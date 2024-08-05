@@ -1,0 +1,83 @@
+/* ChatBox.css */
+.ChatBox-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #fff;
+}
+
+.chat-header {
+  padding: 10px;
+  border-bottom: 1px solid #ececec;
+}
+
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.chat-sender {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-top: 1px solid #ececec;
+}
+
+.followerImage {
+  width: 50px;
+  height: 50px;
+  border-radius: 20px;
+}
+
+.name {
+  margin-left: 10px;
+}
+
+.message {
+  margin-bottom: 10px;
+}
+
+.message.own {
+  text-align: right;
+}
+
+input {
+  width: 100%;
+}
+
+button {
+  margin-left: 10px;
+}
+/* ChatBox.css */
+
+/* Ensure background color and text color are set correctly */
+.message {
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.message.own {
+  background-color: #007bff; /* Example: Blue background for your messages */
+  color: #fff; /* White text color for contrast */
+  align-self: flex-end; /* Align own messages to the end */
+}
+
+.message {
+  background-color: #f1f1f1; /* Example: Light gray background for received messages */
+  color: #000; /* Black text color for readability */
+  align-self: flex-start; /* Align received messages to the start */
+}
+
+.message span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.message .timestamp {
+  font-size: 0.8rem;
+  color: #888; /* Light gray color for timestamp */
+}
