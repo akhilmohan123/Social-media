@@ -13,16 +13,37 @@ import {
 } from 'mdb-react-ui-kit';
 import { FcGoogle } from 'react-icons/fc';
 import { motion } from 'framer-motion';
+import {toast} from 'react-toastify';
+
 
 function Mdbsignup() {
   const [value, setValue] = useState({ fname: "", lname: "", email: "", password: "" });
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error,Seterror]=useState({email:'',password:''})
   const navigate = useNavigate();
-
+  const password_reg=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const email_regex=/^[\w\.]+@([\w-]+\.)+[\w-]{2,4}$/;
   const handleGoogleSignup = () => {
     window.location.href = "http://localhost:3001/auth/google"; // Your backend OAuth route
   };
+
+  function Onvalidation(){
+    alert("called the on validation function")
+    var valid=true;
+    var newError={email:'',password:''}
+    if(!password_reg.test(value.email)){
+      newError.password='Please enter valid password';
+      valid=false;
+    } 
+
+    if(!email_regex.test(value.email)) {
+      newError.email='Please enter valid email';
+      valid=false;
+  }
+  Seterror(newError)
+  return valid
+}
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -35,30 +56,39 @@ function Mdbsignup() {
   }
 
   async function handleSubmit(e) {
+
+    alert("called")
     e.preventDefault();
-    setLoading(true);
+    if(Onvalidation()){
+      alert("reached if ")
+      setLoading(true);
     
-    const form = new FormData();
-    form.append('fname', value.fname);
-    form.append('lname', value.lname);
-    form.append("password", value.password);
-    form.append("email", value.email);
-    if (image) form.append('file', image);
-
-    try {
-      const res = await axios.post("http://localhost:3001/signup", form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      if (res.status === 200) {
-        alert("Account Created Successfully!");
-        navigate("/login");
+      const form = new FormData();
+      form.append('fname', value.fname);
+      form.append('lname', value.lname);
+      form.append("password", value.password);
+      form.append("email", value.email);
+      if (image) form.append('file', image);
+  
+      try {
+        const res = await axios.post("http://localhost:3001/signup", form, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+  
+        if (res.status === 200) {
+          alert("Account Created Successfully!");
+          navigate("/login");
+        }
+      } catch (error) {
+        alert(error.response?.data?.message || "Registration failed. Please try again.");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      alert(error.response?.data?.message || "Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
+    }else{
+      toast.error("Something went wrong !")
+      alert("NO !!!!")
     }
+   
   }
 
   return (
@@ -146,6 +176,7 @@ function Mdbsignup() {
                 onChange={handleChange}
                 required
               />
+              {error.email && <p style={{color:'red'}}>{error.email}</p>}
 
               <MDBInput 
                 wrapperClass='mb-3' 
@@ -158,6 +189,7 @@ function Mdbsignup() {
                 required
                 minLength="6"
               />
+              {error.password && <p style={{color:'red'}}>{error.password}</p>}
 
               <div className='mb-4'>
                 <label htmlFor="profileImage" className="form-label">Profile Image (Optional)</label>
