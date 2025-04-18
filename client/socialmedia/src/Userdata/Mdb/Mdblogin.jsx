@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from "axios";
 import { MDBContainer, MDBRow, MDBCol, MDBIcon, MDBInput } from 'mdb-react-ui-kit';
 import { useNavigate } from 'react-router-dom';
@@ -10,8 +10,8 @@ import './Mdcss.css';
 function Mdblogin() {
   const [value, setValue] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const api_url=import.meta.env.VITE_BACKEND_URL
   const navigate = useNavigate();
-
   const axiosInstance = axios.create({
     baseURL: "http://localhost:3001",
     headers: { 'Content-Type': 'application/json' }
