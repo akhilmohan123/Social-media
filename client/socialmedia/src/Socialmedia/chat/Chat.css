@@ -1,0 +1,19 @@
+/* Chat.css */
+.Chat-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  width: 100vw;  /* Full viewport width */
+  overflow: hidden; /* Hide overflow */
+}
+
+.Right-side-chat {
+  width: 400px; /* Fixed width */
+  height: 600px; /* Fixed height */
+  border: 1px solid #ccc; /* Optional border */
+  background-color: #fff; /* Background color */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
+  display: flex;
+  flex-direction: column;
+}

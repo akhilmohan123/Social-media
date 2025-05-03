@@ -1,0 +1,10 @@
+.textcolor{
+    color: red;
+}
+
+.image{
+    width: 30px;
+    height: 30px;
+    margin-left: 2px;
+    border-radius: 10px;
+}

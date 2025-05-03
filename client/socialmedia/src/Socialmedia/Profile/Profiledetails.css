@@ -1,0 +1,15 @@
+/* ProfileDetails.css */
+.image-gallery-slide img {
+    width: auto; /* Maintain aspect ratio */
+    height: 400px; /* Set height to medium size */
+    object-fit: contain; /* Contain the image within the given dimensions */
+    margin: 0 auto; /* Center the image */
+  }
+  
+  .image-gallery-thumbnail img {
+    height: 75px; /* Adjust the thumbnail size as well */
+    object-fit: cover;
+  }
+  .edit-div{
+    margin-bottom: 0;
+  }

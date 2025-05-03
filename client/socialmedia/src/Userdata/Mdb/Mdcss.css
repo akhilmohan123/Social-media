@@ -1,0 +1,19 @@
+body{
+    color: white;
+}
+/* Add this to your Mdcss.css file */
+.login-container {
+    min-height: 100vh;
+  }
+  
+  .divider {
+    color: #6c757d;
+  }
+  
+  .divider::before,
+  .divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+    margin: auto 0.5rem;
+  }
