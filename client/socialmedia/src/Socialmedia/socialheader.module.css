@@ -1,5 +1,9 @@
 .textcolor{
     color: red;
+    position: sticky;
+    top: 0; /* Sticks to the top when you scroll */
+    background-color: white; /* Optional: to prevent content underlap */
+    z-index: 1000; /* Ensures it stays on top */
 }
 
 .image{

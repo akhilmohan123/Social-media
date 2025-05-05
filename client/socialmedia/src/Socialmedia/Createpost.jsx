@@ -10,11 +10,13 @@ import {
   faMapMarkerAlt,
   faVideo
 } from '@fortawesome/free-solid-svg-icons';
+import AddPhoto from './AddPhoto/AddPhoto';
 
 function CreatePost() {
   const [postContent, setPostContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [image,setImage]=useState(false)
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -46,10 +48,11 @@ function CreatePost() {
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     setImageFile(file);
+    setImage(true)
   };
 
   return (
-    <Container className="bg-light p-4 rounded shadow-sm">
+    <Container className={`bg-light p-4 rounded shadow-sm ${image ? 'block' : ''}`} >
       <div className="create-post">
         <h4 className="mb-4 text-dark">Welocome Akhil</h4>
         <Form onSubmit={handleSubmit} encType="multipart/form-data">
@@ -121,7 +124,9 @@ function CreatePost() {
 
         </Form>
       </div>
+      {image && <AddPhoto/>}
     </Container>
+    
   );
 }
 
