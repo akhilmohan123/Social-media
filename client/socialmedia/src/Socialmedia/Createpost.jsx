@@ -52,7 +52,8 @@ function CreatePost() {
   };
 
   return (
-    <Container className={`bg-light p-4 rounded shadow-sm ${image ? 'block' : ''}`} >
+    <div>
+ <Container className="bg-light p-4 rounded shadow-sm " >
       <div className="create-post">
         <h4 className="mb-4 text-dark">Welocome Akhil</h4>
         <Form onSubmit={handleSubmit} encType="multipart/form-data">
@@ -124,8 +125,11 @@ function CreatePost() {
 
         </Form>
       </div>
-      {image && <AddPhoto/>}
+     
     </Container>
+    {image ? <AddPhoto/> :<div></div>}
+    </div>
+   
     
   );
 }
