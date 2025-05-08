@@ -47,8 +47,15 @@ function CreatePost() {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    setImageFile(file);
-    setImage(true)
+    const reader=new FileReader()
+    reader.readAsDataURL(file)
+    reader.onloadend = ()=>{
+      setImageFile(reader.result)
+      setImage(true)
+    }
+
+    
+
   };
 
   return (
@@ -127,7 +134,7 @@ function CreatePost() {
       </div>
      
     </Container>
-    {image ? <AddPhoto/> :<div></div>}
+    {image ? <AddPhoto imageData={imageFile}/> :<div></div>}
     </div>
    
     
