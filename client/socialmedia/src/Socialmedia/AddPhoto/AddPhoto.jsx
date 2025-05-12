@@ -4,7 +4,9 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Cropper from 'react-easy-crop';
 import getCroppedImage from './CroppedImage';
+import Dropdown from 'react-bootstrap/Dropdown';
 import './AddPhoto.css';
+import { use } from 'react';
 
 function AddPhoto({ imageData }) {
   const [show, setShow] = useState(true);
@@ -17,10 +19,40 @@ function AddPhoto({ imageData }) {
   const [tags, setTags] = useState('');
   const [location, setLocation] = useState('');
   const [showCropper, setShowCropper] = useState(true); // Renamed for clarity
+  const [latitude,setLatitude]= useState(null);
+  const [longitude,setLongitude]=useState(null);
+  const [error,setError] =useState(null);
+  const [suggestions,setSuggestions]=useState([]);
+  const [selectSuggestion,setSelectSuggestion]=useState(null);
+  const [dropdownShow,setDropdownShow] = useState(true)
+   const API_KEY=import.meta.env.VITE_FOURSQUARE_API
+  useEffect(()=>{
+    suggestions.length>0 &&suggestions.map((s)=>{
+      console.log("suggestion is ========",s.name);
+    })
+  },[suggestions]);
 
-  useEffect(() => {
-    console.log('Received image data:', imageData);
-  }, [imageData]);
+
+  useEffect(()=>{
+    console.log("api key is =====",API_KEY)
+  },[])
+ 
+
+   useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
+        },
+        (error) => {
+          setError(error.message);
+        }
+      );
+    } else {
+      setError('Geolocation is not supported by this browser.');
+    }
+  }, []);
 
   function handleBack() {
     setShowCropper(true);
@@ -52,7 +84,41 @@ function AddPhoto({ imageData }) {
     });
     handleBack();
   };
-
+  const getPlaces =async(place,latitude,longitude)=>{
+     const res = await fetch(
+    ` https://api.foursquare.com/v3/places/search?ll=${latitude},${longitude}&radius=1000&query=${place}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: API_KEY, // Replace with your real key
+      },
+    }
+  );
+  const data = await res.json();
+  console.log("dats is ========",data.results);
+  if(data.results.length>0){
+    setSuggestions(data.results)
+  }else{
+    setError("Location not found");
+  }
+  }
+  const handleLocation = (value) =>{
+    console.log("place value is ====="+value);
+    setLocation(value);
+    if(latitude && longitude){
+      getPlaces(value,latitude,longitude);
+    }
+    else{
+      setError("Location not found");
+    }
+  }
+  const handlePlace = (value) =>{
+    setSelectSuggestion(value);
+    setDropdownShow(false);
+    setLocation(value);
+    setSuggestions([]);
+  }
   return (
     <Modal show={show} onHide={handleBack} size="lg" centered className="add-photo-modal">
       <Modal.Header closeButton className="border-0 pb-0">
@@ -131,26 +197,22 @@ function AddPhoto({ imageData }) {
               </Form.Group>
 
               <Form.Group className="mb-3">
-                <Form.Label>Tags (comma separated)</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="nature, vacation, summer"
-                  value={tags}
-                  onChange={(e) => setTags(e.target.value)}
-                />
-                <Form.Text className="text-muted">
-                  Add relevant tags to help organize your photos
-                </Form.Text>
-              </Form.Group>
-
-              <Form.Group className="mb-3">
                 <Form.Label>Location</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Where was this taken?"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(e) => handleLocation(e.target.value)}
                 />
+                {suggestions.length>0 && (
+                  <Dropdown.Menu show  style={{with:'100%'}}>
+                    {suggestions.map((suggestion,index)=>(
+                      <Dropdown.Item key={suggestion.fsq_id} onClick={()=>handlePlace(suggestion.name)}>
+                        {suggestion.name}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                )}
               </Form.Group>
             </Form>
           </div>

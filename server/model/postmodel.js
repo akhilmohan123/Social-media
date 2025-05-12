@@ -5,7 +5,8 @@ const Postschema=new mongoose.Schema({
     Userid: { type: mongoose.Schema.Types.ObjectId, ref: 'usermodel', required: true },
     Image:Object,
     Description:String,
-    Like:Number
-})
+    Location:String,
+    Like: [{ type: mongoose.Schema.Types.ObjectId, ref: 'usermodel' }]
+},{timestamps:true})
 const Post=mongoose.model('Post',Postschema);
 module.exports=Post;
