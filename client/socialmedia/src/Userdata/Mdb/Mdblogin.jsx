@@ -31,11 +31,14 @@ function Mdblogin() {
     setLoading(true);
     try {
       const data = await _post("/login", value);
-      console.log(data);
+      console.log(data.data);
   
       if (data.data) {
+
         localStorage.setItem('token', data.data);
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+        localStorage.setItem('user',JSON.stringify(data.user))
+        localStorage.setItem('token',data.token)
         toast.success("Login successfully")
         navigate("/social")
       }

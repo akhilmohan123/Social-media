@@ -7,6 +7,8 @@ import getCroppedImage from './CroppedImage';
 import Dropdown from 'react-bootstrap/Dropdown';
 import './AddPhoto.css';
 import { use } from 'react';
+import { Axios } from 'axios';
+import { _post, apiClient } from '../axios/Axios';
 
 function AddPhoto({ imageData }) {
   const [show, setShow] = useState(true);
@@ -36,6 +38,11 @@ function AddPhoto({ imageData }) {
   useEffect(()=>{
     console.log("api key is =====",API_KEY)
   },[])
+
+  useEffect(()=>{
+    console.log(imageData);
+    console.log(typeof imageData)
+  })
  
 
    useEffect(() => {
@@ -76,13 +83,33 @@ function AddPhoto({ imageData }) {
   };
 
   const handleFinalSubmit = () => {
-    console.log({
-      image: croppedImageData,
-      caption,
-      tags: tags.split(',').map(tag => tag.trim()),
-      location
-    });
-    handleBack();
+    try {
+    fetch(croppedImageData).then((response)=>{
+      response.blob().then((blob)=>{
+      var reader = new FileReader();
+    reader.readAsDataURL(blob); 
+    reader.onloadend = function() {
+     var base64data = reader.result;                
+      console.log(base64data);
+      setCroppedImageData(base64data);}
+      })
+    })
+    console.log(caption);
+    console.log(location);
+    const token=localStorage.getItem("token");
+    apiClient.defaults.headers.common["Authorization"]=`Bearer ${token}`;
+    const formData=new FormData();
+    formData.append("image",croppedImageData);
+    formData.append("caption",caption);
+    formData.append("location",location)
+     _post("/social/add-post",formData).then((res)=>{
+      console.log(res);
+
+     })
+    } catch (error) {
+     console.log(error); 
+    }
+   
   };
   const getPlaces =async(place,latitude,longitude)=>{
      const res = await fetch(
