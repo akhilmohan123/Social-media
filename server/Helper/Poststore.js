@@ -40,5 +40,28 @@ module.exports={
                 resolve(false)
             }
         })
+      },
+      //adding image,caption,location to database a helper function
+      uploadpost:(id,image,caption,location)=>{
+        return new Promise(async (resolve,reject)=>{
+          try {
+           const postmodel=new Post({
+            Userid:id,
+            Image:image,
+            Caption:caption,
+            Location:location
+           })
+           postmodel.save().then((res)=>{
+            console.log("Respons is ======",res)
+            resolve(res)
+           }).catch((err)=>{
+            console.log(err)
+            reject(err)
+           })
+          } catch (error) {
+            console.log(error)
+            reject(error)
+          }
+        })
       }
 }

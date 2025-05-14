@@ -20,8 +20,8 @@ app.use(cors({
   origin: "http://localhost:5173", // allow frontend dev server
   credentials: true               // allow cookies or auth headers
 }));
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({  extended: true, limit: '10mb'  }));
 app.use(express.urlencoded({
     extended: true
 }))

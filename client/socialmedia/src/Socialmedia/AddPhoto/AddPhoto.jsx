@@ -9,6 +9,7 @@ import './AddPhoto.css';
 import { use } from 'react';
 import { Axios } from 'axios';
 import { _post, apiClient } from '../axios/Axios';
+ import { ToastContainer, toast } from 'react-toastify';
 
 function AddPhoto({ imageData }) {
   const [show, setShow] = useState(true);
@@ -43,7 +44,11 @@ function AddPhoto({ imageData }) {
     console.log(imageData);
     console.log(typeof imageData)
   })
- 
+ useEffect(()=>{
+  if(error){
+    toast.error(error)
+  }
+ },[error])
 
    useEffect(() => {
     if (navigator.geolocation) {
@@ -82,7 +87,7 @@ function AddPhoto({ imageData }) {
     }
   };
 
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = async() => {
     try {
     fetch(croppedImageData).then((response)=>{
       response.blob().then((blob)=>{
@@ -98,15 +103,19 @@ function AddPhoto({ imageData }) {
     console.log(location);
     const token=localStorage.getItem("token");
     apiClient.defaults.headers.common["Authorization"]=`Bearer ${token}`;
-    const formData=new FormData();
-    formData.append("image",croppedImageData);
-    formData.append("caption",caption);
-    formData.append("location",location)
-     _post("/social/add-post",formData).then((res)=>{
-      console.log(res);
+   const payload = {
+  image: croppedImageData, // base64 string
+  caption,
+  location,
+};
 
-     })
+     const data=await _post("/socail/upload",payload)
+     console.log(data)
+     if(data.data.status==true){
+      toast.success("Post uploaded successfully")
+     }
     } catch (error) {
+      toast.error("Post uploaded failed")
      console.log(error); 
     }
    

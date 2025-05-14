@@ -4,10 +4,10 @@ var router=express.Router()
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer')
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "uploads/",limits: { fileSize: 50 * 1024 * 1024 } });
 const fs=require('file-system');
 const { getuserid, getusername, getpeople, geteditdata, posteditdata, getuserpost } = require('../Helper/Getuser');
-const { addpost, addlike, removelike } = require('../Helper/Poststore');
+const { addpost, addlike, removelike, uploadpost } = require('../Helper/Poststore');
 const { addfriend, removefriend } = require('../Helper/Addfriends');
 const Friend = require('../model/Friendsmodel');
 const Post = require('../model/postmodel');
@@ -351,9 +351,34 @@ router.post("/auth/reset-password",async(req,res)=>{
   })
 })
 
-router.post("/social/add-post",upload.single("file"),(res,req)=>{
+
+//add post image,caption,location router
+router.post("/social/upload",upload.single("file"),async(req,res)=>{
+  try {
+    let userresult=await getuserid(req.headers)
+    let email=userresult.userId;
+    let user=await usermodel.findOne({Email:email})
+    let id=user._id
   console.log(req.body)
   console.log(req.file)
-})
+  let file=req.file;
+  let caption=req.body.caption
+  let location=req.body.location
+  await uploadpost(id,file,caption,location).then((result)=>{
+    console.log(result)
+    if(result){
+      res.status(200).json(result)
+    }
+  }).catch(err=>{
+    console.log(err)
+    res.status(400).json(err)
+  })
+}
+catch(err){
+  console.log(err)
+  res.status(400).json(err)
+}
+}
+)
 module.exports=router;
 /*"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJha2hpbCIsImlhdCI6MTcyMDIwMDc4MCwiZXhwIjoxNzIwMjA0MzgwfQ.5ZZmIz4SxIqWv3UCDBGN39cCbjBRNdGNimq1e6RY31w"*/
