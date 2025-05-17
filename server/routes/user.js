@@ -89,7 +89,8 @@ router.get("/test",(req,res)=>{
   })
 })
 router.post("/post",upload.single("file"),(req,res)=>{
- getuserid(req.headers).then((resn)=>{
+  try {
+     getuserid(req.headers).then((resn)=>{
   const {content}=req.body
   let files=req.file.path;
   var img = fs.readFileSync(files);
@@ -106,6 +107,10 @@ router.post("/post",upload.single("file"),(req,res)=>{
     res.status(400).json({data:false})
   })
 })
+  } catch (error) {
+    console.log(error)
+  }
+
 })
 router.get("/profile",(req,res)=>{
  getuserid(req.headers).then(async(response)=>{

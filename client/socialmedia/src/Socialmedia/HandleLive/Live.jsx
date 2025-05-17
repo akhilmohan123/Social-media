@@ -7,6 +7,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
  import { ToastContainer, toast } from 'react-toastify';
 import { Container } from 'react-bootstrap';
 import './Live.css'
+import VideoContainer from './VideoContainer/VideoContainer';
 function Live() {
     const [show,setShow] =useState(true)
   return (
@@ -16,9 +17,7 @@ function Live() {
       </Modal.Header>
 
       <Modal.Body className="p-4">
-        <Container id="container">
-            hello
-        </Container>
+        <VideoContainer/>
       </Modal.Body>
       <Modal.Footer className="border-0 pt-0">
       </Modal.Footer>

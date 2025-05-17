@@ -47,6 +47,8 @@ function CreatePost() {
     }
   };
 
+  
+
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     const reader=new FileReader()
@@ -56,10 +58,13 @@ function CreatePost() {
       setImage(true)
     }
   };
-  const handleLive=()=>{
-    console.log("live")
+
+ 
+ 
+  function handleLive(){
     setLive(true)
     setImage(false)
+   
   }
 
   return (
@@ -109,12 +114,12 @@ function CreatePost() {
     </div>
 
     <div className="d-flex gap-2">
-      <Button variant="danger">
-        <FontAwesomeIcon icon={faVideo} className="me-2" onClick={handleLive}/>
+      <Button variant="danger" onClick={handleLive}>
+        <FontAwesomeIcon icon={faVideo} className="me-2" />
         Go Live
       </Button>
 
-      <Button type="submit" variant="primary">Post</Button>
+      <Button type="submit" variant="primary" >Post</Button>
     </div>
   </Col>
 </Row>
