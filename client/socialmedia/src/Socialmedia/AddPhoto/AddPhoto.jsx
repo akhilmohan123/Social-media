@@ -109,10 +109,11 @@ function AddPhoto({ imageData }) {
   location,
 };
 
-     const data=await _post("/socail/upload",payload)
-     console.log(data)
-     if(data.data.status==true){
+     const data=await _post("/social/upload",payload)
+     console.log(data.status)
+     if(data.status==200){
       toast.success("Post uploaded successfully")
+      setShow(false);
      }
     } catch (error) {
       toast.error("Post uploaded failed")

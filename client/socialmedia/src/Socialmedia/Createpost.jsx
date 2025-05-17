@@ -11,12 +11,14 @@ import {
   faVideo
 } from '@fortawesome/free-solid-svg-icons';
 import AddPhoto from './AddPhoto/AddPhoto';
+import Live from './HandleLive/Live';
 
 function CreatePost() {
   const [postContent, setPostContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [success, setSuccess] = useState(false);
   const [image,setImage]=useState(false)
+  const [live,setLive]=useState(false)
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -53,10 +55,12 @@ function CreatePost() {
       setImageFile(reader.result)
       setImage(true)
     }
-
-    
-
   };
+  const handleLive=()=>{
+    console.log("live")
+    setLive(true)
+    setImage(false)
+  }
 
   return (
     <div>
@@ -102,26 +106,11 @@ function CreatePost() {
         </Form.Label>
       </Form.Group>
 
-      {/* Other buttons with icons */}
-      <Button variant="outline-secondary">
-        <FontAwesomeIcon icon={faSmile} className="me-2" />
-        Feeling
-      </Button>
-
-      <Button variant="outline-secondary">
-        <FontAwesomeIcon icon={faTags} className="me-2" />
-        Tag
-      </Button>
-
-      <Button variant="outline-secondary">
-        <FontAwesomeIcon icon={faMapMarkerAlt} className="me-2" />
-        Check In
-      </Button>
     </div>
 
     <div className="d-flex gap-2">
       <Button variant="danger">
-        <FontAwesomeIcon icon={faVideo} className="me-2" />
+        <FontAwesomeIcon icon={faVideo} className="me-2" onClick={handleLive}/>
         Go Live
       </Button>
 
@@ -132,9 +121,9 @@ function CreatePost() {
 
         </Form>
       </div>
-     
     </Container>
     {image ? <AddPhoto imageData={imageFile}/> :<div></div>}
+    {live?<Live/>:<div></div>}
     </div>
    
     
