@@ -1,12 +1,20 @@
 import React, { useEffect, useRef } from 'react';
 import { Container } from 'react-bootstrap';
 import './VideoContainer.css';
+import socket from '../../Socket/Socket';
 
 function VideoContainer() {
   const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
 
   useEffect(() => {
-    handleVideo();
+    socket.connect();
+    return () => {
+      socket.disconnect();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+    };
   }, []);
 
   async function handleVideo() {
@@ -15,14 +23,42 @@ function VideoContainer() {
         video: true,
         audio: true,
       });
+
       if (videoRef.current) {
+        // Create MediaRecorder
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'video/webm; codecs=vp9' // vp9 has better browser support
+        });
+        mediaRecorderRef.current = mediaRecorder;
+
+        // Set up data handler
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            socket.emit("video-data", event.data);
+          }
+        };
+
+        // Start recording with 1-second chunks
+        mediaRecorder.start(1000);
+
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        videoRef.current.play().catch(e => console.error("Play error:", e));
       }
     } catch (err) {
-      console.error("Error accessing media devices.", err);
+      console.error("Error accessing media devices:", err);
     }
   }
+
+  useEffect(() => {
+    handleVideo();
+    
+    return () => {
+      // Clean up media streams
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   return (
     <div className='main-div'>
@@ -33,7 +69,8 @@ function VideoContainer() {
           controls
           autoPlay
           muted
-        ></video>
+          playsInline // Important for mobile browsers
+        />
       </Container>
     </div>
   );

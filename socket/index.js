@@ -25,6 +25,9 @@ io.on("connection",(socket)=>{
       io.to(user.socketId).emit("recieve-message", data);
     }
   });
+  socket.on("video-data",(data)=>{
+    console.log(data);
+  })
     socket.on("disconnect",()=>{
         activeusers=activeusers.filter((user)=>user.socketId!==socket.id);
         console.log("user disconnected",activeusers)

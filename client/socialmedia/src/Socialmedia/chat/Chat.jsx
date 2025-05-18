@@ -3,8 +3,8 @@ import './Chat.css'
 import axios from 'axios';
 import Conversation from './Conversation/Conversation';
 import Chatbox from './Chatbox/Chatbox';
-import {io} from 'socket.io-client'
 import { useParams } from 'react-router-dom';
+import socket from '../Socket/Socket';
 function Chat() {
   const[chats,setchats]=useState([])
   const[user,setUser]=useState();
@@ -12,37 +12,40 @@ function Chat() {
   const[onlineusers,setonlineusers]=useState([])
   const[sendmessage,setsendmessage]=useState("")
   const[recievemessage,Setrecievemessage]=useState(null)
-  const socket=useRef()
   const token=localStorage.getItem("token")
   console.log(chats)
   const match=useParams('/chat-friend/:id')
   const data={senderId:user,recieverId:match.id}
+
+
+
 useEffect(()=>{
   function callfriend(){
-
     try {
       axios.post("http://localhost:3001/chat",data)
     } catch (error) {
-      
+      console.log(error)
     }
   }
   callfriend()
 },[user,match.id])
   useEffect(()=>{
-    socket.current=io('http://localhost:8800');
-    socket.current.emit("new-user-add",user)
-    socket.current.on('get-users',(users)=>{
+    if(!user) return
+
+    socket.connect()
+    socket.emit("new-user-add",user)
+    socket.on('get-users',(users)=>{
     setonlineusers(users)
     })
     
   },[user])
   useEffect(()=>{
     if(sendmessage!=null){
-      socket.current.emit('send-message',sendmessage)
+      socket.emit('send-message',sendmessage)
     }
   },[sendmessage])
   useEffect(()=>{
-    socket.current.on("recieve-message",(data)=>{
+    socket.on("recieve-message",(data)=>{
       Setrecievemessage(data)
     })
   },[])
@@ -62,7 +65,7 @@ useEffect(()=>{
           setUser(result.data.userid)
         })
       } catch (error) {
-        
+        console.log(error)
       }
     }
     getChats()
