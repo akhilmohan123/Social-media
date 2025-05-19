@@ -1,12 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Container } from 'react-bootstrap';
 import './VideoContainer.css';
 import socket from '../../Socket/Socket';
+import { ToastContainer, toast } from 'react-toastify';
 
 function VideoContainer() {
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
-
+  const[error,setError]=useState(false);
+  useEffect(()=>{
+    if(error){
+      toast.error("Something wen wrong please try again")
+    }
+  },[error])
   useEffect(() => {
     socket.connect();
     return () => {
@@ -46,6 +52,7 @@ function VideoContainer() {
       }
     } catch (err) {
       console.error("Error accessing media devices:", err);
+      setError(true)
     }
   }
 
