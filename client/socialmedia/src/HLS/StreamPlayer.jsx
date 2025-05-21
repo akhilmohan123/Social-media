@@ -2,7 +2,7 @@ import React from 'react'
 import { useEffect,useRef } from 'react'
 import Hls from 'hls.js'
 
-
+//stream player for showing the hls segments 
 function StreamPlayer() {
     const videoRef=useRef(null);
     useEffect(()=>{

@@ -11,7 +11,7 @@ const { addpost, addlike, removelike, uploadpost } = require('../Helper/Poststor
 const { addfriend, removefriend } = require('../Helper/Addfriends');
 const Friend = require('../model/Friendsmodel');
 const Post = require('../model/postmodel');
-const {getfriendsprofile} = require('../Helper/getfriendsprofile');
+const {getfriendsprofile, getAllFriends} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
  require('dotenv').config()
@@ -385,5 +385,28 @@ catch(err){
 }
 }
 )
+
+
+//get friends list for socket server
+
+router.get("/api/get-friends",async(req,res)=>{
+  try{
+    const id=req.params.id
+    await getAllFriends(id).then((result)=>{
+      console.log(result)
+      if(result)
+      {
+        res.status(200).json(result)
+      }
+    }).catch(err=>{
+      console.log(err)
+      res.status(400).json(err)
+    })
+  }catch(err)
+  {
+    console.log(err)
+    res.status(400).json(err)
+  }
+})
 module.exports=router;
 /*"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJha2hpbCIsImlhdCI6MTcyMDIwMDc4MCwiZXhwIjoxNzIwMjA0MzgwfQ.5ZZmIz4SxIqWv3UCDBGN39cCbjBRNdGNimq1e6RY31w"*/

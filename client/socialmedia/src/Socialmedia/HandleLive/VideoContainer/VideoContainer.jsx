@@ -8,6 +8,14 @@ function VideoContainer() {
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const[error,setError]=useState(false);
+  const user=localStorage.getItem("user")
+
+  useEffect(()=>{
+    console.log("user is ======="+user)
+    console.log("user id is -------"+user.id)
+  },[user])
+
+
   useEffect(()=>{
     if(error){
       toast.error("Something wen wrong please try again")
@@ -40,7 +48,7 @@ function VideoContainer() {
         // Set up data handler
         mediaRecorder.ondataavailable = (event) => {
           if (event.data && event.data.size > 0) {
-            socket.emit("video-data", event.data);
+            socket.emit("video-stream", {userId:user.id,data:event.data});
           }
         };
 

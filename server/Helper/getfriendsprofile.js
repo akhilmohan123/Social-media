@@ -37,5 +37,22 @@ module.exports={
         resolve(friend_details)
         })
        
+    },
+    //function to get all users id based on the friends and return it
+    getAllFriends:async (id)=>{
+        return new Promise(async(resolve,reject)=>{
+            try {
+            await Friend.find({Userid:id}).then((res)=>{
+            if(res)
+            {
+                console.log("friends list is ====="+res.Friendsid)
+                resolve(res.Friendsid)
+            }
+            }).catch(error=>reject(error))
+            } catch (error) {
+                consol.log(error)
+                reject(error)
+            }
+        })
     }
 }

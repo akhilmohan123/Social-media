@@ -5,7 +5,27 @@ const io=require("socket.io")(8800,{
         orgin:"http://localhost:3001",
     }
 })
+
+//initializing error flag to track the error
+let errorflag=false
 let activeusers=[]
+
+let friendslist=[];
+//calling the function to get the freinds list
+
+async function getFriendsList(id)
+{
+  try {
+      const friend=await axios.get(`http://localhost:3001/getfriends/${id}`)
+      console.log("this is the response from the server",friend.data)
+      return friend.data
+  } catch (error) {
+    console.log("Error from socket is ======"+error)
+    errorflag=true
+  }
+ 
+}
+
 
 io.on("connection",(socket)=>{
   let ffmpegstatus=false
@@ -28,7 +48,25 @@ io.on("connection",(socket)=>{
       io.to(user.socketId).emit("recieve-message", data);
     }
   });
-  socket.on("video-data", (data) => {
+  //get the video data as blob from the front end and send it to ffmpeg
+  socket.on("live-stream", ({user,data}) => {
+    console.log("user is "+user)
+
+    console.log("data is here",data)
+    //calls the function to get the friend list
+    const friendlist=getFriendsList(user)
+    //check the any users in the friend list if user is 
+    if(friendlist.length>0)
+    {
+      friendlist.forEach((friend)=>{
+        io.to(friend.socketId).emit("live-stream",{user})
+    
+      })
+
+    }
+
+
+    // check ffmpeg process is already running 
     if (!ffmpegProcess) {
       ffmpegProcess = spawn('ffmpeg', [
         '-i', 'pipe:0',
