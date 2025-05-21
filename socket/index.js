@@ -36,7 +36,7 @@ io.on("connection",(socket)=>{
         '-preset', 'ultrafast',
         '-tune', 'zerolatency',
         '-f', 'flv',
-        'rtmp://localhost/live/stream' // or your public RTMP endpoint
+        'rtmp://localhost:1935/live/stream' //rtmp endpoint
       ]);
 
       ffmpegProcess.stderr.on('data', (data) => {
@@ -57,6 +57,10 @@ io.on("connection",(socket)=>{
     }
   });
     socket.on("disconnect",()=>{
+      if(ffmpegProcess){
+        ffmpegProcess.stdin.end()
+        ffmpegProcess.kill('SIGINT')
+      }
         activeusers=activeusers.filter((user)=>user.socketId!==socket.id);
         console.log("user disconnected",activeusers)
         io.emit("get-users",activeusers);
