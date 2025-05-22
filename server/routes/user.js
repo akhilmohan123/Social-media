@@ -313,11 +313,12 @@ router.get("/google/authenticate",googleAuthMiddleWare.authenticate(),(req,res)=
   console.log("Called")
 })
 router.get("/auth/google/callback",googleAuthMiddleWare.callback(),(req,res)=>{
-   let userId=req.user.Email
+  console.log(req.user)
+   let userId=req.user._id
    const token = jwt.sign({ userId: userId },process.env.JWT_SECRETKEY , { expiresIn: '1h' });
    console.log(token)
   // console.log(token)
-  res.redirect(`http://localhost:5173/social?token=${token}`);
+  res.redirect(`http://localhost:5173/social?token=${token}&id=${userId}`);
 })
 router.post("/auth/send-reset-code",async(req,res)=>{
   console.log("get otp called")
@@ -389,7 +390,7 @@ catch(err){
 
 //get friends list for socket server
 
-router.get("/api/get-friends",async(req,res)=>{
+router.get("/api/get-friends/:id",async(req,res)=>{
   try{
     const id=req.params.id
     await getAllFriends(id).then((result)=>{

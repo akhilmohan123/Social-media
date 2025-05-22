@@ -1,107 +1,113 @@
-const {spawn}=require("child_process");
-let ffmpegProcess=null
-const io=require("socket.io")(8800,{
-    cors:{
-        orgin:"http://localhost:3001",
-    }
-})
+const { spawn } = require("child_process");
+const axios = require("axios");
+const io = require("socket.io")(8800, {
+  cors: {
+    origin: ["http://localhost:3001", "http://localhost:5173"],
+    methods: ["GET", "POST"],
+    credentials: true// fixed spelling
+  },
+});
 
-//initializing error flag to track the error
-let errorflag=false
-let activeusers=[]
+let ffmpegProcess = null;
+let activeusers = []; // { userid, socketId }
 
-let friendslist=[];
-//calling the function to get the freinds list
-
-async function getFriendsList(id)
-{
+// async function to get friends list for a user ID
+async function getFriendsList(id) {
   try {
-      const friend=await axios.get(`http://localhost:3001/getfriends/${id}`)
-      console.log("this is the response from the server",friend.data)
-      return friend.data
+    const response = await axios.get(`http://localhost:3001/api/get-friends/${id}`);
+    console.log("Friends from server:", response.data);
+    return response.data; // expect array of friend user IDs
   } catch (error) {
-    console.log("Error from socket is ======"+error)
-    errorflag=true
+    console.error("Error fetching friends:", error.message);
+    return [];
   }
- 
 }
 
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
 
-io.on("connection",(socket)=>{
-  let ffmpegstatus=false
-    //add new user
-    socket.on("new-user-add",(newUserId)=>{
-        //if user is not added previously
-        if(!activeusers.some((user)=>user.userid===newUserId)){
-            activeusers.push({userid:newUserId,socketId:socket.id})
-            console.log("New user connected",activeusers)
-        }
-        io.emit("get-users",activeusers);
-    })
-    // send message to a specific user
+  // Add new user
+  socket.on("new-user-add", (newUserId) => {
+    if (!activeusers.some((user) => user.userid === newUserId)) {
+      activeusers.push({ userid: newUserId, socketId: socket.id });
+      console.log("Active users:", activeusers);
+    }
+    io.emit("get-users", activeusers);
+  });
+
+  // Send message to a specific user
   socket.on("send-message", (data) => {
     const { receiverId } = data;
-    const user = activeusers.find((user) => user.userId === receiverId);
-    console.log("Sending from socket to :", receiverId)
-    console.log("Data: ", data)
+    const user = activeusers.find((user) => user.userid === receiverId); // fixed casing
+    console.log("Sending message to:", receiverId);
     if (user) {
       io.to(user.socketId).emit("recieve-message", data);
     }
   });
-  //get the video data as blob from the front end and send it to ffmpeg
-  socket.on("live-stream", ({user,data}) => {
-    console.log("user is "+user)
 
-    console.log("data is here",data)
-    //calls the function to get the friend list
-    const friendlist=getFriendsList(user)
-    //check the any users in the friend list if user is 
-    if(friendlist.length>0)
-    {
-      friendlist.forEach((friend)=>{
-        io.to(friend.socketId).emit("live-stream",{user})
-    
-      })
+  // Live streaming data from client
+  socket.on("live-stream", async ({ userId, data }) => {
+    try {
 
-    }
+      // // Get friends list (await the promise!)
+      // const friendList = await getFriendsList(userId);
 
+      // Map friend userIds to their socketIds from activeusers
+      // friendList.forEach((friendId) => {
+      //   const friendUser = activeusers.find((u) => u.userid === friendId);
+      //   if (friendUser) {
+      //     io.to(friendUser.socketId).emit("live-stream", { id: userId, data }); // optionally forward data or id
+      //   }
+      // });
 
-    // check ffmpeg process is already running 
-    if (!ffmpegProcess) {
-      ffmpegProcess = spawn('ffmpeg', [
-        '-i', 'pipe:0',
-        '-c:v', 'libx264',
-        '-preset', 'ultrafast',
-        '-tune', 'zerolatency',
-        '-f', 'flv',
-        'rtmp://localhost:1935/live/stream' //rtmp endpoint
-      ]);
+      // Start ffmpeg process if not already running
+      if (ffmpegProcess==null) {
+        console.log("Starting ffmpeg process...");
+        ffmpegProcess = spawn("D:\\Downloads\\ffmpeg-7.1.1-essentials_build\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe", [
+          "-f", "webm",            // <--- required for MediaRecorder output
+  "-i", "pipe:0",
+  "-c:v", "libx264",
+  "-preset", "ultrafast",
+  "-tune", "zerolatency",
+  "-f", "flv",
+  "rtmp://localhost:1935/live/stream"
+        ]);
 
-      ffmpegProcess.stderr.on('data', (data) => {
-        console.log('FFmpeg stderr:', data.toString());
-      });
+        ffmpegProcess.stderr.on("data", (chunk) => {
+          console.log("FFmpeg stderr:", chunk.toString());
+        });
 
-      ffmpegProcess.on('close', (code) => {
-        console.log(`FFmpeg exited with code ${code}`);
-        ffmpegProcess = null;
-      });
+        ffmpegProcess.on("close", (code) => {
+          console.log(`FFmpeg exited with code ${code}`);
+          ffmpegProcess = null;
+        });
 
-      console.log("FFmpeg process started.");
-    }
+        ffmpegProcess.on("error", (err) => {
+          console.error("FFmpeg process error:", err);
+        });
+      }
 
-    if (ffmpegProcess) {
-      const buffer = Buffer.from(new Uint8Array(data)); // Convert ArrayBuffer to Buffer
-      ffmpegProcess.stdin.write(buffer);
+      if (ffmpegProcess && data) {
+        const buffer = Buffer.isBuffer(data) ? data : Buffer.from(new Uint8Array(data));
+        ffmpegProcess.stdin.write(buffer);
+      }
+    } catch (err) {
+      console.error("Error in live-stream handler:", err);
     }
   });
-    socket.on("disconnect",()=>{
-      if(ffmpegProcess){
-        ffmpegProcess.stdin.end()
-        ffmpegProcess.kill('SIGINT')
-      }
-        activeusers=activeusers.filter((user)=>user.socketId!==socket.id);
-        console.log("user disconnected",activeusers)
-        io.emit("get-users",activeusers);
-    })
-    
-})
+
+  // Handle disconnect
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+    activeusers = activeusers.filter((user) => user.socketId !== socket.id);
+    io.emit("get-users", activeusers);
+
+    // If no more users, close ffmpeg
+    if (activeusers.length === 0 && ffmpegProcess) {
+      ffmpegProcess.stdin.end();
+      ffmpegProcess.kill("SIGINT");
+      ffmpegProcess = null;
+      console.log("FFmpeg process stopped due to no users");
+    }
+  });
+});

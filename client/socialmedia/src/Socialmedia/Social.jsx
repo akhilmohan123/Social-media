@@ -10,10 +10,12 @@ function Social() {
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
-
+    const id=params.get("id")
+    console.log("user id is "+id)
     if (token) {
       alert("Token found: " + token);
       localStorage.setItem("token", token);
+      localStorage.setItem("userId",id)
       console.log("Token stored:", token);
 
       // Remove ?token=... from the URL

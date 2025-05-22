@@ -3,17 +3,17 @@ import { Container } from 'react-bootstrap';
 import './VideoContainer.css';
 import socket from '../../Socket/Socket';
 import { ToastContainer, toast } from 'react-toastify';
+import StreamPlayer from '../../../HLS/StreamPlayer';
 
 function VideoContainer() {
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const[error,setError]=useState(false);
-  const user=localStorage.getItem("user")
+  const id=localStorage.getItem("userId")
 
   useEffect(()=>{
-    console.log("user is ======="+user)
-    console.log("user id is -------"+user.id)
-  },[user])
+    console.log("user id is -------"+id)
+  },[id])
 
 
   useEffect(()=>{
@@ -32,37 +32,42 @@ function VideoContainer() {
   }, []);
 
   async function handleVideo() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+
+    if (videoRef.current) {
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm; codecs=vp8', // more compatible than vp9
       });
+      mediaRecorderRef.current = mediaRecorder;
 
-      if (videoRef.current) {
-        // Create MediaRecorder
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'video/webm; codecs=vp9' // vp9 has better browser support
-        });
-        mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            socket.emit('live-stream', {
+              userId: id,
+              data: reader.result, // ArrayBuffer
+            });
+          };
+          reader.readAsArrayBuffer(event.data);
+        }
+      };
 
-        // Set up data handler
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0) {
-            socket.emit("video-stream", {userId:user.id,data:event.data});
-          }
-        };
+      mediaRecorder.start(1000); // send 1 second chunks
 
-        // Start recording with 1-second chunks
-        mediaRecorder.start(1000);
-
-        videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(e => console.error("Play error:", e));
-      }
-    } catch (err) {
-      console.error("Error accessing media devices:", err);
-      setError(true)
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch((e) => console.error('Play error:', e));
     }
+  } catch (err) {
+    console.error('Error accessing media devices:', err);
+    setError(true);
   }
+}
+
 
   useEffect(() => {
     handleVideo();
@@ -87,6 +92,7 @@ function VideoContainer() {
           playsInline // Important for mobile browsers
         />
       </Container>
+      <StreamPlayer/>
     </div>
   );
 }
