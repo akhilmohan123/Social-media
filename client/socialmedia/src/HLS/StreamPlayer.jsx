@@ -1,29 +1,35 @@
-import React from 'react'
-import { useEffect,useRef } from 'react'
-import Hls from 'hls.js'
+import React, { useEffect, useRef } from 'react';
+import Hls from 'hls.js';
 
-//stream player for showing the hls segments 
 function StreamPlayer() {
-    const videoRef=useRef(null);
-    useEffect(()=>{
-        const video=videoRef.current;
-        if(Hls.isSupported()){
-            const hls=new Hls();
-            hls.loadSource("http://localhost:8080/hls/stream.m3u8")
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED,()=>{
-                video.play();
-            })
-        }else{
-            video.src="http://localhost:8080/hls.stream.m3u8"
-            video.addEventListene("loademetadata",()=>{
-                video.play();
-            })
-        }
-    })
+  const videoRef = useRef(null);
+  const hlsUrl = "http://localhost:8080/hls/stream.m3u8";
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(hlsUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error('HLS Error:', data);
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // For Safari
+      video.src = hlsUrl;
+    }
+  }, []);
+
   return (
-    <video ref={videoRef} controls autoPlay muted  style={{width:"100%",height:"100%"}}></video>
-  )
+    <video
+      ref={videoRef}
+      controls
+      autoPlay
+      muted
+      style={{ width: '100%', height: '100%' }}
+    ></video>
+  );
 }
 
-export default StreamPlayer
+export default StreamPlayer;

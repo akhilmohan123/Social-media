@@ -43,6 +43,7 @@ module.exports={
         return new Promise(async(resolve,reject)=>{
             try {
             await Friend.find({Userid:id}).then((res)=>{
+            console.log(res)
             if(res)
             {
                 console.log("friends list is ====="+res.Friendsid)
