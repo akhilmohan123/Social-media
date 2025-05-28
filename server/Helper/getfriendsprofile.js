@@ -46,14 +46,17 @@ module.exports={
             console.log(res)
             if(res)
             {
-                console.log("friends list is ====="+res.Friendsid)
-                resolve(res.Friendsid)
+                res.forEach((val)=>{
+                   resolve(val.Friendsid)
+                })
+                
             }
             }).catch(error=>reject(error))
             } catch (error) {
                 consol.log(error)
                 reject(error)
             }
+  
         })
     }
 }

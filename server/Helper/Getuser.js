@@ -41,6 +41,7 @@ module.exports = {
   },
   
   getpeople: (authorization) => {
+    console.log("get people called")
     return new Promise(async (resolve, reject) => {
       let res = {};
       try {
@@ -56,13 +57,18 @@ module.exports = {
           }
           try {
             const useris = payload;
-            const user = await usermodel.findOne({ Email: useris.userId });
+            console.log(useris)
+            const user = await usermodel.findOne({ _id: useris.userId });
+            console.log(user)
             if (user) {
+              console.log("inside user is ")
               res.id = user._id;
               const users = await usermodel.find({}).select("-Password").exec();
               if (users) {
+                console.log(users)
                 const authorizedUsers = users.filter(u => u.Email !== useris.userId);
                 res.authorizedUsers = authorizedUsers;
+                console.log(authorizedUsers)
                 res.status = true;
                 return resolve(res);
               } else {

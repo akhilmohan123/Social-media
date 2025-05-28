@@ -9,6 +9,7 @@ function StreamPlayer() {
     const video = videoRef.current;
 
     if (Hls.isSupported()) {
+      console.log("hls is  supported")
       const hls = new Hls();
       hls.loadSource(hlsUrl);
       hls.attachMedia(video);
@@ -16,6 +17,7 @@ function StreamPlayer() {
         console.error('HLS Error:', data);
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      console.log("hls is not supported")
       // For Safari
       video.src = hlsUrl;
     }

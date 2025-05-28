@@ -1,0 +1,70 @@
+.friend-card-container {
+  padding: 20px 0;
+}
+
+.friend-card {
+  transition: all 0.3s ease;
+  border: none;
+  margin-bottom: 20px;
+}
+
+.friend-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.profile-image {
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.friend-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.friend-bio {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.friend-actions .btn {
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.follow-button {
+  min-width: 120px;
+}
+
+.view-profile-button {
+  min-width: 140px;
+}
+
+.verified-badge {
+  color: #0d6efd;
+  margin-left: 8px;
+  font-size: 0.9em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .friend-card .d-flex {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .flex-grow-1 {
+    margin-top: 20px;
+    margin-left: 0 !important;
+  }
+  
+  .friend-actions {
+    justify-content: center;
+  }
+}

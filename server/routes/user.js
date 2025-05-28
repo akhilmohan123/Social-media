@@ -132,9 +132,11 @@ router.get("/profile",(req,res)=>{
  }
 })
 })
-router.get("/friends",(req,res)=>{
+router.get("/friends",async(req,res)=>{
+
   const {authorization}=req.headers
- getpeople(authorization).then((response)=>{
+  console.log(authorization)
+  await getpeople(authorization).then((response)=>{
   if(response){
     
     res.status(200).json(response);
@@ -392,6 +394,7 @@ catch(err){
 
 router.get("/api/get-friends/:id",async(req,res)=>{
   try{
+    console.log("Called the api")
     const id=req.params.id
     await getAllFriends(id).then((result)=>{
       console.log(result)
@@ -408,6 +411,13 @@ router.get("/api/get-friends/:id",async(req,res)=>{
     console.log(err)
     res.status(400).json(err)
   }
+})
+
+//router to get username based on the id
+router.get("/api/get-friends-name/:id",(req,res)=>{
+  let userid=req.params.id
+  
+
 })
 module.exports=router;
 /*"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJha2hpbCIsImlhdCI6MTcyMDIwMDc4MCwiZXhwIjoxNzIwMjA0MzgwfQ.5ZZmIz4SxIqWv3UCDBGN39cCbjBRNdGNimq1e6RY31w"*/

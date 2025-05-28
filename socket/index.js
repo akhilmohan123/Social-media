@@ -10,7 +10,7 @@ const io = require("socket.io")(8800, {
 
 let ffmpegProcess = null;
 let activeusers = []; // { userid, socketId }
-
+let liveWrite=false
 
 // Modified FFmpeg startup
 function startFFmpegProcess() {
@@ -64,6 +64,14 @@ async function getFriendsList(id) {
   }
 }
 
+//function to get the user name
+
+async function getUsername(id)
+{
+  const response=await axios.get(`http://localhost:3001/api/get-friends-name/${id}`)
+  console.log("friends name is ======"+response.data)
+}
+
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
@@ -88,9 +96,9 @@ io.on("connection", (socket) => {
 
   // Live streaming data from client
   let ffmpegStarted = false;
-let bufferQueue = [];
+  let bufferQueue = [];
 
-socket.on("live-stream", ({ data }) => {
+socket.on("live-stream", ({userId, data }) => {
   const buffer = Buffer.from(data);
 
   if (!ffmpegStarted) {
@@ -115,8 +123,24 @@ socket.on("live-stream", ({ data }) => {
       });
     }
   }
+ 
+     const friendsarray=getFriendsList(userId)//get the friendarray
+  
+      
+  // friendsarray.forEach((id)=>{
+  //   activeusers.forEach((value)=>{
+  //     if(value.userid==id)//active user is a friend
+  //     {
+  //       io.to(id).emit("live-stream-friend")
+  //     }
+  //   })
+  // })
+
 });
 
+socket.on('error', (err) => {
+  console.error('Socket error:', err.message);
+})
   // Handle disconnect
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
