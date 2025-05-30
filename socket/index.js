@@ -54,10 +54,10 @@ ffmpegProcess.stdin.setMaxListeners(50);
 }
 // async function to get friends list for a user ID
 async function getFriendsList(id) {
-  try {
+ try {
     const response = await axios.get(`http://localhost:3001/api/get-friends/${id}`);
     console.log("Friends from server:", response.data);
-    return response.data; // expect array of friend user IDs
+    return response.data;
   } catch (error) {
     console.error("Error fetching friends:", error.message);
     return [];
@@ -98,7 +98,7 @@ io.on("connection", (socket) => {
   let ffmpegStarted = false;
   let bufferQueue = [];
 
-socket.on("live-stream", ({userId, data }) => {
+socket.on("live-stream", async({userId, data }) => {
   const buffer = Buffer.from(data);
 
   if (!ffmpegStarted) {
@@ -124,17 +124,16 @@ socket.on("live-stream", ({userId, data }) => {
     }
   }
  
-     const friendsarray=getFriendsList(userId)//get the friendarray
+     const friendsarray=await getFriendsList(userId)//get the friendarray
   
-      
-  // friendsarray.forEach((id)=>{
-  //   activeusers.forEach((value)=>{
-  //     if(value.userid==id)//active user is a friend
-  //     {
-  //       io.to(id).emit("live-stream-friend")
-  //     }
-  //   })
-  // })
+      console.log("Friendsarray----",friendsarray)
+  friendsarray.forEach((friendId) => {
+  const friendSocket = activeusers.find(user => user.userid === friendId);
+  if (friendSocket) {
+    io.to(friendSocket.socketId).emit("live-stream-friend");
+    console.log(`Emitting to friend ${friendId} at socket ${friendSocket.socketId}`);
+  }
+});
 
 });
 

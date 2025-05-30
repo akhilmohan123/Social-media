@@ -152,6 +152,7 @@ module.exports={
         })
       },
       LoginVerify:(email,password)=>{
+        let userObj={}
         return new Promise(async(resolve,reject)=>{
             try{
                 console.log(password)
@@ -164,9 +165,11 @@ module.exports={
                   await bcrypt.compare(password, useris.Password).then((rese)=>{
                           if(rese){
                             console.log("response reached")
-                            const token = jwt.sign({ userId: useris.Email },process.env.JWT_SECRETKEY , { expiresIn: '1h' });
+                            const token = jwt.sign({ userId: useris._id },process.env.JWT_SECRETKEY , { expiresIn: '1h' });
                             console.log(token)
-                            resolve(token)
+                            userObj.userId=useris._id
+                            userObj.token=token
+                            resolve(userObj)
                           }else{
                             reject(false)
                           }

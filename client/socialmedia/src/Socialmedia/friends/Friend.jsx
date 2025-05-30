@@ -13,10 +13,16 @@ function Friend() {
   const [loading, setLoading] = useState(true);
   const [id,setid]=useState(null)
   let [color, setColor] = useState("#ffffff");
-   const token=localStorage.getItem('token')
-  
+   let token=localStorage.getItem('token')
+
+   
+   useEffect(()=>{
+    console.log("toke nin friend page is "+token)
+    console.log("user id is",localStorage.getItem("userId"))
+   },[])
     useEffect(()=>{
         function fetchfriends(){
+          console.log("toke is "+token)
           axios.get("http://localhost:3001/friends",{
             headers:{
               Authorization:`Bearer ${token}`

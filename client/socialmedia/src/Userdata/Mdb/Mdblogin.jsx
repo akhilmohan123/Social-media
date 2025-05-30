@@ -20,6 +20,9 @@ function Mdblogin() {
   const [codeSent, setCodeSent] = useState(false);
   const [verifyMode, setVerifyMode] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [googleLogin,setGooglelogin]=useState(false)
+  const [normallogin,setNormallogin]=useState(false)
+
   const navigate = useNavigate();
 
   function handleChange(e) {
@@ -31,14 +34,14 @@ function Mdblogin() {
     setLoading(true);
     try {
       const data = await _post("/login", value);
-      console.log(data.data);
+      console.log("token after login is "+data.data.token);
   
       if (data.data) {
 
-        localStorage.setItem('token', data.data);
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('userId',data.data.userId);
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         localStorage.setItem('user',JSON.stringify(data.user))
-        localStorage.setItem('token',data.token)
         toast.success("Login successfully")
         navigate("/social")
       }
@@ -48,8 +51,9 @@ function Mdblogin() {
       setLoading(false);
     }
   }
-
+  
   async function handleGoogleLogin() {
+    setGooglelogin(true)
     window.location.href = "http://localhost:3001/google/authenticate";
   }
 
