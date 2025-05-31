@@ -113,6 +113,7 @@ router.post("/post",upload.single("file"),(req,res)=>{
 
 })
 router.get("/profile",(req,res)=>{
+  console.log("profile page called")
  getuserid(req.headers).then(async(response)=>{
 
   let mail=response.userId;

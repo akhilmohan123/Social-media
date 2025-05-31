@@ -1,76 +1,57 @@
-import React, { useEffect } from 'react'
-import Socialheader from './Socialheader'
-import Socialmiddle from './Socialmiddle'
-import socket from './Socket/Socket'
+import React, { useEffect, useState } from 'react';
+import Socialheader from './Socialheader';
+import Socialmiddle from './Socialmiddle';
+import socket from './Socket/Socket';
 
-socket.on("live-stream-friend", () => {
-        const userId = localStorage.getItem("userId");
+function Social() {
+  const [userId, setUserId] = useState(localStorage.getItem("userId"));
+  const [isLive,setisLive]=useState(false);
+  useEffect(() => {
+    console.log("Checking URL for token...");
 
-    if (!userId) {
-      console.warn("No userId found in localStorage");
-      return;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const id = params.get("id");
+
+    if (token && id) {
+      alert("Token found: " + token);
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", id);
+      setUserId(id); // update the state
+      console.log("Token stored:", token);
+
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      console.log("No token in URL");
     }
+  }, []);
 
-    // Connect and emit new-user-add
+  useEffect(() => {
+    if (!userId || !socket) return;
+
     if (!socket.connected) {
       socket.connect();
     }
 
     socket.emit("new-user-add", userId);
-    console.log("User added to socket:", userId);
+    console.log("Sent new-user-add for:", userId);
 
     socket.on("live-stream-friend", () => {
+      setisLive(true)
       console.log("yeah live started");
     });
 
     return () => {
       socket.off("live-stream-friend");
     };
-  });
-function Social() {
+  }, [userId]); // Re-run only when userId is available
 
-  useEffect(()=>{
-    if (!socket) return;
-
-  // Make sure socket is connected
-  if (!socket.connected) {
-    socket.connect();
-  }
-
-  socket.on("live-stream-friend", () => {
-    console.log("yeah live started");
-  });
-
-  return () => {
-    socket.off("live-stream-friend");
-  };
-  },[])
-  useEffect(() => {
-    console.log("Checking URL for token...");
-
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const id=params.get("id")
-    console.log("user id is "+id)
-    if (token) {
-      alert("Token found: " + token);
-      localStorage.setItem("token", token);
-      localStorage.setItem("userId",id)
-      console.log("Token stored:", token);
-
-      // Remove ?token=... from the URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-      console.log("No token in URL");
-    }
-  }, []);
   return (
-    <div style={{backgroundColor:'white',height: '100vh', width: '100vw'}}>
-       <Socialheader/>
-       <Socialmiddle/>
-       
+    <div style={{ backgroundColor: 'white', height: '100vh', width: '100vw' }}>
+      <Socialheader />
+      <Socialmiddle live={isLive} />
     </div>
-  )
+  );
 }
 
-export default Social
+export default Social;

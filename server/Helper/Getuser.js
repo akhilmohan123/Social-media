@@ -41,55 +41,61 @@ module.exports = {
   },
   
   getpeople: (authorization) => {
-    console.log("get people called")
-    return new Promise(async (resolve, reject) => {
-      let res = {};
-      try {
-        if (!authorization) {
+  console.log("get people called");
+  return new Promise(async (resolve, reject) => {
+    let res = {};
+    try {
+      if (!authorization) {
+        res.status = false;
+        return resolve(res);
+      }
+
+      const token = authorization.replace("Bearer ", "");
+
+      jwt.verify(token, process.env.JWT_SECRETKEY, async (err, payload) => {
+        if (err) {
           res.status = false;
           return resolve(res);
         }
-        const token = authorization.replace("Bearer ", "");
-        jwt.verify(token, process.env.JWT_SECRETKEY, async (err, payload) => {
-          if (err) {
-            res.status = false;
-            return resolve(res);
-          }
-          try {
-            const useris = payload;
-            console.log(useris)
-            const user = await usermodel.findOne({ _id: useris.userId });
-            console.log(user)
-            if (user) {
-              console.log("inside user is ")
-              res.id = user._id;
-              const users = await usermodel.find({}).select("-Password").exec();
-              if (users) {
-                console.log(users)
-                const authorizedUsers = users.filter(u => u.Email !== useris.userId);
-                res.authorizedUsers = authorizedUsers;
-                console.log(authorizedUsers)
-                res.status = true;
-                return resolve(res);
-              } else {
-                res.status = false;
-                return resolve(res);
-              }
+
+        try {
+          const useris = payload;
+          const user = await usermodel.findOne({ _id: useris.userId }); // ✅ FIXED
+
+          if (user) {
+            res.id = user._id;
+
+            const users = await usermodel.find({}).select("-Password").exec();
+
+            if (users) {
+              const authorizedUsers = users.filter(
+                u => u._id.toString() !== user._id.toString()
+              );
+              res.authorizedUsers = authorizedUsers;
+              res.status = true;
+              return resolve(res);
             } else {
               res.status = false;
               return resolve(res);
             }
-          } catch (error) {
+          } else {
             res.status = false;
             return resolve(res);
           }
-        });
-      } catch (error) {
-        res.status = false;
-        return resolve(res);
-      }
-    });
-  },
+        } catch (error) {
+          console.error("Inner try-catch error:", error);
+          res.status = false;
+          return resolve(res);
+        }
+      });
+    } catch (error) {
+      console.error("Outer try-catch error:", error);
+      res.status = false;
+      return resolve(res);
+    }
+  });
+}
+,
   geteditdata:async(userid)=>{
     return new Promise(async(resolve,reject)=>{
       let userdata={}

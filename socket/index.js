@@ -71,7 +71,7 @@ async function getUsername(id)
   const response=await axios.get(`http://localhost:3001/api/get-friends-name/${id}`)
   console.log("friends name is ======"+response.data)
 }
-
+let usersStreaming = new Set();
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
@@ -99,6 +99,7 @@ io.on("connection", (socket) => {
   let bufferQueue = [];
 
 socket.on("live-stream", async({userId, data }) => {
+  console.log("user id is "+userId)
   const buffer = Buffer.from(data);
 
   if (!ffmpegStarted) {
@@ -123,18 +124,27 @@ socket.on("live-stream", async({userId, data }) => {
       });
     }
   }
- 
+ if (!usersStreaming.has(userId)) {
+    usersStreaming.add(userId);
      const friendsarray=await getFriendsList(userId)//get the friendarray
   
       console.log("Friendsarray----",friendsarray)
   friendsarray.forEach((friendId) => {
-  const friendSocket = activeusers.find(user => user.userid === friendId);
+    const cleanId = String(friendId).trim();
+    console.log("Searching for friendId:", cleanId);
+    console.log(activeusers)
+  activeusers.forEach((user) => {
+    console.log("Active user ID:", user.userid, "===", cleanId, "?", user.userid === cleanId);
+  });
+  const friendSocket = activeusers.find(user => String(user.userid).trim() === cleanId);
+  console.log("firend socket is -------"+friendSocket)
   if (friendSocket) {
+    console.log("emitting")
     io.to(friendSocket.socketId).emit("live-stream-friend");
     console.log(`Emitting to friend ${friendId} at socket ${friendSocket.socketId}`);
   }
 });
-
+ }
 });
 
 socket.on('error', (err) => {

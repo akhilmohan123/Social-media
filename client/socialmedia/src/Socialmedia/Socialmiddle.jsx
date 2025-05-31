@@ -6,7 +6,8 @@ import LoadingSpinnerComponent from 'react-spinners-components';
 import { useNavigate } from 'react-router-dom';
 import SocialmediaLCP from './SocialmediaCP/SocialmediaLCP/SocialmediaLCP';
 import SocialmediaRCP from './SocialmediaCP/SocialmediaRCP/SocialmediaRCP';
-function Socialmiddle() {
+import StreamPlayer from '../HLS/StreamPlayer';
+function Socialmiddle({live}) {
 const token=localStorage.getItem('token')
 const[data,setdata]=useState([])
 const[error,seterror]=useState(null)
@@ -63,7 +64,7 @@ if (loading) {
   <div style={{ width: '250px' }}>
     <SocialmediaLCP />
   </div>
-
+  {live&&<StreamPlayer/>}
   {/* Middle Feed */}
   <div style={{ flex: 1, margin: '0 20px' }}>
     <CreatePost />
