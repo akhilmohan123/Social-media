@@ -58,5 +58,39 @@ module.exports={
             }
   
         })
+    },
+
+    //function to get the friendname based on the id
+    getFriendName:(id)=>{
+        let name="";
+        return new Promise(async(resolve,reject)=>{
+            try {
+                console.log("called helper function")
+                await usermodel.findOne({_id:id}).then((res)=>{
+                    console.log("user found"+res)
+                    console.log(res)
+                    if(res.Fname='' || res.Fname!=null || res.Fname!=undefined)
+                    {
+                        name+=res.Fname;
+                    }
+                    if(res.Lname!='' || res.Lname!=null || res.Lname!=undefined)
+                    {
+                        name+=res.Lname;
+                    }
+                    console.log("name is "+name)
+                    resolve(name)
+
+
+                }).catch(err=>{
+                    console.log("there is an error")
+                    console.log(err)
+                    reject(err)
+                })
+            } catch (error) {
+                console.log(error)
+                reject(error)
+
+            } 
+        })
     }
 }

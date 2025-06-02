@@ -64,6 +64,20 @@ async function getFriendsList(id) {
   }
 }
 
+//get frends name
+async function getFriendname(id)
+{
+  try{
+  const response=await axios.get(`http://localhost:3001/api/get-friendname/${id}`)
+  console.log("before response")
+  console.log(response.data)
+   return response.data
+  }catch(err)
+  {
+    console.log(err)
+  }
+}
+
 //function to get the user name
 
 async function getUsername(id)
@@ -126,8 +140,10 @@ socket.on("live-stream", async({userId, data }) => {
   }
  if (!usersStreaming.has(userId)) {
     usersStreaming.add(userId);
-     const friendsarray=await getFriendsList(userId)//get the friendarray
-  
+      const friendsarray=await getFriendsList(userId)//get the friendarray
+      const friendName=await getFriendname(userId) 
+      let friend = friendName.split("true")[1];//get friend name 
+      console.log("friend name is =========="+friend)
       console.log("Friendsarray----",friendsarray)
   friendsarray.forEach((friendId) => {
     const cleanId = String(friendId).trim();

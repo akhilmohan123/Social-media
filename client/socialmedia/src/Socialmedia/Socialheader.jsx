@@ -9,9 +9,11 @@ import { useNavigate } from "react-router-dom";
 import image from './live-chat.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch,faCommentDots,faBell,faRobot } from '@fortawesome/free-solid-svg-icons';
+import { useSelector } from "react-redux";
 function Socialheader({ value }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const liveStat=useSelector(state => state.Live.LiveStatus)
    const navigate=useNavigate()
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -79,30 +81,30 @@ function chatclick(){
           <div className="d-flex align-items-center gap-4">
 
             {/* Notification Bell */}
-            <div
-              style={{ position: "relative", cursor: "pointer" }}
-              onClick={() => console.log("Notifications clicked")}
-            >
-              <FontAwesomeIcon
-                icon={faBell}
-                className="text-dark"
-                style={{ fontSize: "1.4rem" }}
-              />
-              <span
-                style={{
-                  position: "absolute",
-                  top: "-4px",
-                  right: "-6px",
-                  backgroundColor: "red",
-                  color: "white",
-                  borderRadius: "50%",
-                  fontSize: "0.65rem",
-                  padding: "2px 5px",
-                  lineHeight: 1,
-                }}
-              >
-                3
-              </span>
+
+           <div
+                style={{ position: "relative", cursor: "pointer" }}
+                onClick={() => console.log("Notifications clicked")}
+             >
+            <FontAwesomeIcon
+               icon={faBell}
+               className="text-dark"
+               style={{ fontSize: "1.4rem" }}
+            />
+            {liveStat &&   <span
+             style={{
+             position: "absolute",
+             top: "0px",
+             right: "0px",
+             width: "8px",
+             height: "8px",
+             backgroundColor: "red",
+             borderRadius: "50%",
+             border: "2px solid white", // optional for a cleaner dot with outline
+             display: "inline-block",
+             }}
+             ></span>}
+          
             </div>
 
             {/* Message Icon */}

@@ -11,7 +11,7 @@ const { addpost, addlike, removelike, uploadpost } = require('../Helper/Poststor
 const { addfriend, removefriend } = require('../Helper/Addfriends');
 const Friend = require('../model/Friendsmodel');
 const Post = require('../model/postmodel');
-const {getfriendsprofile, getAllFriends} = require('../Helper/getfriendsprofile');
+const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
  require('dotenv').config()
@@ -415,8 +415,23 @@ router.get("/api/get-friends/:id",async(req,res)=>{
 })
 
 //router to get username based on the id
-router.get("/api/get-friends-name/:id",(req,res)=>{
-  let userid=req.params.id
+router.get("/api/get-friendname/:id",async(req,res)=>{
+  try {
+    console.log("called get friendname api=========")
+    let userid=req.params.id
+    console.log(userid)
+    await getFriendName(userid).then((response)=>{
+      if(response)
+      {
+        console.log(response)
+        return res.status(200).json(response)
+      }
+    }).catch((err)=>{
+      return res.status(404).json(response)
+    })
+  } catch (error) {
+    return res.status(404).json(error)
+  }
   
 
 })
