@@ -16,6 +16,7 @@ import AiChat from './Socialmedia/Aichat';
 import Editprofile from './Socialmedia/Profile/Editprofile';
 import Viewprofile from './Socialmedia/Profile/Viewprofile';
 import { ToastContainer } from 'react-toastify';
+import store from './Redux/Store.js'
 function App() {
   return (
     <>

@@ -2,7 +2,9 @@ import {createSlice} from "@reduxjs/toolkit";
 
 const initialState={
     LiveStatus:false,
-    liveData:[]
+    liveData:[],
+    userId:null,
+    streamPlay:false
 }
 
 const LiveStatusSlice=createSlice({
@@ -14,15 +16,18 @@ const LiveStatusSlice=createSlice({
         },
         updateLivename(state,action){
             const{id,name}=action.payload;
-            const existingUser=state.liveData.filter((user)=>user.id=id)
+            const existingUser=state.liveData.find((user)=>user.id=id)
             if(!existingUser)
             {
              state.liveData.push({id:id,name:name})
             }
+        },
+        updateStreamplay(state,action){
+            state.streamPlay=action.payload;
         }
         
 
     }
 })
-export const{updateLiveStatus,updateLivename}=LiveStatusSlice.actions;
+export const{updateLiveStatus,updateLivename,updateStreamplay}=LiveStatusSlice.actions;
 export default LiveStatusSlice.reducer;

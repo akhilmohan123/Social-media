@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import SocialmediaLCP from './SocialmediaCP/SocialmediaLCP/SocialmediaLCP';
 import SocialmediaRCP from './SocialmediaCP/SocialmediaRCP/SocialmediaRCP';
 import StreamPlayer from '../HLS/StreamPlayer';
+import { useSelector } from 'react-redux';
 function Socialmiddle() {
 const token=localStorage.getItem('token')
 const[data,setdata]=useState([])
@@ -14,12 +15,17 @@ const[error,seterror]=useState(null)
 let [color, setColor] = useState("#ffffff");
 const navigate=useNavigate()
 const [loading, setLoading] = useState(true);
+const live=useSelector(state=>state.Live.LiveStatus)
+ const streamstatus=useSelector(state=>state.Live.streamPlay)
 const override = {
   display: "block",
   margin: "0 auto",
   borderColor: "red",
   backgroundColor:'#9de2ff'
 };
+useEffect(()=>{
+  alert("live status of user is ======"+live)
+},[live])
 useEffect(()=>{
   axios.get("http://localhost:3001/get-post",{
     headers:{
@@ -35,6 +41,9 @@ useEffect(()=>{
   })
 
 },[token])
+useEffect(()=>{
+  console.log(streamstatus)
+},[])
 
 if (loading) {
   return (
@@ -67,7 +76,7 @@ if (loading) {
 
   {/* Middle Feed */}
   <div style={{ flex: 1, margin: '0 20px' }}>
-    <CreatePost />
+   {streamstatus? <StreamPlayer/> :<CreatePost />} 
     {data.map((item) => (
       <Showfeed
         key={item._id}

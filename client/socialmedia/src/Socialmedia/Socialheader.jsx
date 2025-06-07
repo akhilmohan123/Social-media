@@ -10,10 +10,12 @@ import image from './live-chat.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch,faCommentDots,faBell,faRobot } from '@fortawesome/free-solid-svg-icons';
 import { useSelector } from "react-redux";
+import Notificationbell from "./Notification/Notificationbell";
 function Socialheader({ value }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const liveStat=useSelector(state => state.Live.LiveStatus)
+  const live=useSelector(state=>state.Live.LiveStatus)
    const navigate=useNavigate()
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -82,7 +84,7 @@ function chatclick(){
 
             {/* Notification Bell */}
 
-           <div
+           {/* <div
                 style={{ position: "relative", cursor: "pointer" }}
                 onClick={() => console.log("Notifications clicked")}
              >
@@ -91,7 +93,7 @@ function chatclick(){
                className="text-dark"
                style={{ fontSize: "1.4rem" }}
             />
-            {liveStat &&   <span
+            {live &&   <span
              style={{
              position: "absolute",
              top: "0px",
@@ -105,8 +107,8 @@ function chatclick(){
              }}
              ></span>}
           
-            </div>
-
+            </div> */}
+            <Notificationbell/>
             {/* Message Icon */}
             <FontAwesomeIcon
               icon={faCommentDots}

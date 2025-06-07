@@ -8,7 +8,9 @@ import { FcGoogle } from 'react-icons/fc';
 import './Mdcss.css';
 import { _get, _post, apiClient } from '../../Socialmedia/axios/Axios';
 import { toast } from 'react-toastify';
-
+import socket from '../../Socialmedia/Socket/Socket';
+import { useDispatch } from 'react-redux';
+import { updatetoken } from '../../Redux/UserSlice';
 function Mdblogin() {
   const [value, setValue] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,7 @@ function Mdblogin() {
   const [normallogin,setNormallogin]=useState(false)
 
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -35,13 +38,16 @@ function Mdblogin() {
     try {
       const data = await _post("/login", value);
       console.log("token after login is "+data.data.token);
-  
+      console.log("Clicked the login")
       if (data.data) {
 
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('userId',data.data.userId);
+        dispatch(updatetoken(data.data.userId));
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         localStorage.setItem('user',JSON.stringify(data.user))
+         socket.connect();
+         socket.emit("new-user-add", data.data.userId);
         toast.success("Login successfully")
         navigate("/social")
       }

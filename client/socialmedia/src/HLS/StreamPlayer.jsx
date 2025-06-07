@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import Hls from 'hls.js';
+import { useSelector } from 'react-redux';
 
 function StreamPlayer() {
+  const live=useSelector(state=>state.Live.LiveStatus)
   const videoRef = useRef(null);
   const hlsUrl = "http://localhost:8080/hls/stream.m3u8";
 

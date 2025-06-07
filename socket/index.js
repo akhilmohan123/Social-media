@@ -55,6 +55,7 @@ ffmpegProcess.stdin.setMaxListeners(50);
 // async function to get friends list for a user ID
 async function getFriendsList(id) {
  try {
+    console.log(`user  ${id} calling the friend `)
     const response = await axios.get(`http://localhost:3001/api/get-friends/${id}`);
     console.log("Friends from server:", response.data);
     return response.data;
@@ -91,6 +92,7 @@ io.on("connection", (socket) => {
 
   // Add new user
   socket.on("new-user-add", (newUserId) => {
+    console.log("user id from server is "+newUserId)
     if (!activeusers.some((user) => user.userid === newUserId)) {
       activeusers.push({ userid: newUserId, socketId: socket.id });
       console.log("Active users:", activeusers);
@@ -113,7 +115,9 @@ io.on("connection", (socket) => {
   let bufferQueue = [];
 
 socket.on("live-stream", async({userId, data }) => {
-  console.log("user id is "+userId)
+  console.log("user id started stream ========= "+userId)
+
+  console.log(activeusers)
   const buffer = Buffer.from(data);
 
   if (!ffmpegStarted) {
@@ -147,6 +151,11 @@ socket.on("live-stream", async({userId, data }) => {
       console.log("Friendsarray----",friendsarray)
   friendsarray.forEach((friendId) => {
     const cleanId = String(friendId).trim();
+    if(cleanId==String(userId).trim())
+    {
+      console.log("user with same socket id "+cleanId)
+      return;
+    }
     console.log("Searching for friendId:", cleanId);
     console.log(activeusers)
   activeusers.forEach((user) => {
@@ -154,9 +163,10 @@ socket.on("live-stream", async({userId, data }) => {
   });
   const friendSocket = activeusers.find(user => String(user.userid).trim() === cleanId);
   console.log("firend socket is -------"+friendSocket)
+  console.log(friendSocket)
   if (friendSocket) {
     console.log("emitting")
-    io.to(friendSocket.socketId).emit("live-stream-friend");
+    io.to(friendSocket.socketId).emit("live-stream-friend",{id:friendSocket.userid,name:friend});
     console.log(`Emitting to friend ${friendId} at socket ${friendSocket.socketId}`);
   }
 });

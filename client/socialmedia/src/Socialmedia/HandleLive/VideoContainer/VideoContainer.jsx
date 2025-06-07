@@ -4,16 +4,17 @@ import './VideoContainer.css';
 import socket from '../../Socket/Socket';
 import { ToastContainer, toast } from 'react-toastify';
 import StreamPlayer from '../../../HLS/StreamPlayer';
+import { useSelector } from 'react-redux';
 
 function VideoContainer() {
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const[error,setError]=useState(false);
   const id=localStorage.getItem("userId")
-
-  useEffect(()=>{
-    console.log("user id is -------"+id)
-  },[id])
+  // const userID=useSelector(state=>state.User.userId)
+  // useEffect(()=>{
+  //   console.log("user id is -------"+userID)
+  // },[id])
 
 
   useEffect(()=>{
@@ -22,9 +23,10 @@ function VideoContainer() {
     }
   },[error])
   useEffect(() => {
-    socket.connect();
+
+    // socket.connect();
     return () => {
-      socket.disconnect();
+      // socket.disconnect();
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
@@ -32,11 +34,13 @@ function VideoContainer() {
   }, []);
 
   async function handleVideo() {
+    
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true,
     });
+    alert(id)
 
     if (videoRef.current) {
       const mediaRecorder = new MediaRecorder(stream, {
@@ -49,7 +53,7 @@ function VideoContainer() {
           const reader = new FileReader();
           reader.onloadend = () => {
             socket.emit('live-stream', {
-              userId: id,
+              userId:id,
               data: reader.result, // ArrayBuffer
             });
           };
@@ -92,7 +96,6 @@ function VideoContainer() {
           playsInline // Important for mobile browsers
         />
       </Container>
-      <StreamPlayer/>
     </div>
   );
 }
