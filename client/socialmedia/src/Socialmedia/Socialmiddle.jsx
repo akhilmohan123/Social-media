@@ -42,8 +42,8 @@ useEffect(()=>{
 
 },[token])
 useEffect(()=>{
-  console.log(streamstatus)
-},[])
+  console.log("stream status is ====="+streamstatus)
+},[streamstatus])
 
 if (loading) {
   return (

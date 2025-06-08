@@ -4,7 +4,8 @@ const initialState={
     LiveStatus:false,
     liveData:[],
     userId:null,
-    streamPlay:false
+    streamPlay:false,
+    liveVideo:false
 }
 
 const LiveStatusSlice=createSlice({
@@ -24,10 +25,13 @@ const LiveStatusSlice=createSlice({
         },
         updateStreamplay(state,action){
             state.streamPlay=action.payload;
+        },
+        updateLivevideocontainer(state,action){
+            state.liveVideo=action.payload;
         }
         
 
     }
 })
-export const{updateLiveStatus,updateLivename,updateStreamplay}=LiveStatusSlice.actions;
+export const{updateLiveStatus,updateLivename,updateStreamplay,updateLivevideocontainer}=LiveStatusSlice.actions;
 export default LiveStatusSlice.reducer;

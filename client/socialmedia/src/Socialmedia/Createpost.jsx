@@ -12,14 +12,16 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import AddPhoto from './AddPhoto/AddPhoto';
 import Live from './HandleLive/Live';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateLivevideocontainer } from '../Redux/Bandwidthslice';
 
 function CreatePost() {
   const [postContent, setPostContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [success, setSuccess] = useState(false);
   const [image,setImage]=useState(false)
-  const [live,setLive]=useState(false)
-
+  const dispatch=useDispatch()
+  const live=useSelector(state=>state.Live.liveVideo)
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -62,8 +64,8 @@ function CreatePost() {
  
  
   function handleLive(){
-    setLive(true)
     setImage(false)
+    dispatch(updateLivevideocontainer(true))
    
   }
 

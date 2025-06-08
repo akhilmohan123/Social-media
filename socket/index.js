@@ -143,6 +143,7 @@ socket.on("live-stream", async({userId, data }) => {
     }
   }
  if (!usersStreaming.has(userId)) {
+    console.log("insidethe userstreaming")
     usersStreaming.add(userId);
       const friendsarray=await getFriendsList(userId)//get the friendarray
       const friendName=await getFriendname(userId) 
@@ -170,6 +171,10 @@ socket.on("live-stream", async({userId, data }) => {
     console.log(`Emitting to friend ${friendId} at socket ${friendSocket.socketId}`);
   }
 });
+ }else
+ {
+  console.log(usersStreaming)
+  console.log("user streaming not found")
  }
 });
 
@@ -179,7 +184,22 @@ socket.on('error', (err) => {
   // Handle disconnect
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
-    activeusers = activeusers.filter((user) => user.socketId !== socket.id);
+   
+     console.log("Socket disconnected:", socket.id);
+
+  // Find the disconnected user's ID before removing them
+  const disconnectedUser = activeusers.find(user => user.socketId === socket.id);
+
+  if (disconnectedUser) {
+    const userId = disconnectedUser.userid;
+
+    // Remove from streaming set if present
+    if (usersStreaming.has(userId)) {
+      usersStreaming.delete(userId);
+      console.log(`Removed ${userId} from usersStreaming`);
+    }
+  }
+   activeusers = activeusers.filter((user) => user.socketId !== socket.id);
     io.emit("get-users", activeusers);
 
     // If no more users, close ffmpeg
