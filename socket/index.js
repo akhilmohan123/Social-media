@@ -177,6 +177,9 @@ socket.on("live-stream", async({userId, data }) => {
   console.log("user streaming not found")
  }
 });
+socket.on("stream-ended",(id)=>{
+  console.log(`Stream ended for user ${id}`)
+})
 
 socket.on('error', (err) => {
   console.error('Socket error:', err.message);

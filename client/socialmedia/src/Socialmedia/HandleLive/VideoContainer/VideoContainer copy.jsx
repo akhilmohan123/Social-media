@@ -39,61 +39,42 @@ function VideoContainer() {
     };
   }, []);
 
-  function closecamera() {
-  // 1. Set stopped flag immediately
-  stoppedRef.current = true;
-  
-  // 2. Stop media recorder and remove handlers
-  if (mediaRecorderRef.current) {
-    try {
-      mediaRecorderRef.current.ondataavailable = null;
-      if (mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
-      }
-    } catch (e) {
-      console.error("Error stopping recorder:", e);
-    }
-    mediaRecorderRef.current = null;
-  }
-
-  // 3. Stop all tracks
-  const stopTracks = (stream) => {
-    if (stream) {
-      stream.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-    }
-  };
-
-  stopTracks(videoRef.current?.srcObject);
-  stopTracks(streamRef.current);
-
-  // 4. Clean video element
-  if (videoRef.current) {
+  function closecamera()
+  {
+  if (videoRef.current && videoRef.current.srcObject) {
+    videoRef.current.srcObject.getTracks().forEach(track => track.stop());
     videoRef.current.srcObject = null;
-    videoRef.current.load();
+    console.log("inside the video ref ")
   }
-
-  // 5. Clear refs
+    if (streamRef.current) {
+  streamRef.current.getTracks().forEach(track => track.stop());
   streamRef.current = null;
+  console.log("inside the stream ref")
 }
 
-function handleClose() {
+  if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+    mediaRecorderRef.current.stop();
+  }
+  mediaRecorderRef.current = null;
+  }
+
+  function handleClose() {
   console.log("handle close is called");
+  stoppedRef.current = true; // mark as stopped
   dispatch(updateLivevideocontainer(false));
-  closecamera();
+  closecamera()
 }
 
 
 
   async function handleVideo() {
-  if (stoppedRef.current) {
-    console.log("Video component stopped - skipping");
-    return;
-  }
-
-  console.log("Starting video...");
+    if(stoppedRef.current) 
+      {
+        console.log("video component stopped")
+        return;
+      }
+      
+    console.log("calleds video")
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
@@ -101,51 +82,37 @@ function handleClose() {
     });
     streamRef.current = stream;
 
-    if (videoRef.current && live) {
-      // Clear any existing recorder first
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.ondataavailable = null;
-        if (mediaRecorderRef.current.state !== 'inactive') {
-          mediaRecorderRef.current.stop();
-        }
-      }
+   
 
+    if (videoRef.current && live) {
+      console.log("inside live")
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm; codecs=vp8',
+        mimeType: 'video/webm; codecs=vp8', // more compatible than vp9
       });
-      
-      // Store the stopped state in closure
-      let isStopped = false;
-      
+      mediaRecorderRef.current = mediaRecorder;
+
       mediaRecorder.ondataavailable = (event) => {
-        if (stoppedRef.current || isStopped) {
-          console.log("Stream stopped — skipping data chunk");
-          return;
-        }
-        
+         if (stoppedRef.current) {
+               console.log("Stream stopped — skipping data chunk");
+            return;
+           }   
         if (event.data && event.data.size > 0) {
           const reader = new FileReader();
           reader.onloadend = () => {
-            if (!stoppedRef.current && !isStopped) {
-              socket.emit('live-stream', {
-                userId: id,
-                data: reader.result,
-              });
-            }
+            console.log("before calling live stream")
+            socket.emit('live-stream', {
+              userId:id,
+              data: reader.result, // ArrayBuffer
+            });
           };
           reader.readAsArrayBuffer(event.data);
         }
       };
 
-      // Update ref and add stop handler
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.onstop = () => {
-        isStopped = true;
-      };
+      mediaRecorder.start(1000); // send 1 second chunks
 
-      mediaRecorder.start(1000);
       videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(console.error);
+      videoRef.current.play().catch((e) => console.error('Play error:', e));
     }
   } catch (err) {
     console.error('Error accessing media devices:', err);
@@ -154,19 +121,24 @@ function handleClose() {
 }
 
 
-useEffect(() => {
-  if(live) {
-    handleVideo()
-  } else {
-    closecamera()
-  }
+  useEffect(() => {
+    alert("livestatus is "+live)
+    if(live)
+    {
+      handleVideo()
+    }else{
+      closecamera()
+    }
   
-  return () => {
-    closecamera();
-    // Notify server stream is stopped
-    socket.emit('stream-ended', { userId: id });
-  };
-}, [live]);
+    
+    return () => {
+      // Clean up media streams
+      // if (videoRef.current && videoRef.current.srcObject) {
+      //   videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      // }
+      return closecamera();
+    };
+  }, [live]);
 
   return (
     <div className='main-div'>
