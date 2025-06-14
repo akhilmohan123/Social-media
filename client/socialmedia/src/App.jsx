@@ -17,6 +17,7 @@ import Editprofile from './Socialmedia/Profile/Editprofile';
 import Viewprofile from './Socialmedia/Profile/Viewprofile';
 import { ToastContainer } from 'react-toastify';
 import store from './Redux/Store.js'
+import Group from './Socialmedia/Groups/Group.jsx';
 function App() {
   return (
     <>

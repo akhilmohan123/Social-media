@@ -5,7 +5,7 @@ const initialState={
     liveData:[],
     userId:null,
     streamPlay:false,
-    liveVideo:false
+    liveVideo:false,
 }
 
 const LiveStatusSlice=createSlice({
