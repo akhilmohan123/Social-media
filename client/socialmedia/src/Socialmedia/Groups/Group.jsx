@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Button } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
 import './Group.css'
 import { updateGroupcomponentBack } from "../../Redux/SocialCompent";
+import { updateShowCreategroup } from "../../Redux/SocialCompent";
+import CreateGroup from "./CreateGroup";
 function Group() {
   const dispatch = useDispatch();
   const groupStatus = useSelector((state) => state.Social.groupComponent);
   const groupBack=useSelector((state)=>state.Social.handleGroupback)
+  const showCreategroup=useSelector((state)=>state.Social.showCreategroup)
   const [selectedGroup, setSelectedGroup] = useState(null);
   const arraygroup = [
     { name: "Group1" }, { name: "Group2" }, { name: "Group3" },
@@ -18,7 +21,15 @@ function Group() {
 
   const handleGoBack = () => {
     dispatch(updateGroupcomponentBack(true))
+    dispatch(updateShowCreategroup(false))
   };
+  const handleShowCreategroup=()=>{ 
+    dispatch(updateShowCreategroup(true))
+  }
+  useEffect(()=>{
+    console.log(showCreategroup)
+
+  },[showCreategroup])
 
   return (
     <>
@@ -32,27 +43,33 @@ function Group() {
                 borderRadius: "12px",
                 overflow: "hidden",
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                width:'200px'
+                width: showCreategroup ? "260px" : "200px",
               }}
             >
               {/* Header */}
               <div
-                className="d-flex justify-content-between align-items-center p-3 bg-light"
-                style={{
-                  borderBottom: "1px solid #dee2e6",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
+               className="d-flex justify-content-between align-items-center p-3 bg-light flex-wrap gap-2"
+               style={{
+               borderBottom: "1px solid #dee2e6",
+               position: "sticky",
+               top: 0,
+               zIndex: 1,
                 }}
-              >
-                <h5 className="mb-0 text-primary">Groups</h5>
-                <Button variant="outline-danger" size="sm" onClick={handleGoBack}>
-                  ← Back
-                </Button>
+               >
+               <h5 className="mb-0 text-primary">Groups</h5>
+               <div className="d-flex gap-2">
+              <Button variant="outline-primary" size="sm" onClick={handleShowCreategroup}>
+                ➕ Create
+              </Button>
+              <Button variant="outline-danger" size="sm" onClick={handleGoBack}>
+              ← Go Back
+               </Button>
               </div>
+             </div>
 
+              
               {/* Scrollable list */}
-              <div style={{ overflowY: "auto", height: "100%" }}>
+             {!showCreategroup ? <div style={{ overflowY: "auto", height: "100%" }}>
                 {arraygroup.map((group, index) => (
                   <div
                     key={`${group.name}-${index}`}
@@ -75,7 +92,7 @@ function Group() {
                     {group.name}
                   </div>
                 ))}
-              </div>
+              </div>:<CreateGroup/>} 
             </Card>
           </Col>
 

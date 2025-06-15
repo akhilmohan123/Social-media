@@ -6,6 +6,7 @@ const initialState={
     userId:null,
     streamPlay:false,
     liveVideo:false,
+    
 }
 
 const LiveStatusSlice=createSlice({
@@ -28,7 +29,8 @@ const LiveStatusSlice=createSlice({
         },
         updateLivevideocontainer(state,action){
             state.liveVideo=action.payload;
-        }
+        },
+        
         
 
     }

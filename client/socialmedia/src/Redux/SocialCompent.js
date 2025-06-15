@@ -3,6 +3,7 @@ import {createSlice} from "@reduxjs/toolkit";
 const initialState={
    groupComponent:false,
    handleGroupback:false,
+   showCreategroup:false
 }
 
 const SocialComponentSlice=createSlice({
@@ -14,10 +15,13 @@ const SocialComponentSlice=createSlice({
         },
         updateGroupcomponentBack(state,action){
             state.handleGroupback=action.payload
+        },
+        updateShowCreategroup(state,action){
+            state.showCreategroup=action.payload;
         }
         
 
     }
 })
-export const{updateGroupComponent,updateGroupcomponentBack}=SocialComponentSlice.actions;
+export const{updateGroupComponent,updateGroupcomponentBack,updateShowCreategroup}=SocialComponentSlice.actions;
 export default SocialComponentSlice.reducer;
