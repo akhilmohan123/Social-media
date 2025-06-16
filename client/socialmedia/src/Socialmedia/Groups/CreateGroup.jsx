@@ -3,10 +3,12 @@ import { Form, Button, Modal } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateShowCreategroup } from '../../Redux/SocialCompent';
 import { toast } from 'react-toastify';
+import { _post,apiClient } from '../axios/Axios';
 function CreateGroup() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState('');
+  const [image,setImage]=useState('');
   const showGroup = useSelector((state) => state.Social.showCreategroup);
   const [error, setError] = useState({});
   const dispatch = useDispatch();
@@ -16,9 +18,12 @@ function CreateGroup() {
   function handleClose() {
     dispatch(updateShowCreategroup(false));
   }
+  
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    try {
+      
+       e.preventDefault();
     console.log({name,description,type });
     if(!name || !description || ! type)
     {
@@ -30,20 +35,34 @@ function CreateGroup() {
       })
     }
     //if all fields are filled process with api call
+    let formData=new FormData();
+    formData.append("name",name);
+    formData.append("description",description);
+    formData.append("type",type);
+    formData.append("image",image);
+    console.log("formData is ",formData);
 
-    let data={}
-    data.name=name;
-    data.description=description;
-    data.type=type;
-    data.token=token;
-    
+
+    //setting the token in header
+    apiClient.defaults.headers.common["Authorization"]=`Bearer ${token}`;
+    response=_post("/group/create",formData);
+    console.log("response is ",response);
+    //if group created successfully then close the modal and show success message
     if(response)
     {
       toast.success("Group Created Successfully")
       handleClose();
-    }else{
+      
+    }
+    //if group creation failed then show the error message
+    else{
       toast.error("Failed to create group")
     }
+    } catch (error) {
+      toast.error("An error occured while creating the group");
+      console.error("Error creating group:",error); 
+    }
+   
   };
   useEffect(()=>{
     if(error.name || error.description || error.type)
@@ -67,6 +86,15 @@ function CreateGroup() {
               placeholder="Enter group name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="groupImage">
+            <Form.Label style={{ color: 'black' }}>Group Image</Form.Label>
+            <Form.Control
+              type="file"
+              placeholder="upload group image"
+              onChange={(e) => setImage(e.target.files[0])}
             />
           </Form.Group>
 

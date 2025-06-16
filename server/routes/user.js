@@ -14,6 +14,7 @@ const Post = require('../model/postmodel');
 const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
+const { createGroup } = require('../Helper/messagecontroller');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
@@ -432,8 +433,37 @@ router.get("/api/get-friendname/:id",async(req,res)=>{
   } catch (error) {
     return res.status(404).json(error)
   }
-  
+})
 
+//router to create a group
+router.post("/group/create",upload.single("image"),async(req,res)=>{
+  try {
+    let header=req.headers;
+    let groupData={
+      name:req.body.name,
+      description:req.body.description,
+      type:req.body.type,
+      image:req.file ? req.file.path : null
+    }
+    console.log(groupData)
+    await createGroup(header,groupData).then((result)=>{
+      if(result)
+      {
+        console.log("Group created successfully",result)
+        res.status(200).json(result);
+
+      }else{
+        res.status(400).json({message:"Failed to create group"})
+      }
+    }).catch((error)=>{
+      console.log("Error in creating group",error)
+      res.status(400).json({message:"Error in creating group",error})
+    })
+    console.log("Group data is ",groupData)
+  } catch (error) {
+    res.status(400).json({message:"Error while creating group",error})
+    console.log("Error while creating group",error);
+  }
 })
 module.exports=router;
 /*"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJha2hpbCIsImlhdCI6MTcyMDIwMDc4MCwiZXhwIjoxNzIwMjA0MzgwfQ.5ZZmIz4SxIqWv3UCDBGN39cCbjBRNdGNimq1e6RY31w"*/

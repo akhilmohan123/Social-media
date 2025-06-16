@@ -30,7 +30,7 @@ const googleAuthMiddleWare = {
                   Password: null // clearly indicate it's a Google login
                 });
                 await newUser.save();
-      return done(null, newUser);
+              return done(null, newUser);
               }
 
 
