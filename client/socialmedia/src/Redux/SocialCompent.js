@@ -3,7 +3,8 @@ import {createSlice} from "@reduxjs/toolkit";
 const initialState={
    groupComponent:false,
    handleGroupback:false,
-   showCreategroup:false
+   showCreategroup:false,
+   showOwngroup:false,
 }
 
 const SocialComponentSlice=createSlice({
@@ -18,10 +19,13 @@ const SocialComponentSlice=createSlice({
         },
         updateShowCreategroup(state,action){
             state.showCreategroup=action.payload;
+        },
+        updateShowOwngroup(state,action){
+            state.showOwngroup=action.payload;
         }
         
 
     }
 })
-export const{updateGroupComponent,updateGroupcomponentBack,updateShowCreategroup}=SocialComponentSlice.actions;
+export const{updateGroupComponent,updateGroupcomponentBack,updateShowCreategroup,updateShowOwngroup}=SocialComponentSlice.actions;
 export default SocialComponentSlice.reducer;

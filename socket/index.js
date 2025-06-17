@@ -180,6 +180,7 @@ socket.on("live-stream", async({userId, data }) => {
 socket.on("stream-ended",(id)=>{
   console.log(`Stream ended for user ${id}`)
 })
+//for group getting write code later
 
 socket.on('error', (err) => {
   console.error('Socket error:', err.message);

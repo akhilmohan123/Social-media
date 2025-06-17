@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateShowCreategroup } from '../../Redux/SocialCompent';
 import { toast } from 'react-toastify';
 import { _post,apiClient } from '../axios/Axios';
+import socket from '../Socket/Socket';
 function CreateGroup() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -20,7 +21,7 @@ function CreateGroup() {
   }
   
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     try {
       
        e.preventDefault();
@@ -45,19 +46,25 @@ function CreateGroup() {
 
     //setting the token in header
     apiClient.defaults.headers.common["Authorization"]=`Bearer ${token}`;
-    response=_post("/group/create",formData);
-    console.log("response is ",response);
+    await _post("/group/create",formData).then((response)=>{
+       console.log(response.data);
+
     //if group created successfully then close the modal and show success message
     if(response)
     {
       toast.success("Group Created Successfully")
       handleClose();
-      
+      socket.emit("createGroup",{
+        groupID:response.data,
+        admin:localStorage.getItem("userId"),
+      })
     }
     //if group creation failed then show the error message
     else{
       toast.error("Failed to create group")
     }
+    });
+   
     } catch (error) {
       toast.error("An error occured while creating the group");
       console.error("Error creating group:",error); 

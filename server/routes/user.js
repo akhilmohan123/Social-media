@@ -449,8 +449,8 @@ router.post("/group/create",upload.single("image"),async(req,res)=>{
     await createGroup(header,groupData).then((result)=>{
       if(result)
       {
-        console.log("Group created successfully",result)
-        res.status(200).json(result);
+        console.log("Group created successfully",result._id)
+        res.status(200).json(result._id);
 
       }else{
         res.status(400).json({message:"Failed to create group"})
@@ -459,7 +459,7 @@ router.post("/group/create",upload.single("image"),async(req,res)=>{
       console.log("Error in creating group",error)
       res.status(400).json({message:"Error in creating group",error})
     })
-    console.log("Group data is ",groupData)
+    
   } catch (error) {
     res.status(400).json({message:"Error while creating group",error})
     console.log("Error while creating group",error);

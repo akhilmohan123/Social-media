@@ -2,13 +2,15 @@ import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Button } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
 import './Group.css'
-import { updateGroupcomponentBack } from "../../Redux/SocialCompent";
+import { updateGroupcomponentBack, updateShowOwngroup } from "../../Redux/SocialCompent";
 import { updateShowCreategroup } from "../../Redux/SocialCompent";
 import CreateGroup from "./CreateGroup";
+import UserGroups from "./UserGroups";
 function Group() {
   const dispatch = useDispatch();
   const groupStatus = useSelector((state) => state.Social.groupComponent);
   const groupBack=useSelector((state)=>state.Social.handleGroupback)
+  const showOwngroup=useSelector((state)=>state.Social.showOwngroup)
   const showCreategroup=useSelector((state)=>state.Social.showCreategroup)
   const [selectedGroup, setSelectedGroup] = useState(null);
   const arraygroup = [
@@ -19,13 +21,27 @@ function Group() {
     { name: "Group13" }
   ];
 
-  const handleGoBack = () => {
-    dispatch(updateGroupcomponentBack(true))
-    dispatch(updateShowCreategroup(false))
-  };
-  const handleShowCreategroup=()=>{ 
-    dispatch(updateShowCreategroup(true))
+ const handleGoBack = () => {
+  if (showCreategroup || showOwngroup || selectedGroup) {
+    dispatch(updateShowCreategroup(false));
+    dispatch(updateShowOwngroup(false));
+    setSelectedGroup(null);
+  } else {
+    dispatch(updateGroupcomponentBack(true)); // hide full Group component
   }
+};
+
+const handleShowCreategroup = () => {
+  dispatch(updateShowCreategroup(true));
+  dispatch(updateShowOwngroup(false));
+  setSelectedGroup(null);
+};
+
+const handleShowOwngroups = () => {
+  dispatch(updateShowOwngroup(true));
+  dispatch(updateShowCreategroup(false));
+  setSelectedGroup(null);
+};
   useEffect(()=>{
     console.log(showCreategroup)
 
@@ -43,7 +59,7 @@ function Group() {
                 borderRadius: "12px",
                 overflow: "hidden",
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                width: showCreategroup ? "260px" : "200px",
+                width:"260px",
               }}
             >
               {/* Header */}
@@ -57,19 +73,26 @@ function Group() {
                 }}
                >
                <h5 className="mb-0 text-primary">Groups</h5>
-               <div className="d-flex gap-2">
-              <Button variant="outline-primary" size="sm" onClick={handleShowCreategroup}>
-                ➕ Create
-              </Button>
-              <Button variant="outline-danger" size="sm" onClick={handleGoBack}>
-              ← Go Back
-               </Button>
-              </div>
+              <div className="d-flex flex-wrap align-items-center gap-2">
+  <Button variant="outline-primary" size="sm" onClick={handleShowCreategroup}>
+    ➕ Create
+  </Button>
+
+  <Button variant="outline-secondary" size="sm" onClick={handleShowOwngroups}>
+    📁 My Groups
+  </Button>
+
+  <Button variant="outline-danger" size="sm" onClick={handleGoBack}>
+    ← Go Back
+  </Button>
+</div>
+
              </div>
 
               
               {/* Scrollable list */}
-             {!showCreategroup ? <div style={{ overflowY: "auto", height: "100%" }}>
+             {showCreategroup ? <CreateGroup/>: showOwngroup ? <UserGroups/> :<div style={{ overflowY: "auto", height: "100%" }}>
+              
                 {arraygroup.map((group, index) => (
                   <div
                     key={`${group.name}-${index}`}
@@ -92,7 +115,7 @@ function Group() {
                     {group.name}
                   </div>
                 ))}
-              </div>:<CreateGroup/>} 
+              </div>} 
             </Card>
           </Col>
 
