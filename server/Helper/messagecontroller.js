@@ -65,5 +65,34 @@ module.exports={
                 reject(error)
             }
         })
+    },
+    getUserGroups:async(req)=>{
+        return new Promise(async(resolve,reject)=>{
+        
+            let user=await getuserid(req.headers)
+            if(!user)
+            {
+                reject("user not found")
+                return;
+            }
+            try {
+                let groups=await Group.find({
+                   $or:[
+                    {admin:user.userId},
+                    {members:user.userId}
+                   ] 
+                })
+                console.log(groups.length)
+                //if the groups are found resolve the groups 
+                if(groups.length>0)
+                {
+                    resolve(groups)
+                }else{
+                    resolve("No groups found for the user")
+                }
+            } catch (error) {
+                reject("Error in fetching user groups "+error);
+            }
+        })
     }
 }
