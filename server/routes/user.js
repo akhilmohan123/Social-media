@@ -14,7 +14,7 @@ const Post = require('../model/postmodel');
 const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
-const { createGroup, getUserGroups } = require('../Helper/messagecontroller');
+const { createGroup, getUserGroups, getAllgroups } = require('../Helper/messagecontroller');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
@@ -485,6 +485,22 @@ router.get('/api/socialmedia/groups/user-groups',async(req,res)=>{
   {
     console.log("Error in fetching user groups",error)
     res.status(400).json({message:"Error in fetching user groups",error})
+  }
+})
+
+//fetch all groups that is users not part of
+router.get('/api/socialmedia/groups/all-groups',async(req,res)=>{
+  console.log("inside all groups api")
+  try {
+    await getAllgroups(req).then((result)=>{
+      if(result)
+      {
+        res.status(200).json(result);
+      }
+    })
+  } catch (error) {
+    console.log("Error in fetching all groups"+error)
+    res.status(400).json({message:"Error in fetching all groups",error})
   }
 })
 module.exports=router;

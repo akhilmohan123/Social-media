@@ -94,5 +94,29 @@ module.exports={
                 reject("Error in fetching user groups "+error);
             }
         })
+    },
+    getAllgroups:async()=>{
+        return new Promise(async(resolve,reject)=>{
+            try {
+                let user=await getuserid(req.headers)
+                if(!user)
+                {
+                    reject("user not found")
+                    return
+                }else{
+                    //fetch groups that is not user part
+                    let groups=await Group.find({members:{$ne:user.userId}})
+                    if(groups)
+                    {
+                        resolve(groups)
+                    }else
+                    {
+                        resolve("No groups found")
+                    }
+                }
+            } catch (error) {
+                reject("Error in fetching all groups:"+error)
+            }
+        })
     }
 }
