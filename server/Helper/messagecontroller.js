@@ -95,7 +95,7 @@ module.exports={
             }
         })
     },
-    getAllgroups:async()=>{
+    getAllgroups:async(req)=>{
         return new Promise(async(resolve,reject)=>{
             try {
                 let user=await getuserid(req.headers)
@@ -104,10 +104,17 @@ module.exports={
                     reject("user not found")
                     return
                 }else{
+                    console.log("user is"+user)
                     //fetch groups that is not user part
-                    let groups=await Group.find({members:{$ne:user.userId}})
+                    let groups = await Group.find({
+                        $and: [
+                        { members: { $ne: user.userId } },
+                        { admin: { $ne: user.userId } }
+                        ]
+                      })
                     if(groups)
                     {
+                        console.log("groups are",groups)
                         resolve(groups)
                     }else
                     {

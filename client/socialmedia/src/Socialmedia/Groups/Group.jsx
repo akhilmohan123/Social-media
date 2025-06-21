@@ -7,7 +7,7 @@ import { updateShowCreategroup } from "../../Redux/SocialCompent";
 import CreateGroup from "./CreateGroup";
 import UserGroups from "./UserGroups";
 import { _get, apiClient } from "../axios/Axios";
-import { response } from "express";
+
 function Group() {
   const dispatch = useDispatch();
   const groupStatus = useSelector((state) => state.Social.groupComponent);
@@ -15,6 +15,7 @@ function Group() {
   const showOwngroup=useSelector((state)=>state.Social.showOwngroup)
   const showCreategroup=useSelector((state)=>state.Social.showCreategroup)
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [arraygroup,setArraygroup]=useState([])
   const token=localStorage.getItem("token")
 
   async function getGroups()
@@ -24,24 +25,20 @@ function Group() {
       if(response.status===200)
       {
         console.log(response.data)
-        return response.data;
+        setArraygroup(response.data)
       }
     }).catch((error)=>{
-      return []
+      setArraygroup([])
     })
   }
 
+
   useEffect(()=>{
-    async function fetchGroups() {
-      const arraygroup = await getGroups();
-      if (arraygroup && arraygroup.length > 0) {
-        console.log("Fetched Groups:", arraygroup);
-      } else {
-        console.log("No groups found or error fetching groups.");
-      }
-    }
-    fetchGroups();
+    getGroups();
+    console.log(arraygroup);
   },[])
+
+
   // const arraygroup = [
   //   { name: "Group1" }, { name: "Group2" }, { name: "Group3" },
   //   { name: "Group4" }, { name: "Group5" }, { name: "Group6" },
@@ -134,14 +131,14 @@ const handleShowOwngroups = () => {
                     borderBottom: "1px solid #f1f1f1",
                     transition: "background-color 0.2s",
                   }}
-                  onClick={() => setSelectedGroup(group.name)}
+                  onClick={() => setSelectedGroup(group.groupname)}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.backgroundColor =
                       selectedGroup === group.name ? "#e3f2fd" : "white")
                   }
                 >
-                  {group.name}
+                  {group.groupname}
                 </div>
               ))}
             </div>

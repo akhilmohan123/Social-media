@@ -3,7 +3,7 @@
 const mongoose=require('mongoose');
 const groupschema=new mongoose.Schema({
     groupname:{type:String,required:true},
-    memebers:[{type:mongoose.Schema.Types.ObjectId,ref:'usermodel'}],
+    members:[{type:mongoose.Schema.Types.ObjectId,ref:'usermodel'}],
     groupImage:{type:Object},
     admin:{type:mongoose.Schema.Types.ObjectId,ref:'usermodel',required:true},
     groupDescription:{type:String},
