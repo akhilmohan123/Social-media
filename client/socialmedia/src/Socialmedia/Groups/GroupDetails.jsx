@@ -28,7 +28,7 @@ function GroupDetails({ group, onBack }) {
   }
 
   const handleRequest = () => {
-    // Simulate API call
+  
     setRequested(true);
     console.log(`Requested to join ${group.groupname}`);
   };
