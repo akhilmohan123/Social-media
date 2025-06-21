@@ -160,5 +160,48 @@ module.exports={
                 reject("Error in joining group:"+error)
             }
         })
+    },
+    //function to request to join the group
+    requestJoinGroup:async(req)=>{
+        return new Promise(async(resolve,reject)=>{
+            try {
+                console.log(req.headers)
+                let user=await getuserid(req.headers)
+                if(!user)
+                {
+                    reject("user not found")
+                    return;
+
+                }
+                let group=await Group.findOne({
+                    _id:req.body.groupId
+                })
+                if(!group)
+                {
+                    reject("Group not found")
+                    return;
+                }
+                if(group.joinRequests.includes(user.userId))
+                {
+                    resolve("User has already requested to join the group")
+                    return;
+                }
+                await group.updateOne({
+                    $push:{joinRequests:user.userId}
+                }).then((result)=>{
+                    console.log("User has requested to join the group"+result)
+                    resolve(result)
+
+                }).catch((error)=>{
+                    console.log("Error in requesting to join the group",error)
+                    reject("Error in requesting to join the group:"+error)
+                })
+                
+            } catch (error) {
+                console.log("Error in request join group:",error)
+                reject("Error in request join group:"+error)
+            }
+        })
     }
+
 }

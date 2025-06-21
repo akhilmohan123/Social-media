@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import { _post, apiClient } from '../axios/Axios';
+import { toast } from 'react-toastify';
 
 function GroupDetails({ group, onBack }) {
   const [joined, setJoined] = useState(false);
   const [requested, setRequested] = useState(false);
-  
+  const [error,setError]=useState(null);
+
+  useEffect(()=>{
+    if(error)
+    {
+      toast.error(error);
+    }
+  },[error])
   useEffect(()=>{
     console.log(group.members)
   },[group]);
@@ -21,15 +29,28 @@ function GroupDetails({ group, onBack }) {
         console.log(response)
       }else{
         console.log("failed to join the group")
+        setError("Failed to join the group. Please try again.");      
       }
     })
     
     console.log(`Joined ${group.groupname}`);
   }
 
-  const handleRequest = () => {
-  
+  const handleRequest = async() => {
     setRequested(true);
+    //api call for requesting to join the group
+    apiClient.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem("token")}`;
+    await _post('/api/socialmedia/groups/request-join',{groupId:group._id}).then((response)=>{
+      if(response.status==200)
+      {
+        console.log(response.data)
+        console.log("request sent successfully")
+        setRequested(true)
+      }
+    }).catch((error)=>{
+      console.log(error)
+       setError("Failed to join the group.Please try again later")
+    })
     console.log(`Requested to join ${group.groupname}`);
   };
 

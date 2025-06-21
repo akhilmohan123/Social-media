@@ -14,7 +14,7 @@ const Post = require('../model/postmodel');
 const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
-const { createGroup, getUserGroups, getAllgroups, joinGroup } = require('../Helper/messagecontroller');
+const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup } = require('../Helper/messagecontroller');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
@@ -520,6 +520,22 @@ router.post('/api/socialmedia/groups/join',async(req,res)=>{
     })
   } catch (error) {
     res.status(400).json({message:"Error in joining the group",error})
+  }
+})
+
+//api to handle join request
+router.post('/api/socialmedia/groups/request-join',async(req,res)=>{
+  try {
+    await requestJoinGroup(req).then((result)=>{
+      if(result)
+      {
+        console.log("join request sent successfully",result)
+        res.status(200).json({message:"join request sent successfully",result})
+      }
+    })
+  } catch (error) {
+    console.log("error in handling join request",error)
+    res.status(400).json({message:"Error in handling join request",error})
   }
 })
 module.exports=router;
