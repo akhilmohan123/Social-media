@@ -7,6 +7,7 @@ import { updateShowCreategroup } from "../../Redux/SocialCompent";
 import CreateGroup from "./CreateGroup";
 import UserGroups from "./UserGroups";
 import { _get, apiClient } from "../axios/Axios";
+import GroupDetails from "./GroupDetails";
 
 function Group() {
   const dispatch = useDispatch();
@@ -131,7 +132,7 @@ const handleShowOwngroups = () => {
                     borderBottom: "1px solid #f1f1f1",
                     transition: "background-color 0.2s",
                   }}
-                  onClick={() => setSelectedGroup(group.groupname)}
+                  onClick={() => setSelectedGroup(group)}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.backgroundColor =
@@ -158,15 +159,7 @@ const handleShowOwngroups = () => {
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
           }}
         >
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h4 className="text-secondary">
-              Selected Group: <span className="text-dark">{selectedGroup}</span>
-            </h4>
-            <Button variant="outline-danger" size="sm" onClick={() => setSelectedGroup(null)}>
-              ← Back to Groups
-            </Button>
-          </div>
-          <p className="text-muted">You can add chat messages, posts, or group info here.</p>
+         <GroupDetails group={selectedGroup} onBack={()=>setSelectedGroup(null)}/>
         </Card>
       </Col>
     )}
