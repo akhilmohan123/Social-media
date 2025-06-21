@@ -125,5 +125,40 @@ module.exports={
                 reject("Error in fetching all groups:"+error)
             }
         })
+    },
+    joinGroup:async(req)=>{
+        return new Promise(async(resolve,reject)=>{
+            try {
+                let user=await getuserid(req.headers)
+                if(!user)
+                {
+                    reject("user not found")
+                    return;
+                }
+                let groupJoined=await Group.findOne({
+                    _id:req.body.groupId
+                })
+                if(!groupJoined)
+                {
+                    reject("Group not found")
+                    return;
+                }
+                //check if user is already a memeber of the group
+                if(groupJoined.members.includes(user.userId))
+                {
+                    resolve("User is already a member of the group")
+                    return;
+                }
+                //if user is not a member of the group then add the user to the group
+                await groupJoined.updateOne({
+                    $push:{members:user.userId}
+                }).then((result)=>{
+                    console.log("user joined the group successfully",result)
+                    resolve(result)
+                })
+            } catch (error) {
+                reject("Error in joining group:"+error)
+            }
+        })
     }
 }

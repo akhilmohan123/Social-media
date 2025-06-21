@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
+import { _post, apiClient } from '../axios/Axios';
 
 function GroupDetails({ group, onBack }) {
   const [joined, setJoined] = useState(false);
   const [requested, setRequested] = useState(false);
+  
+  useEffect(()=>{
+    console.log(group.members)
+  },[group]);
 
-  const handleJoin = () => {
+ async function handleJoin() {
+    console.log("called the join")
     // Simulate API call
-    setJoined(true);
+    apiClient.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem("token")}`;
+    await _post('/api/socialmedia/groups/join',{groupId:group._id}).then((response)=>{
+      if(response.status==200)
+      {
+        setJoined(true);
+        console.log(response)
+      }else{
+        console.log("failed to join the group")
+      }
+    })
+    
     console.log(`Joined ${group.groupname}`);
-  };
+  }
 
   const handleRequest = () => {
     // Simulate API call
@@ -47,7 +63,7 @@ function GroupDetails({ group, onBack }) {
 
       {/* Conditional Buttons */}
       {!joined && !requested && (
-        group.type === 'public' ? (
+        group.groupType === 'public' ? (
           <Button variant="success" onClick={handleJoin}>
             ✅ Join Group
           </Button>

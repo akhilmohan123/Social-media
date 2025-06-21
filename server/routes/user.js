@@ -14,7 +14,7 @@ const Post = require('../model/postmodel');
 const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
-const { createGroup, getUserGroups, getAllgroups } = require('../Helper/messagecontroller');
+const { createGroup, getUserGroups, getAllgroups, joinGroup } = require('../Helper/messagecontroller');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
@@ -501,6 +501,25 @@ router.get('/api/socialmedia/groups/all-groups',async(req,res)=>{
   } catch (error) {
     console.log("Error in fetching all groups"+error)
     res.status(400).json({message:"Error in fetching all groups",error})
+  }
+})
+//api to join a group
+router.post('/api/socialmedia/groups/join',async(req,res)=>{
+
+  try {
+    
+    await joinGroup(req).then((result)=>{
+      console.log(result)
+      if(result)
+      {
+        res.status(200).json({message:"Successfully joined the group",result});
+      }
+    }).catch((error)=>{
+      console.log(error)
+      res.status(400).json({message:"Error in joining the group",error})
+    })
+  } catch (error) {
+    res.status(400).json({message:"Error in joining the group",error})
   }
 })
 module.exports=router;
