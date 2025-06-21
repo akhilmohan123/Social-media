@@ -7,7 +7,9 @@ function GroupDetails({ group, onBack }) {
   const [joined, setJoined] = useState(false);
   const [requested, setRequested] = useState(false);
   const [error,setError]=useState(null);
+  const user=localStorage.getItem("userId")
 
+  
   useEffect(()=>{
     if(error)
     {
@@ -15,7 +17,10 @@ function GroupDetails({ group, onBack }) {
     }
   },[error])
   useEffect(()=>{
-    console.log(group.members)
+  if(group.joinRequests.includes(user))
+  {
+    setRequested(true)
+  }
   },[group]);
 
  async function handleJoin() {
