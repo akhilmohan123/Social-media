@@ -4,61 +4,130 @@ import { Dropdown, Badge } from 'react-bootstrap';
 import { BellFill } from 'react-bootstrap-icons'; // Optional, use Bootstrap Icons
 import { useDispatch, useSelector } from 'react-redux';
 import { updateStreamplay } from '../../Redux/Bandwidthslice';
-import './Notificationbell.css'
+import socket from '../Socket/Socket';
+import './Notificationbell.css';
+import { markNotificationAsRead, updateNotificationdata, updateShowNotification } from '../../Redux/SocialCompent';
+import { _post, apiClient } from '../axios/Axios';
+
 const Notificationbell = () => {
+  const live = useSelector(state => state.Live.LiveStatus);
+  const livedata = useSelector(state => state.Live.liveData);
+  const notification = useSelector(state => state.Social.showNotification);
+  const notificationdata = useSelector(state => state.Social.notificationData);
+  const dispatch = useDispatch();
 
+  useEffect(() => {
+    if (live) {
+      dispatch(updateShowNotification(true));
+    }
+  }, [live, dispatch]);
 
-  const live=useSelector(state=>state.Live.LiveStatus)
-  const livedata=useSelector(state=>state.Live.liveData)
-  const dispatch=useDispatch()
+  async function handleAccept(notification) {
+    try {
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
 
-  //update stream player based on clicking the notification
- function handleClick(id)
- {
-  if(id)
-  {
-     dispatch(updateStreamplay(true))
+      // Call backend to accept the group join request
+      await _post('/api/socialmedia/groups/join-accept', notification).then((response) => {
+        if (response) {
+          // Mark the notification as read in Redux
+          dispatch(markNotificationAsRead(notification));
+
+          // Remove the accepted notification from the local notification list (Redux)
+          dispatch(updateNotificationdata(notification.id));
+
+          // Emit the socket event to notify other clients about the acceptance
+          socket.emit('accept-group-request-join', notification);
+
+          alert('Group join request accepted!');
+        }
+      });
+    } catch (error) {
+      console.log('Error accepting group join:', error);
+    }
   }
- }
-  useEffect(()=>{
-    console.log("called the notifiucation component")
-    console.log(livedata)
-  },[livedata])
+
+  async function handleReject(notification) {
+    try {
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
+
+      // Call backend to reject the group join request
+      await _post('/api/socialmedia/groups/join-reject', notification).then((response) => {
+        if (response) {
+          // Remove the rejected notification from the local notification list (Redux)
+          dispatch(updateNotificationdata(notification.id));
+
+          // Emit a socket event for rejection if needed
+          socket.emit('reject-group-request-join', notification);
+
+          alert('Group join request rejected.');
+        }
+      });
+    } catch (error) {
+      console.log('Error rejecting group join:', error);
+    }
+  }
+
   return (
     <Dropdown align="end">
       <Dropdown.Toggle variant="light" id="dropdown-basic" className="position-relative">
         <BellFill size={20} />
-        {live && (
+        {notification && (
           <Badge bg="danger" pill className="position-absolute top-0 start-100 translate-middle">
-           .
+            .
           </Badge>
         )}
       </Dropdown.Toggle>
 
       <Dropdown.Menu style={{ width: '300px' }}>
         <Dropdown.Header>Notifications</Dropdown.Header>
-       {live ? (
-  livedata.map((notif) => (
-    <Dropdown.Item
-      key={notif.id}
-      onClick={() => handleClick(notif.id)}
-      className="notification-item border-bottom"
-      style={{ cursor: 'pointer', padding: '10px' }}
-    >
-      <div className="d-flex justify-content-between">
-        <strong>{notif.name}</strong>
-        {/* Optional: Show time if available */}
-        {/* <small className="text-muted">{notif.time}</small> */}
-      </div>
-      <div className="text-muted" style={{ fontSize: '0.875rem' }}>
-        started a live stream
-      </div>
-    </Dropdown.Item>
-  ))
-) : (
-  <div className="text-center text-muted p-3">No new notifications</div>
-)}
 
+        {notification ? (
+          <>
+            {/* Render stream notifications */}
+            {livedata.map((notif) => (
+              <Dropdown.Item
+                key={notif.id}
+                onClick={() => dispatch(updateStreamplay(true))}
+                className="notification-item border-bottom"
+                style={{ cursor: 'pointer', padding: '10px' }}
+              >
+                <div className="d-flex justify-content-between">
+                  <strong>{notif.name}</strong>
+                </div>
+                <div className="text-muted" style={{ fontSize: '0.875rem' }}>
+                  started a live stream
+                </div>
+              </Dropdown.Item>
+            ))}
+
+            {/* Render group join notifications */}
+            {notificationdata.map((notif) => (
+              <Dropdown.Item key={notif.id} className="notification-item border-bottom" style={{ padding: '10px' }}>
+                {notif.type === 'group-joining-request' && (
+                  <>
+                    <div className="d-flex justify-content-between">
+                      <strong>{notif.fromUser?.name || 'Someone'}</strong>
+                      <small className="text-muted">{new Date(notif.timestamp).toLocaleTimeString()}</small>
+                    </div>
+                    <div className="text-muted mb-2" style={{ fontSize: '0.875rem' }}>
+                      requested to join your {notif.fromUser?.groupname || 'group'}
+                    </div>
+                    <div className="d-flex gap-2">
+                      <button className="btn btn-sm btn-success" onClick={() => handleAccept(notif)}>
+                        Accept
+                      </button>
+                      <button className="btn btn-sm btn-danger" onClick={() => handleReject(notif)}>
+                        Reject
+                      </button>
+                    </div>
+                  </>
+                )}
+              </Dropdown.Item>
+            ))}
+          </>
+        ) : (
+          <div className="text-center text-muted p-3">No new notifications</div>
+        )}
       </Dropdown.Menu>
     </Dropdown>
   );

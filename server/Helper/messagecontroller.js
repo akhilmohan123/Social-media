@@ -1,3 +1,4 @@
+const { set } = require("mongoose");
 const Group = require("../model/GroupModel");
 const  Messagemodel = require("../model/Messagemodel");
 const { getuserid } = require("./Getuser");
@@ -202,6 +203,64 @@ module.exports={
                 reject("Error in request join group:"+error)
             }
         })
+    },
+    getGroupname:async(id)=>{
+        return new Promise(async(resolve,reject)=>{
+            try {
+                await Group.find({_id:id}).then((response)=>{
+                    if(response)
+                    {
+                        console.log(9);
+                        console.log(response);
+                        resolve(response[0].groupname)
+                        
+                    }
+                })
+            } catch (error) {
+                resolve(error);
+            }
+        })
+    },
+    Acceptgroupjoin:async (data) => {
+    try {
+        const groupid = data.fromUser.groupId;
+
+        // Perform the update with the correct syntax
+        const updatedGroup = await Group.findByIdAndUpdate(
+            groupid, // Pass only groupid, no object wrapping
+            {
+                $push: { members: data.fromUser.id }, // Add user to members array
+                $pull: { joinRequests: data.fromUser.id } // Remove user from joinRequests array
+            },
+            { new: true } // Return the updated document
+        );
+
+        console.log("updated one "+updatedGroup); // Log the updated group
+        return updatedGroup; // Resolve the promise with the updated group
+    } catch (error) {
+        console.error("Error accepting group join:", error);
+        throw error; // Reject the promise with the error
     }
+},
+Rejectgroupjoin:async(notifiction)=>{
+    try {
+        const groupid = data.fromUser.groupId;
+
+        // Perform the update with the correct syntax
+        const updatedGroup = await Group.findByIdAndUpdate(
+            groupid, // Pass only groupid, no object wrapping
+            {
+                $pull: { joinRequests: data.fromUser.id } // Remove user from joinRequests array
+            },
+            { new: true } // Return the updated document
+        );
+
+        console.log("updated one "+updatedGroup); // Log the updated group
+        return updatedGroup; // Resolve the promise with the updated group
+    } catch (error) {
+        console.error("Error accepting group join:", error);
+        throw error; // Reject the promise with the error
+    }
+}
 
 }

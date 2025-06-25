@@ -29,7 +29,7 @@ const LiveStatusSlice=createSlice({
         },
         updateLivevideocontainer(state,action){
             state.liveVideo=action.payload;
-        },
+        }
         
         
 

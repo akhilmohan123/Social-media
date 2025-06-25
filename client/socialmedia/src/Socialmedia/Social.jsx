@@ -6,6 +6,7 @@ import 'react-notifications/lib/notifications.css';
 import { ToastContainer, toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateLivename, updateLiveStatus } from '../Redux/Bandwidthslice';
+import { updateNotificationdata,updateShowNotification } from '../Redux/SocialCompent';
 
 function Social() {
   
@@ -15,6 +16,39 @@ function Social() {
   const liveUsers = useSelector(state => state.Live.liveData);
   const userID=useSelector(state=>state.User.userId)
   const socialRef=useRef(false)
+  const notificationData=useSelector(state=>state.Social.notificationData)
+
+  useEffect(()=>{
+    console.log(notificationData)
+  },[notificationData])
+
+ useEffect(() => {
+  const handleGroupJoinRequest = ({ notificationid, groupId, user,username,groupname }) => {
+    console.log(notificationid, groupId, user);
+    dispatch(updateNotificationdata({
+      id: notificationid,
+      type: 'group-joining-request',
+      fromUser: {
+        id: user,
+        name:username,
+        groupId,
+        groupname
+      },
+      status: 'pending',
+      read: false,
+      timestamp: new Date().toISOString(),
+    }));
+      dispatch(updateShowNotification(true))
+  };
+
+  socket.on("group-joining-request", handleGroupJoinRequest);
+
+  // Cleanup to avoid multiple listeners
+  return () => {
+    socket.off("group-joining-request", handleGroupJoinRequest);
+  };
+}, []); // ✅ No dependency here
+
   useEffect(() => {
     console.log("Checking URL for token...");
 
@@ -83,11 +117,20 @@ useEffect(() => { //if the browser refreshes socket got reconnected--------
     socket.emit("new-user-add", userId);
   }
   socket.on("live-stream-friend", (data) => {
-    const{id,name}=data
+    const{notification_id,id,name}=data
     console.log("id is "+id)
     console.log("name is =="+name)
     toast.success(`${name} Started Live`)
     dispatch(updateLivename({id:id,name:name}))
+    //dispatch the notificationdata//
+    dispatch(updateNotificationdata({
+      id:notification_id,
+      type:'live-stream-friend',
+      fromUser:{id:id,name:name},
+      status:'pending',
+      read:false,
+      timestamp:new Date().toISOString()
+    }))
     alert("live started")
     dispatch(updateLiveStatus(true))
     console.log("yeah live started");

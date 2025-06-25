@@ -14,7 +14,7 @@ const Post = require('../model/postmodel');
 const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
-const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup } = require('../Helper/messagecontroller');
+const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin } = require('../Helper/messagecontroller');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
@@ -536,6 +536,53 @@ router.post('/api/socialmedia/groups/request-join',async(req,res)=>{
   } catch (error) {
     console.log("error in handling join request",error)
     res.status(400).json({message:"Error in handling join request",error})
+  }
+})
+
+//api to get the group name
+router.get('/api/get-group-name/:id',async(req,res)=>{
+  const id=req.params.id
+  try {
+    await getGroupname(id).then((response)=>{
+      console.log(response)
+      if(response)
+      {
+        console.log(response)
+        return res.status(200).json(response)
+      }
+    })
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+})
+
+//router to handle the accept join request
+
+router.post("/api/socialmedia/groups/join-accept",async(req,res)=>{
+  try {
+    console.log("handle join request is called")
+    await Acceptgroupjoin(req.body).then(result=>{
+      if(result)
+      {
+        return res.status(200).json(result);
+      }
+    })
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+})
+
+router.post("/api/socialmedia/groups/join-reject",async(req,res)=>{
+  try {
+    console.log("handle join request is called")
+    await Rejectgroupjoin(req.body).then(result=>{
+      if(result)
+      {
+        return res.status(200).json(result);
+      }
+    })
+  } catch (error) {
+    return res.status(400).json(error)
   }
 })
 module.exports=router;

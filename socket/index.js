@@ -1,5 +1,7 @@
 const { spawn } = require("child_process");
 const axios = require("axios");
+const { v4: uuidv4 } = require('uuid');
+const { response } = require("express");
 const io = require("socket.io")(8800, {
   cors: {
     origin: ["http://localhost:3001", "http://localhost:5173"],
@@ -11,7 +13,7 @@ const io = require("socket.io")(8800, {
 let ffmpegProcess = null;
 let activeusers = []; // { userid, socketId }
 let liveWrite=false
-
+const notificationid = uuidv4();
 // Modified FFmpeg startup
 function startFFmpegProcess() {
   
@@ -52,6 +54,18 @@ ffmpegProcess.stdin.setMaxListeners(50);
   });
   return ffmpegProcess
 }
+//function to get the group name
+
+async function getGroupname(id) {
+  try {
+    const response = await axios.get(`http://localhost:3001/api/get-group-name/${id}`);
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching group name:", error);
+  }
+}
+
 // async function to get friends list for a user ID
 async function getFriendsList(id) {
  try {
@@ -83,8 +97,11 @@ async function getFriendname(id)
 
 async function getUsername(id)
 {
-  const response=await axios.get(`http://localhost:3001/api/get-friends-name/${id}`)
-  console.log("friends name is ======"+response.data)
+  await axios.get(`http://localhost:3001/api/get-friendname/${id}`).then((response)=>{
+     console.log("friends name is from getusername ======"+response.data)
+     return response.data
+  })
+
 }
 let usersStreaming = new Set();
 io.on("connection", (socket) => {
@@ -167,7 +184,7 @@ socket.on("live-stream", async({userId, data }) => {
   console.log(friendSocket)
   if (friendSocket) {
     console.log("emitting")
-    io.to(friendSocket.socketId).emit("live-stream-friend",{id:friendSocket.userid,name:friend});
+    io.to(friendSocket.socketId).emit("live-stream-friend",{notification_id:notificationid,id:friendSocket.userid,name:friend});
     console.log(`Emitting to friend ${friendId} at socket ${friendSocket.socketId}`);
   }
 });
@@ -179,6 +196,19 @@ socket.on("live-stream", async({userId, data }) => {
 });
 socket.on("stream-ended",(id)=>{
   console.log(`Stream ended for user ${id}`)
+})
+
+//for group joining request
+socket.on("group-join-request",async({groupId,admin,user})=>{
+  let adminUser = activeusers.find((val) => val.userid === admin);
+  if(adminUser)
+  {
+    let username=await getFriendname(user)
+    let groupname=await getGroupname(groupId)
+    console.log("group name is ===="+groupname);
+    console.log("user name is ===="+username)
+    io.to(adminUser.socketId).emit("group-joining-request",{notificationid,groupId,user,username,groupname})
+  }
 })
 //for group getting write code later
 

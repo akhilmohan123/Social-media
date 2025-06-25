@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import { _post, apiClient } from '../axios/Axios';
 import { toast } from 'react-toastify';
+import socket from '../Socket/Socket'
 
 function GroupDetails({ group, onBack }) {
   const [joined, setJoined] = useState(false);
@@ -51,6 +52,14 @@ function GroupDetails({ group, onBack }) {
         console.log(response.data)
         console.log("request sent successfully")
         setRequested(true)
+        //emits socket event for group join request
+        socket.emit("group-join-request",{
+          groupId:group._id,
+          admin:group.admin,
+          user:user
+        })
+        
+        
       }
     }).catch((error)=>{
       console.log(error)
