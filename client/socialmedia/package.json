@@ -22,6 +22,7 @@
     "crypto": "^1.0.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
+    "firebase": "^11.9.1",
     "googleapis": "^148.0.0",
     "mdb-react-ui-kit": "^8.0.0",
     "react": "^18.3.1",

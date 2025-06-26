@@ -18,7 +18,16 @@ import Viewprofile from './Socialmedia/Profile/Viewprofile';
 import { ToastContainer } from 'react-toastify';
 import store from './Redux/Store.js'
 import Group from './Socialmedia/Groups/Group.jsx';
+import { useEffect } from 'react';
+import { generatetoken } from './firebase/firebase.js';
+import { onMessage } from 'firebase/messaging';
 function App() {
+  useEffect(()=>{
+    generatetoken();
+    onMessage(getMessaging,(payload)=>{
+      console.log(payload);
+    })
+  },[])
   return (
     <>
      <ToastContainer 
