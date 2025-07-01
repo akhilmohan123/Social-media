@@ -28,7 +28,7 @@ function VideoContainer() {
     }
   },[error])
   useEffect(() => {
-
+  stoppedRef.current=false
     // socket.connect();
     return () => {
       // socket.disconnect();
@@ -119,7 +119,7 @@ function handleClose() {
       
       mediaRecorder.ondataavailable = (event) => {
         if (stoppedRef.current || isStopped) {
-          console.log("Stream stopped — skipping data chunk");
+          console.log("Stream stopped — skipping data chunk"+isStopped);
           return;
         }
         

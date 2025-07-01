@@ -15,6 +15,7 @@ const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/get
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
 const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin } = require('../Helper/messagecontroller');
+const { saveFcm, getFcm } = require('../Helper/Notificationhelper');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
@@ -585,5 +586,42 @@ router.post("/api/socialmedia/groups/join-reject",async(req,res)=>{
     return res.status(400).json(error)
   }
 })
+
+//router for saving the fcm token 
+router.post("/api/save-token",async(req,res)=>{
+  console.log("Called save fcm token")
+  try {
+    let user=await getuserid(req.headers)
+    console.log(user)
+    if(user)
+    {
+      await saveFcm(req.body,user.userId).then((result)=>{
+        if(result)
+        {
+          return res.status(200).json(true)
+        }
+      })
+    }
+  } catch (error) {
+    
+  }
+  console.log(req.body)
+})
+
+//router to get the fcm token 
+
+router.get("/api/get-fcm-token/:id",async(req,res)=>{
+  try {
+    let id=req.params.id;
+    await getFcm(id).then((result)=>{
+      return res.status(200).json(result)
+    }).catch(err=>{
+      return res.status(400).json(err)
+    })
+  } catch (error) {
+    return res.status(400).json(err)
+  }
+})
+
 module.exports=router;
 /*"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJha2hpbCIsImlhdCI6MTcyMDIwMDc4MCwiZXhwIjoxNzIwMjA0MzgwfQ.5ZZmIz4SxIqWv3UCDBGN39cCbjBRNdGNimq1e6RY31w"*/

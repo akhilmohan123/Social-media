@@ -7,7 +7,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateLivename, updateLiveStatus } from '../Redux/Bandwidthslice';
 import { updateNotificationdata,updateShowNotification } from '../Redux/SocialCompent';
-
+import { generatetoken } from '../firebase/firebase';
+import { getMessaging,getToken } from "firebase/messaging";
+import { onMessage } from 'firebase/messaging';
 function Social() {
   
   const [userId, setUserId] = useState(localStorage.getItem("userId"));
@@ -48,7 +50,24 @@ function Social() {
     socket.off("group-joining-request", handleGroupJoinRequest);
   };
 }, []); // ✅ No dependency here
-
+  useEffect(()=>{
+    if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/firebase-messaging-sw.js')
+    .then((registration) => {
+      console.log('Service Worker registered:', registration);
+      // Optional: you can pass registration to getToken()
+      })
+       .catch((error) => {
+      console.error('Service Worker registration failed:', error);
+      });
+    }
+    generatetoken();
+    onMessage(getMessaging,(payload)=>{
+      console.log(payload);
+      console.log("user is ====="+localStorage.getItem("userId"))
+    })
+  },[])
   useEffect(() => {
     console.log("Checking URL for token...");
 

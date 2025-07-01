@@ -167,7 +167,7 @@ socket.on("live-stream", async({userId, data }) => {
       let friend = friendName.split("true")[1];//get friend name 
       console.log("friend name is =========="+friend)
       console.log("Friendsarray----",friendsarray)
-  friendsarray.forEach((friendId) => {
+  friendsarray.forEach(async (friendId) => {
     const cleanId = String(friendId).trim();
     if(cleanId==String(userId).trim())
     {
@@ -182,11 +182,32 @@ socket.on("live-stream", async({userId, data }) => {
   const friendSocket = activeusers.find(user => String(user.userid).trim() === cleanId);
   console.log("firend socket is -------"+friendSocket)
   console.log(friendSocket)
-  if (friendSocket) {
-    console.log("emitting")
-    io.to(friendSocket.socketId).emit("live-stream-friend",{notification_id:notificationid,id:friendSocket.userid,name:friend});
-    console.log(`Emitting to friend ${friendId} at socket ${friendSocket.socketId}`);
+ if (friendSocket) {
+  // ✅ Online — emit via socket
+  io.to(friendSocket.socketId).emit("live-stream-friend", {
+    notification_id: notificationid,
+    id: friendSocket.userid,
+    name: friend
+  });
+} else {
+  // ❌ Offline — fallback to push notification
+  console.log("user id for fcm is ===="+cleanId);
+  const response = await axios.get(`http://localhost:3001/api/get-fcm-token/${cleanId}`);
+  
+  
+  
+  if (response.data) {
+    const sendPush = require('./utils/sendPushNotification');
+    await sendPush(response.data, {
+      title: `${friend} started a live stream!`,
+      body: `Tap to join or view later.`,
+      data: {
+        type: 'live-stream',
+        userId: userId
+      }
+    });
   }
+}
 });
  }else
  {

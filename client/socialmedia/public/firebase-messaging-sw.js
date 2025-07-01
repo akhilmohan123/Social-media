@@ -1,33 +1,30 @@
-import { initializeApp } from "firebase/app";
-import { getMessaging } from "firebase/messaging/sw";
-import { onBackgroundMessage } from "firebase/messaging/sw";
+// public/firebase-messaging-sw.js
 
-// Initialize the Firebase app in the service worker by passing in
-// your app's Firebase config object.
-// https://firebase.google.com/docs/web/setup#config-object
-const firebaseApp = {
-  apiKey: import.meta.env.VITE_apiKey,
-  authDomain:import.meta.env.VITE_AUTHDOMAIN ,
-  projectId: import.meta.env.VITE_PROJECTID,
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_messagingSenderId,
-  appId: import.meta.env.VITE_APPID,
-  measurementId: import.meta.env.VITE_MEASUREMENTID
-};
+importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
 
-// Retrieve an instance of Firebase Messaging so that it can handle background
-// messages.
-const messaging = getMessaging(firebaseApp);
+// ✅ Initialize Firebase with corrected storageBucket
+firebase.initializeApp({
+  apiKey: "AIzaSyB2tSMifKx8yjY46c-emBf9aWcCcbt-yVk",
+  authDomain: "social-media-a5994.firebaseapp.com",
+  projectId: "social-media-a5994",
+  storageBucket: "social-media-a5994.appspot.com", // ✅ fixed here
+  messagingSenderId: "650068737905",
+  appId: "1:650068737905:web:c9e3bbfdf0f032b14540d0",
+  measurementId: "G-NZLN3P8X5K"
+});
 
-onBackgroundMessage(messaging, (payload) => {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  // Customize notification here
-  const notificationTitle = payload.notification.title;
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[firebase-messaging-sw.js] Received background message', payload);
+
+  const notificationTitle = payload.notification?.title || 'New Notification';
   const notificationOptions = {
-    body: payload.notification.body,
-    icon: payload.notification.image
+    body: payload.notification?.body || '',
+    icon: payload.notification?.image || '/logo192.png',
+    data: payload.data || {},
   };
 
-  self.registration.showNotification(notificationTitle,
-    notificationOptions);
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
