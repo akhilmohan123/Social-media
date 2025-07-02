@@ -203,7 +203,8 @@ socket.on("live-stream", async({userId, data }) => {
       body: `Tap to join or view later.`,
       data: {
         type: 'live-stream',
-        userId: userId
+        userId: userId,
+        notificationid:notificationid
       }
     });
   }
@@ -228,7 +229,32 @@ socket.on("group-join-request",async({groupId,admin,user})=>{
     let groupname=await getGroupname(groupId)
     console.log("group name is ===="+groupname);
     console.log("user name is ===="+username)
-    io.to(adminUser.socketId).emit("group-joining-request",{notificationid,groupId,user,username,groupname})
+    if(adminUser.socketId)
+    {
+       io.to(adminUser.socketId).emit("group-joining-request",{notificationid,groupId,user,username,groupname})
+    }else{
+        console.log("user id for fcm is ===="+cleanId);
+  const response = await axios.get(`http://localhost:3001/api/get-fcm-token/${cleanId}`);
+  
+  
+  
+  if (response.data) {
+    const sendPush = require('./utils/sendPushNotification');
+    await sendPush(response.data, {
+      title: `${user} send a friend request!`,
+      body: `Accept or Reject.`,
+      data: {
+        type: 'group-joining-request',
+        userId: user,
+        notificationid:notificationid,
+        groupId:groupId,
+        groupname:groupname,
+        username:username
+         }
+       });
+      }
+    }
+    
   }
 })
 //for group getting write code later
