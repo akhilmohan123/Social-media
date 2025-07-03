@@ -232,12 +232,13 @@ socket.on("group-join-request",async({groupId,admin,user})=>{
     if(adminUser.socketId)
     {
        io.to(adminUser.socketId).emit("group-joining-request",{notificationid,groupId,user,username,groupname})
-    }else{
-        console.log("user id for fcm is ===="+cleanId);
-  const response = await axios.get(`http://localhost:3001/api/get-fcm-token/${cleanId}`);
-  
-  
-  
+    }
+  }else{
+    console.log("Absolutyl inside the else condition")
+        console.log("user id for fcm is ===="+user);
+       const response = await axios.get(`http://localhost:3001/api/get-fcm-token/${user}`);
+        let groupname=await getGroupname(groupId)
+         let username=await getFriendname(user)
   if (response.data) {
     const sendPush = require('./utils/sendPushNotification');
     await sendPush(response.data, {
@@ -254,8 +255,6 @@ socket.on("group-join-request",async({groupId,admin,user})=>{
        });
       }
     }
-    
-  }
 })
 //for group getting write code later
 
