@@ -22,6 +22,7 @@ import { useEffect } from 'react';
 import { generatetoken } from './firebase/firebase.js';
 import { getMessaging,getToken } from "firebase/messaging";
 import { onMessage } from 'firebase/messaging';
+import FirebaseNotificationListener from './Socialmedia/Notification/FirebaseNotificationListener.jsx';
 function App() {
 
   return (

@@ -48,9 +48,14 @@ ffmpegProcess.stdin.setMaxListeners(50);
   ffmpegProcess.on('error', (err) => {
     console.error('FFmpeg process error:', err);
   });
-
+ ffmpegProcess.stdin.on('error', (err) => {
+  console.error('FFmpeg stdin error:', err.message);
+});
   ffmpegProcess.on('exit', (code) => {
     console.log(`FFmpeg exited with code ${code}`);
+  ffmpegProcess = null;
+  ffmpegStarted = false;
+  bufferQueue = [];
   });
   return ffmpegProcess
 }
@@ -132,6 +137,7 @@ io.on("connection", (socket) => {
   let bufferQueue = [];
 
 socket.on("live-stream", async({userId, data }) => {
+  try{
   console.log("user id started stream ========= "+userId)
 
   console.log(activeusers)
@@ -152,12 +158,14 @@ socket.on("live-stream", async({userId, data }) => {
     }
   } else {
     // Regular streaming
+  if (ffmpegProcess && ffmpegProcess.stdin.writable) {
     const canWrite = ffmpegProcess.stdin.write(buffer);
     if (!canWrite) {
       ffmpegProcess.stdin.once('drain', () => {
         ffmpegProcess.stdin.write(buffer);
       });
     }
+  }
   }
  if (!usersStreaming.has(userId)) {
     console.log("insidethe userstreaming")
@@ -192,18 +200,18 @@ socket.on("live-stream", async({userId, data }) => {
 } else {
   // ❌ Offline — fallback to push notification
   console.log("user id for fcm is ===="+cleanId);
-  const response = await axios.get(`http://localhost:3001/api/get-fcm-token/${cleanId}`);
-  
-  
-  
+  const response = await axios.get(`http://localhost:3001/api/get-fcm-token/${cleanId}`); 
   if (response.data) {
+    console.log("FCM Tokens:", response.data);
+     let username=await getFriendname(cleanId)
+    console.log("inside the response data")
     const sendPush = require('./utils/sendPushNotification');
     await sendPush(response.data, {
-      title: `${friend} started a live stream!`,
-      body: `Tap to join or view later.`,
+      title: `${username} started live!`,
+      body: `Accept or Reject.`,
       data: {
         type: 'live-stream',
-        userId: userId,
+        userId: cleanId,
         notificationid:notificationid
       }
     });
@@ -215,6 +223,10 @@ socket.on("live-stream", async({userId, data }) => {
   console.log(usersStreaming)
   console.log("user streaming not found")
  }
+}catch(err)
+{
+  console.log("something went wrong "+err);
+}
 });
 socket.on("stream-ended",(id)=>{
   console.log(`Stream ended for user ${id}`)

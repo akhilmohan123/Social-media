@@ -50,62 +50,71 @@ function Social() {
     socket.off("group-joining-request", handleGroupJoinRequest);
   };
 }, []); // ✅ No dependency here
-  useEffect(() => {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/firebase-messaging-sw.js')
-      .then((registration) => {
-        console.log('Service Worker registered:', registration);
-      })
-      .catch((error) => {
-        console.error('Service Worker registration failed:', error);
-      });
-  }
-
-  generatetoken();
-
-  const messaging = getMessaging();
-
-  onMessage(messaging, (payload) => {
-    console.log('[Foreground] Notification received:', payload);
-    if(payload.notification?.data.type == 'live-stream')
-    {
-    dispatch(updateNotificationdata({
-      id: payload.notification?.data.notificationid,
-      type: payload.notification?.data.type,
-      fromUser: {
-        id: payload.notification?.data.userId,
-      },
-      status: 'pending',
-      read: false,
-      timestamp: new Date().toISOString(),
-       }));
-      dispatch(updateShowNotification(true))
-    }else if(payload.notification?.data.type == 'group-joining-request'){
-        dispatch(updateNotificationdata({
-      id: payload.notification?.data.notificationid,
-      type: payload.notification?.data.type,
-      fromUser: {
-        id: payload.notification?.data.userId,
-        name:payload.notification?.data.username,
-        groupId:payload.notification?.data.groupId,
-        groupname:payload.notification?.data.groupname,
-        username:payload.notification?.data.username
-      },
-      status: 'pending',
-      read: false,
-      timestamp: new Date().toISOString(),
-    }));
-      dispatch(updateShowNotification(true))
+useEffect(() => {
+    // ✅ Register the service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/firebase-messaging-sw.js')
+        .then((registration) => {
+          console.log('Service Worker registered:', registration);
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
     }
-      
-    // Optionally show an in-app notification using UI library like Toast
-    alert(payload?.notification?.title + "\n" + payload?.notification?.body);
 
-    // If needed, handle data
-    console.log("Custom data:", payload.data);
-  });
-}, []);
+    const messaging = getMessaging();
+
+    // ✅ Handle foreground messages
+    const unsubscribe = onMessage(messaging, (payload) => {
+      alert('Received foreground notification!');
+      console.log('[Foreground] Notification received:', payload);
+
+      // ✅ Use `payload.data` directly (not `payload.notification.data`)
+      const data = payload.data;
+
+      if (data?.type === 'live-stream') {
+        alert("Live stream notification received");
+
+        dispatch(updateNotificationdata({
+          id: data.notificationid,
+          type: data.type,
+          fromUser: {
+            id: data.userId,
+          },
+          status: 'pending',
+          read: false,
+          timestamp: new Date().toISOString(),
+        }));
+
+        dispatch(updateShowNotification(true));
+      } else if (data?.type === 'group-joining-request') {
+        dispatch(updateNotificationdata({
+          id: data.notificationid,
+          type: data.type,
+          fromUser: {
+            id: data.userId,
+            name: data.username,
+            groupId: data.groupId,
+            groupname: data.groupname,
+            username: data.username,
+          },
+          status: 'pending',
+          read: false,
+          timestamp: new Date().toISOString(),
+        }));
+
+        dispatch(updateShowNotification(true));
+      }
+
+      generatetoken(); // Refresh token or re-check token if needed
+    });
+
+    // Cleanup listener on unmount
+    return () => {
+      unsubscribe(); // Prevent memory leak
+    };
+  }, [dispatch]);
 
   useEffect(() => {
     console.log("Checking URL for token...");
