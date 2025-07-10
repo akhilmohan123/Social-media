@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId, // ID of the user who should receive this notification
-    ref: 'User',
-    required: true,
-  },
   fromUser: {
     id: {
       type: mongoose.Schema.Types.ObjectId, // Sender (like who started the live stream or made the group request)
@@ -18,10 +13,6 @@ const notificationSchema = new mongoose.Schema({
     },
     groupname: String,
     username: String,
-  },
-  title: {
-    type: String,
-    required: true,
   },
   body: String,
   type: {

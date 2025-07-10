@@ -21,26 +21,7 @@ const Notificationbell = () => {
       dispatch(updateShowNotification(true));
     }
   }, [live, dispatch]);
-  useEffect(()=>{
-    console.log(notificationdata)
-  },[notificationdata])
 
-  async function handleLiveClick()
-  {
-    dispatch(updateStreamplay(true));
-    dispatch(markNotificationAsRead(notificationdata))
-    apiClient.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem('token')}`;
-    await _post('/api/socialmedia/mark-notification-as-read', notificationdata).then((response) => {
-      if (response) {
-        // Remove the live notification from the local notification list (Redux)
-        dispatch(updateNotificationdata(notificationdata.id));
-        // Emit a socket event to notify other clients about the live stream
-
-      }
-    });
-
-
-  }
   async function handleAccept(notification) {
     try {
       apiClient.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
@@ -103,15 +84,15 @@ const Notificationbell = () => {
         {notification ? (
           <>
             {/* Render stream notifications */}
-            {notificationdata.map((notif) => (
+            {livedata.map((notif) => (
               <Dropdown.Item
                 key={notif.id}
-                onClick={handleLiveClick}
+                onClick={() => dispatch(updateStreamplay(true))}
                 className="notification-item border-bottom"
                 style={{ cursor: 'pointer', padding: '10px' }}
               >
                 <div className="d-flex justify-content-between">
-                  <strong>{notif.fromUser?.name}</strong>
+                  <strong>{notif.name}</strong>
                 </div>
                 <div className="text-muted" style={{ fontSize: '0.875rem' }}>
                   started a live stream

@@ -108,6 +108,33 @@ async function getUsername(id)
   })
 
 }
+//function to post the notification data
+
+async function PostNotificationData(notificationData)
+{
+  try {
+    await axios.post("http://localhost:3001/api/post-notification", notificationData).then((response)=>{
+      console.log("notification data posted successfully"+response.data)
+    })
+  } catch (error) {
+    console.error("Error posting notification data:", error);
+  }
+}
+
+//function to mark notification as read
+async function markNotificationAsRead({userId,type})
+{
+  try{
+   await axios.post("http://localhost:3001/api/socialmedia/mark-notification-as-seen", {
+    userId: userId,
+    type: type
+  });
+  } catch(err)
+  {
+    console.log("Error in marking notification as read",err);
+  }
+}
+
 let usersStreaming = new Set();
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
@@ -138,6 +165,22 @@ io.on("connection", (socket) => {
 
 socket.on("live-stream", async({userId, data }) => {
   try{
+  const friendName=await getFriendname(userId) 
+  let friend = friendName.split("true")[1];//get friend name 
+  console.log("friend name for storinng the database of user is "+friend)
+  console.log("notification id for stroing is "+notificationid)
+const notificationData = {
+  notification_id: notificationid,
+  user_id: userId,
+  user_name: friend,
+  type: "live-stream"
+};
+  console.log("notification data is "+notificationData)
+  let result=await PostNotificationData(notificationData);
+  if(result)
+  {
+    console.log("Notification sent successfully");
+  }
   console.log("user id started stream ========= "+userId)
 
   console.log(activeusers)
@@ -171,8 +214,6 @@ socket.on("live-stream", async({userId, data }) => {
     console.log("insidethe userstreaming")
     usersStreaming.add(userId);
       const friendsarray=await getFriendsList(userId)//get the friendarray
-      const friendName=await getFriendname(userId) 
-      let friend = friendName.split("true")[1];//get friend name 
       console.log("friend name is =========="+friend)
       console.log("Friendsarray----",friendsarray)
   friendsarray.forEach(async (friendId) => {
@@ -228,8 +269,9 @@ socket.on("live-stream", async({userId, data }) => {
   console.log("something went wrong "+err);
 }
 });
-socket.on("stream-ended",(id)=>{
+socket.on("stream-ended",async(id)=>{
   console.log(`Stream ended for user ${id}`)
+  await markNotificationAsRead({ userId: id, type: "live-stream" });
 })
 
 //for group joining request
@@ -241,6 +283,17 @@ socket.on("group-join-request",async({groupId,admin,user})=>{
     let groupname=await getGroupname(groupId)
     console.log("group name is ===="+groupname);
     console.log("user name is ===="+username)
+    //create notification data and store it in the database
+    const notificationData=new FormData();
+    notificationData.append("notification_id",notificationid);
+    notificationData.append("user_id",user);
+    notificationData.append("user_name",username)
+    notificationData.append("groupId",groupId)
+    notificationData.append("groupname",groupname)
+    notificationData.append("type","group-joining-request")
+    console.log("notification data is "+notificationData)
+    await PostNotificationData(notificationData);
+    console.log("Notification sent successfully")
     if(adminUser.socketId)
     {
        io.to(adminUser.socketId).emit("group-joining-request",{notificationid,groupId,user,username,groupname})

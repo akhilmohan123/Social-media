@@ -223,8 +223,19 @@ module.exports={
     },
     Acceptgroupjoin:async (data) => {
     try {
-        const groupid = data.fromUser.groupId;
+        if(data.id)
+        {
+            console.log("date is "+data.id)
+            //if data.id is present then find the notification and mark it as read is true
+            await Notification.findByIdAndUpdate({
+                notifictionid:data.id
+            }, {
+                $set:{$read:true}
+            })
+            console.log("notification marked as read")
 
+        }
+        const groupid = data.fromUser.groupId;
         // Perform the update with the correct syntax
         const updatedGroup = await Group.findByIdAndUpdate(
             groupid, // Pass only groupid, no object wrapping
@@ -234,18 +245,26 @@ module.exports={
             },
             { new: true } // Return the updated document
         );
-
         console.log("updated one "+updatedGroup); // Log the updated group
-        return updatedGroup; // Resolve the promise with the updated group
+        resolve(updatedGroup); // Resolve the promise with the updated group
     } catch (error) {
         console.error("Error accepting group join:", error);
-        throw error; // Reject the promise with the error
+        reject(error) // Reject the promise with the error
     }
 },
-Rejectgroupjoin:async(notifiction)=>{
+Rejectgroupjoin:async(data)=>{
     try {
         const groupid = data.fromUser.groupId;
-
+        if(data.id)
+        {
+            console.log("data is "+data.id)
+            //if data is present update the notification as marked 
+            await Notification.findByIdAndUpdate({
+                notifictionid:data.id,
+            }, {
+                $set:{$read:true}
+            })
+        }
         // Perform the update with the correct syntax
         const updatedGroup = await Group.findByIdAndUpdate(
             groupid, // Pass only groupid, no object wrapping

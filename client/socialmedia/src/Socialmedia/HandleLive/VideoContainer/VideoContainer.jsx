@@ -83,6 +83,8 @@ function handleClose() {
   console.log("handle close is called");
   dispatch(updateLivevideocontainer(false));
   closecamera();
+  //Notify server stream is stopped 
+  socket.emit('stream-ended',{userId:id})
 }
 
 

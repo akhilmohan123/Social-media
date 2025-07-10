@@ -10,6 +10,7 @@ import { updateNotificationdata,updateShowNotification } from '../Redux/SocialCo
 import { generatetoken } from '../firebase/firebase';
 import { getMessaging,getToken } from "firebase/messaging";
 import { onMessage } from 'firebase/messaging';
+import DatabaseNotification from './Notification/DatabaseNotification';
 function Social() {
   
   const [userId, setUserId] = useState(localStorage.getItem("userId"));
@@ -222,6 +223,7 @@ socket.on("reconnect", (attempt) => {
     <div style={{ backgroundColor: 'white', height: '100vh', width: '100vw' }}>
       <Socialheader />
       <Socialmiddle />
+      <DatabaseNotification/>
     </div>
   );
 }

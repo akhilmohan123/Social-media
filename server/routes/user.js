@@ -15,7 +15,7 @@ const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/get
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
 const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin } = require('../Helper/messagecontroller');
-const { saveFcm, getFcm } = require('../Helper/Notificationhelper');
+const { saveFcm, getFcm, saveNotification, getNotification, markNotificationAsSeen, markNotificationAsRead } = require('../Helper/Notificationhelper');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
@@ -33,6 +33,7 @@ const { saveFcm, getFcm } = require('../Helper/Notificationhelper');
       res.status(400).send('Invalid token.');
   }
 };
+
 router.get('/',(req,res)=>{
     console.log("This is req body")
 })
@@ -620,6 +621,78 @@ router.get("/api/get-fcm-token/:id",async(req,res)=>{
     })
   } catch (error) {
     return res.status(400).json(err)
+  }
+})
+
+
+//router to post the notification
+router.post("/api/post-notification",async(req,res)=>{
+  try {
+    console.log(req.body)
+    await saveNotification(req.body).then((result)=>{
+      if(result)
+      {
+        console.log("Notification saved successfully")
+        return res.status(200).json(true);
+      }
+    })
+  } catch (error) {
+    console.log("Error saving notification:", error);
+    return res.status(400).json(false);
+  }
+})
+
+//router to get the nofification from the database
+router.get("/api/socialmedia/get-notifications",async(req,res)=>{
+  try {
+    let user=await getuserid(req.headers);
+    if(user)
+    {
+      await getNotification(user.userId).then((result)=>{
+        console.log(result)
+        if(result){
+          return res.status(200).json(result);
+        }
+      })
+    }
+  } catch (error) {
+    return res.status(400).json({message:"Error fetching notifications",error});
+  }
+})
+
+//router to post the notification as read
+router.post("/api/socialmedia/mark-notification-as-read",async(req,res)=>{
+  try {
+    console.log("mark notification as read called");
+   let user=await getuserid(req.headers);
+   if(user)
+   {
+    await markNotificationAsRead(req.body).then((result)=>{
+      if(result)
+      {
+        console.log("Notification marked as read successfully");
+        return res.status(200).json(true);
+      }
+    })
+   }
+  } catch (error) {
+    
+  }
+})
+
+//router to mark the notification as read
+router.post("/api/socialmedia/mark-notification-as-seen",async(req,res)=>{
+  try {
+    await markNotificationAsSeen(req.body).then((result)=>{
+      if(result)
+      {
+        console.log("Notification marked as seen successfully");
+        return res.status(200).json(true);
+      }
+    })
+  } catch (error) {
+    console.log("Error marking notification as seen:", error);
+    return res.status(400).json(false);
   }
 })
 
