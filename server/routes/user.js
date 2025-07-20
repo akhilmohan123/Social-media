@@ -398,7 +398,7 @@ catch(err){
 
 router.get("/api/get-friends/:id",async(req,res)=>{
   try{
-    console.log("Called the api")
+    
     const id=req.params.id
     await getAllFriends(id).then((result)=>{
       console.log(result)
@@ -422,11 +422,11 @@ router.get("/api/get-friendname/:id",async(req,res)=>{
   try {
     console.log("called get friendname api=========")
     let userid=req.params.id
-    console.log(userid)
+    //console.log(userid)
     await getFriendName(userid).then((response)=>{
       if(response)
       {
-        console.log(response)
+        //console.log(response)
         return res.status(200).json(response)
       }
     }).catch((err)=>{
@@ -683,11 +683,12 @@ router.post("/api/socialmedia/mark-notification-as-read",async(req,res)=>{
 //router to mark the notification as read
 router.post("/api/socialmedia/mark-notification-as-seen",async(req,res)=>{
   try {
+    console.log("mark notification as seen called");
     await markNotificationAsSeen(req.body).then((result)=>{
       if(result)
       {
         console.log("Notification marked as seen successfully");
-        return res.status(200).json(true);
+        return res.status(200).json(result);
       }
     })
   } catch (error) {

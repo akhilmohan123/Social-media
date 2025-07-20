@@ -82,6 +82,7 @@ function VideoContainer() {
 function handleClose() {
   console.log("handle close is called");
   dispatch(updateLivevideocontainer(false));
+  console.log("user id is "+id)
   closecamera();
   //Notify server stream is stopped 
   socket.emit('stream-ended',{userId:id})
@@ -166,7 +167,7 @@ useEffect(() => {
   return () => {
     closecamera();
     // Notify server stream is stopped
-    socket.emit('stream-ended', { userId: id });
+    
   };
 }, [live]);
 

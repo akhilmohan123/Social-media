@@ -6,13 +6,13 @@ import 'react-notifications/lib/notifications.css';
 import { ToastContainer, toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateLivename, updateLiveStatus } from '../Redux/Bandwidthslice';
-import { updateNotificationdata,updateShowNotification } from '../Redux/SocialCompent';
+import { removeNotification, updateNotificationdata,updateShowNotification } from '../Redux/SocialCompent';
 import { generatetoken } from '../firebase/firebase';
 import { getMessaging,getToken } from "firebase/messaging";
 import { onMessage } from 'firebase/messaging';
 import DatabaseNotification from './Notification/DatabaseNotification';
 function Social() {
-  
+
   const [userId, setUserId] = useState(localStorage.getItem("userId"));
   const [isLive,setisLive]=useState(false);
   const dispatch=useDispatch()
@@ -45,7 +45,11 @@ function Social() {
   };
 
   socket.on("group-joining-request", handleGroupJoinRequest);
-
+  socket.on("notification-update", ({id}) => {
+    console.log("Notification update received"+id);
+    dispatch(removeNotification(id))
+    dispatch(updateShowNotification(false))
+  });
   // Cleanup to avoid multiple listeners
   return () => {
     socket.off("group-joining-request", handleGroupJoinRequest);
@@ -185,15 +189,16 @@ useEffect(() => { //if the browser refreshes socket got reconnected--------
     socket.emit("new-user-add", userId);
   }
   socket.on("live-stream-friend", (data) => {
+    console.log("live stream friend is called")
     const{notification_id,id,name}=data
-    console.log("id is "+id)
+    console.log("notification id is "+notification_id)
     console.log("name is =="+name)
     toast.success(`${name} Started Live`)
     dispatch(updateLivename({id:id,name:name}))
     //dispatch the notificationdata//
     dispatch(updateNotificationdata({
       id:notification_id,
-      type:'live-stream-friend',
+      type:'live-stream',
       fromUser:{id:id,name:name},
       status:'pending',
       read:false,

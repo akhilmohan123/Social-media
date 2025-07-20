@@ -230,7 +230,8 @@ module.exports={
             await Notification.findByIdAndUpdate({
                 notifictionid:data.id
             }, {
-                $set:{$read:true}
+                $set:{$read:true},
+                $set:{$status:"accepted"}
             })
             console.log("notification marked as read")
 
@@ -247,7 +248,7 @@ module.exports={
         );
         console.log("updated one "+updatedGroup); // Log the updated group
         resolve(updatedGroup); // Resolve the promise with the updated group
-    } catch (error) {
+       }catch (error) {
         console.error("Error accepting group join:", error);
         reject(error) // Reject the promise with the error
     }
@@ -262,7 +263,8 @@ Rejectgroupjoin:async(data)=>{
             await Notification.findByIdAndUpdate({
                 notifictionid:data.id,
             }, {
-                $set:{$read:true}
+                $set:{$read:true},
+                $set:{$status:"rejected"}
             })
         }
         // Perform the update with the correct syntax

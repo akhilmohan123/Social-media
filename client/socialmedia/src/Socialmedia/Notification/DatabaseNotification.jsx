@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { _get, apiClient } from '../axios/Axios';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateNotificationdata, updateShowNotification } from '../../Redux/SocialCompent';
+import { updateNotificationdata, updateShowNotification,removeNotification } from '../../Redux/SocialCompent';
 
 function DatabaseNotification() {
   const token = localStorage.getItem("token");
@@ -27,9 +27,29 @@ function DatabaseNotification() {
         console.log("Notification data from the response:", response.data);
         console.log(existingNotification)
         response.data.forEach((notification) => {
-          const { notificationid, fromUser, type, status, read, timestamp } = notification;
+          const { notificationid, fromUser, type, status, read, timestamp ,seen} = notification;
            const exists = existingNotification.some(n => n.notificationid === notificationid);
             console.log("Existing notifications:", existingNotification);   
+            //if the status is ended then we dont want to show the notifiction
+              if (status === 'ended' && seen === true) {
+              try {
+                   dispatch(removeNotification(notificationid));
+                    console.log("Deleted ended and seen notification:", notificationid);
+                  } catch (err) {
+                    console.error("Failed to delete notification:", err);
+                  } 
+                  return;
+              }
+              //if the status is accepted or rejected and read is true then we dont want to show the notification
+              if(status === 'accepted' || status === 'rejected' && read === true)
+              {
+                try {
+                   dispatch(removeNotification(notificationid));
+                   console.log("Deleted accepted/rejected and seen notification:", notificationid);
+                } catch (error) {
+                   console.error("Failed to delete notification:", error);
+                }
+              }
           // 👇 check if the same notificationid already exists
           if (exists) {
             console.log("Duplicate notification, skipping:", notificationid);
@@ -38,19 +58,30 @@ function DatabaseNotification() {
 
           console.log("Notification ID:", notificationid);
 
-          if (type === "live-stream" || type === "group-joining-request") {
-            dispatch(updateNotificationdata({
-              notificationid,
-              fromUser,
-              type,
-              status,
-              read,
-              timestamp
-            }));
-            dispatch(updateShowNotification(true));
-            hasFetched.current = false;
-            console.log("Notification added to Redux:", notificationid);
+          if (type === "live-stream") {
+               const payload = {
+               notificationid,
+               fromUser,
+               type,
+               status,
+               read,
+               timestamp
+            };
+
+          if (type === "group-joining-request") {
+          // Add additional fields specific to group joining
+           payload.groupname = notification.groupname;
+           payload.groupid = notification.groupid;
+           payload.admin = notification.admin;
           }
+
+           dispatch(updateNotificationdata(payload));
+           dispatch(updateShowNotification(true));
+           hasFetched.current = false;
+           console.log("Notification added to Redux:", notificationid);
+          }
+
+          
         });
       }
     } catch (error) {

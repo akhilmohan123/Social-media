@@ -13,7 +13,7 @@ const io = require("socket.io")(8800, {
 let ffmpegProcess = null;
 let activeusers = []; // { userid, socketId }
 let liveWrite=false
-const notificationid = uuidv4();
+
 // Modified FFmpeg startup
 function startFFmpegProcess() {
   
@@ -64,7 +64,7 @@ ffmpegProcess.stdin.setMaxListeners(50);
 async function getGroupname(id) {
   try {
     const response = await axios.get(`http://localhost:3001/api/get-group-name/${id}`);
-    console.log(response.data);
+   // console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching group name:", error);
@@ -74,9 +74,9 @@ async function getGroupname(id) {
 // async function to get friends list for a user ID
 async function getFriendsList(id) {
  try {
-    console.log(`user  ${id} calling the friend `)
+   // console.log(`user  ${id} calling the friend `)
     const response = await axios.get(`http://localhost:3001/api/get-friends/${id}`);
-    console.log("Friends from server:", response.data);
+    // console.log("Friends from server:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching friends:", error.message);
@@ -89,8 +89,8 @@ async function getFriendname(id)
 {
   try{
   const response=await axios.get(`http://localhost:3001/api/get-friendname/${id}`)
-  console.log("before response")
-  console.log(response.data)
+  //console.log("before response")
+  //console.log(response.data)
    return response.data
   }catch(err)
   {
@@ -103,7 +103,7 @@ async function getFriendname(id)
 async function getUsername(id)
 {
   await axios.get(`http://localhost:3001/api/get-friendname/${id}`).then((response)=>{
-     console.log("friends name is from getusername ======"+response.data)
+     //console.log("friends name is from getusername ======"+response.data)
      return response.data
   })
 
@@ -114,28 +114,34 @@ async function PostNotificationData(notificationData)
 {
   try {
     await axios.post("http://localhost:3001/api/post-notification", notificationData).then((response)=>{
-      console.log("notification data posted successfully"+response.data)
+     // console.log("notification data posted successfully"+response.data)
     })
   } catch (error) {
     console.error("Error posting notification data:", error);
   }
+  if(response)
+  return response.data;
 }
 
 //function to mark notification as read
 async function markNotificationAsRead({userId,type})
 {
   try{
-   await axios.post("http://localhost:3001/api/socialmedia/mark-notification-as-seen", {
+   var result = await axios.post("http://localhost:3001/api/socialmedia/mark-notification-as-seen", {
     userId: userId,
     type: type
   });
+  console.log("Notification marked as read:", result.data);
   } catch(err)
   {
     console.log("Error in marking notification as read",err);
+    return err
   }
+  return result.data
 }
 
 let usersStreaming = new Set();
+const userNotificationMap = new Map();
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
@@ -165,6 +171,15 @@ io.on("connection", (socket) => {
 
 socket.on("live-stream", async({userId, data }) => {
   try{
+          let notificationid;
+          if(userNotificationMap.has(userId))
+          {
+            notificationid=userNotificationMap.get(userId)
+          }else
+          {
+            notificationid=uuidv4();
+          }
+      userNotificationMap.set(userId, notificationid);
   const friendName=await getFriendname(userId) 
   let friend = friendName.split("true")[1];//get friend name 
   console.log("friend name for storinng the database of user is "+friend)
@@ -211,11 +226,12 @@ const notificationData = {
   }
   }
  if (!usersStreaming.has(userId)) {
-    console.log("insidethe userstreaming")
+    console.log("insidethe userstreaming" + userId + "the user id is this")
     usersStreaming.add(userId);
       const friendsarray=await getFriendsList(userId)//get the friendarray
       console.log("friend name is =========="+friend)
       console.log("Friendsarray----",friendsarray)
+
   friendsarray.forEach(async (friendId) => {
     const cleanId = String(friendId).trim();
     if(cleanId==String(userId).trim())
@@ -269,20 +285,29 @@ const notificationData = {
   console.log("something went wrong "+err);
 }
 });
-socket.on("stream-ended",async(id)=>{
-  console.log(`Stream ended for user ${id}`)
-  await markNotificationAsRead({ userId: id, type: "live-stream" });
+socket.on("stream-ended",async(data)=>{
+  console.log(`Stream ended for user ${data.userId}`)
+  usersStreaming.delete(data.userId);
+  userNotificationMap.delete(data.userId);
+  console.log("from stream ended "+usersStreaming)
+  await markNotificationAsRead({ userId: data.userId, type: "live-stream" }).then((result)=>{
+    console.log(result)
+    io.emit("notification-update", {id:result.notificationid});
+  });
+  // io.emit("notification-update", {});
+
 })
 
 //for group joining request
 socket.on("group-join-request",async({groupId,admin,user})=>{
   let adminUser = activeusers.find((val) => val.userid === admin);
+  const notificationid = uuidv4();
   if(adminUser)
   {
     let username=await getFriendname(user)
     let groupname=await getGroupname(groupId)
-    console.log("group name is ===="+groupname);
-    console.log("user name is ===="+username)
+    //console.log("group name is ===="+groupname);
+    //console.log("user name is ===="+username)
     //create notification data and store it in the database
     const notificationData=new FormData();
     notificationData.append("notification_id",notificationid);
@@ -291,16 +316,16 @@ socket.on("group-join-request",async({groupId,admin,user})=>{
     notificationData.append("groupId",groupId)
     notificationData.append("groupname",groupname)
     notificationData.append("type","group-joining-request")
-    console.log("notification data is "+notificationData)
+    //console.log("notification data is "+notificationData)
     await PostNotificationData(notificationData);
-    console.log("Notification sent successfully")
+    //console.log("Notification sent successfully")
     if(adminUser.socketId)
     {
        io.to(adminUser.socketId).emit("group-joining-request",{notificationid,groupId,user,username,groupname})
     }
   }else{
-    console.log("Absolutyl inside the else condition")
-        console.log("user id for fcm is ===="+user);
+    //console.log("Absolutyl inside the else condition")
+        //console.log("user id for fcm is ===="+user);
        const response = await axios.get(`http://localhost:3001/api/get-fcm-token/${user}`);
         let groupname=await getGroupname(groupId)
          let username=await getFriendname(user)
@@ -324,13 +349,13 @@ socket.on("group-join-request",async({groupId,admin,user})=>{
 //for group getting write code later
 
 socket.on('error', (err) => {
-  console.error('Socket error:', err.message);
+  //console.error('Socket error:', err.message);
 })
   // Handle disconnect
   socket.on("disconnect", () => {
-    console.log("Socket disconnected:", socket.id);
+    //console.log("Socket disconnected:", socket.id);
    
-     console.log("Socket disconnected:", socket.id);
+     //console.log("Socket disconnected:", socket.id);
 
   // Find the disconnected user's ID before removing them
   const disconnectedUser = activeusers.find(user => user.socketId === socket.id);
@@ -341,7 +366,7 @@ socket.on('error', (err) => {
     // Remove from streaming set if present
     if (usersStreaming.has(userId)) {
       usersStreaming.delete(userId);
-      console.log(`Removed ${userId} from usersStreaming`);
+      //console.log(`Removed ${userId} from usersStreaming`);
     }
   }
    activeusers = activeusers.filter((user) => user.socketId !== socket.id);

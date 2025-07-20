@@ -19,10 +19,26 @@ const Notificationbell = () => {
   useEffect(() => {
     if (live) {
       dispatch(updateShowNotification(true));
+      notificationdata.forEach((notif)=>{
+        console.log("notification data:",notif)
+        //you can 
+      })
     }
   }, [live, dispatch]);
+
+
+
+
+  useEffect(() => {
+  if (notificationdata.length > 0) {
+    dispatch(updateShowNotification(true)); // Trigger the notification flag
+  } else {
+    dispatch(updateShowNotification(false)); // Reset if no notifications
+  }
+}, [notificationdata, dispatch]);
   useEffect(()=>{
     console.log(notificationdata)
+    console.log("Notification data updated:", notification);
   },[notificationdata])
 
   async function handleLiveClick()
@@ -103,46 +119,50 @@ const Notificationbell = () => {
         {notification ? (
           <>
             {/* Render stream notifications */}
-            {notificationdata.map((notif) => (
-              <Dropdown.Item
-                key={notif.id}
-                onClick={handleLiveClick}
-                className="notification-item border-bottom"
-                style={{ cursor: 'pointer', padding: '10px' }}
-              >
-                <div className="d-flex justify-content-between">
-                  <strong>{notif.fromUser?.name}</strong>
-                </div>
-                <div className="text-muted" style={{ fontSize: '0.875rem' }}>
-                  started a live stream
-                </div>
-              </Dropdown.Item>
-            ))}
+          {notificationdata
+  .filter((notif) => {
+    console.log('Filtering notification:', notif); // Debugging log
+    return notif?.type === 'live-stream' && notif?.fromUser;
+  })
+  .map((notif) => (
+
+    <Dropdown.Item key={notif.id} onClick={handleLiveClick}>
+      <div className="d-flex justify-content-between">
+        <strong>{notif.fromUser.name}</strong>
+        <small className="text-muted">{new Date(notif.timestamp).toLocaleTimeString()}</small>
+      </div>
+      <div className="text-muted" style={{ fontSize: '0.875rem' }}>
+        started a live stream
+      </div>
+    </Dropdown.Item>
+
+))}
+
+
 
             {/* Render group join notifications */}
-            {notificationdata.map((notif) => (
-              <Dropdown.Item key={notif.id} className="notification-item border-bottom" style={{ padding: '10px' }}>
-                {notif.type === 'group-joining-request' && (
-                  <>
-                    <div className="d-flex justify-content-between">
-                      <strong>{notif.fromUser?.name || 'Someone'}</strong>
-                      <small className="text-muted">{new Date(notif.timestamp).toLocaleTimeString()}</small>
-                    </div>
-                    <div className="text-muted mb-2" style={{ fontSize: '0.875rem' }}>
-                      requested to join your {notif.fromUser?.groupname || 'group'}
-                    </div>
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-sm btn-success" onClick={() => handleAccept(notif)}>
-                        Accept
-                      </button>
-                      <button className="btn btn-sm btn-danger" onClick={() => handleReject(notif)}>
-                        Reject
-                      </button>
-                    </div>
-                  </>
-                )}
-              </Dropdown.Item>
-            ))}
+           {notificationdata
+  .filter((notif) => notif?.type === 'group-joining-request' && notif?.fromUser)
+  .map((notif) => (
+    <Dropdown.Item key={notif.id} className="notification-item border-bottom" style={{ padding: '10px' }}>
+      <div className="d-flex justify-content-between">
+        <strong>{notif.fromUser?.name || 'Someone'}</strong>
+        <small className="text-muted">{new Date(notif.timestamp).toLocaleTimeString()}</small>
+      </div>
+      <div className="text-muted mb-2" style={{ fontSize: '0.875rem' }}>
+        requested to join your {notif.fromUser?.groupname || 'group'}
+      </div>
+      <div className="d-flex gap-2">
+        <button className="btn btn-sm btn-success" onClick={() => handleAccept(notif)}>
+          Accept
+        </button>
+        <button className="btn btn-sm btn-danger" onClick={() => handleReject(notif)}>
+          Reject
+        </button>
+      </div>
+    </Dropdown.Item>
+))}
+
           </>
         ) : (
           <div className="text-center text-muted p-3">No new notifications</div>

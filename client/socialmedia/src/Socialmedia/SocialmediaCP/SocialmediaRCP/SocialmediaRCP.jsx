@@ -1,7 +1,36 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ListGroup, Image } from 'react-bootstrap';
+import { _get } from '../../axios/Axios';
+import { useDispatch } from 'react-redux';
+import { removeNotification } from '../../../Redux/SocialCompent';
 
 function SocialmediaRCP() {
+  const dispatch=useDispatch()
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await _get('/api/socialmedia/get-notifications');
+        if (response?.data?.length > 0) {
+          console.log("Notification data from the response:", response.data);
+          response.data.forEach((notification) => {
+            if (notification.type === 'live-stream' && notification.status === 'ended' && notification.seen === true) {
+              console.log("Live stream notification:", notification);
+              const { notificationid, fromUser, type, status, read, timestamp } = notification;
+              // Handle live stream notification as needed
+                dispatch(removeNotification(notificationid));
+               console.log("Deleted ended and seen notification:", notificationid);
+                        
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
   const activeFriends = [
     { name: "Alice", image: "/images/alice.jpg" },
     { name: "Bob", image: "/images/bob.jpg" },

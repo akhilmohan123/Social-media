@@ -67,8 +67,8 @@ module.exports={
             try {
                 console.log("called helper function")
                 await usermodel.findOne({_id:id}).then((res)=>{
-                    console.log("user found"+res)
-                    console.log(res)
+                    //console.log("user found"+res)
+                    //console.log(res)
                     if(res.Fname='' || res.Fname!=null || res.Fname!=undefined)
                     {
                         name+=res.Fname;
@@ -77,7 +77,7 @@ module.exports={
                     {
                         name+=res.Lname;
                     }
-                    console.log("name is "+name)
+                    //console.log("name is "+name)
                     resolve(name)
 
 

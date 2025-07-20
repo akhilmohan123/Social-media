@@ -6,7 +6,8 @@ const initialState={
    showCreategroup:false,
    showOwngroup:false,
    showNotification:false,
-   notificationData:[]
+   notificationData:[],
+   latestActivity:[]
 }
 
 const SocialComponentSlice=createSlice({
@@ -29,10 +30,18 @@ const SocialComponentSlice=createSlice({
         {
             state.showNotification=action.payload;
         },
-        updateNotificationdata(state,action)
-        {
-            state.notificationData.unshift(action.payload)
-        },
+updateNotificationdata(state, action) {
+  console.log("Updating notification data:", action.payload); // Log here
+  const exists = state.notificationData.some(
+    (n) => n.notificationid === action.payload.notificationid
+  );
+
+  if (!exists) {
+    state.notificationData.unshift(action.payload);
+  }
+},
+
+
         markNotificationAsRead(state,action){
             const notification=state.notificationData.find(n=>n.id ===action.payload)
             if(notification)
@@ -51,8 +60,18 @@ const SocialComponentSlice=createSlice({
         },
         clearAllNotifications(state){
             state.notificationData=[]
+        },
+        removeNotification(state, action) {
+              console.log("Removing notification ID:", action.payload);
+  console.log("Current notifications:", state.notificationData);
+            state.notificationData = state.notificationData.filter(
+             n => n.id !== action.payload
+         );
+        },
+        updateLatestActivity(state,action){
+            state.latestActivity = action.payload;
         }
     }
 });
-export const{updateGroupComponent,updateGroupcomponentBack,updateShowCreategroup,updateShowOwngroup,updateShowNotification,updateNotificationdata,markNotificationAsRead,updateNotificationStatus,clearAllNotifications}=SocialComponentSlice.actions;
+export const{updateGroupComponent,updateGroupcomponentBack,updateShowCreategroup,updateShowOwngroup,updateShowNotification,updateNotificationdata,markNotificationAsRead,updateNotificationStatus,clearAllNotifications,removeNotification,updateLatestActivity}=SocialComponentSlice.actions;
 export default SocialComponentSlice.reducer;

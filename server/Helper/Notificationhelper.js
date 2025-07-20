@@ -2,12 +2,15 @@
 const Fcm = require("../model/FcmModel");
 const Friend = require("../model/Friendsmodel");
 const Notification = require("../model/Notification");
+const {mongoose} = require("mongoose");
+const ObjectId  = mongoose.Types.ObjectId;
 
 
 module.exports={
     saveFcm: (data, id) => {
   return new Promise(async (resolve, reject) => {
     try {
+      
       const result = await Fcm.findOneAndUpdate(
         { Userid: id },
         { Token: data.fcmtoken },
@@ -123,7 +126,7 @@ module.exports={
     markNotificationAsRead:async(notification)=>{
       return new Promise(async(resolve,reject)=>{
         try{
-          let result=await Notification.findOneAndUpdate(
+          let result=await Notification.findByIdAndUpdate(
             { _id: notification.id },
             { status: "read" },
             { new: true }
@@ -135,23 +138,34 @@ module.exports={
           reject(false);
         }
       })
+    
     },
     markNotificationAsSeen:async(notification)=>{
+      console.log(notification)
+      console.log("Matching with:");
+console.log("fromUser.id:", notification.userId);
+console.log("type:", notification.type);
+      console.log(notification)
+      console.log(await Notification.find({}))
       return new Promise (async(resolve,reject)=>{
         try{
           let result=await Notification.findOneAndUpdate({
-            fromUser:notification.userId,
-            type:notification.type
+           'fromUser.id': new ObjectId(notification.userId),
+            type:notification.type,
+            status: 'pending'
           },{
-            seen:true
+            seen:true,
+            status:"ended"
           },{
             new:true  
           })
+          console.log(result)
           if(result){
             console.log("Notification marked as seen:", result);
-            resolve(true);
+            resolve(result);
           }
         }catch(error){
+          console.log("Error marking notification as seen:", error);  
           reject(false);
         }
       })
