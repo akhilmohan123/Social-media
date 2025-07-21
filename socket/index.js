@@ -90,7 +90,7 @@ async function getFriendname(id)
   try{
   const response=await axios.get(`http://localhost:3001/api/get-friendname/${id}`)
   //console.log("before response")
-  //console.log(response.data)
+  console.log(response.data)
    return response.data
   }catch(err)
   {
@@ -115,9 +115,11 @@ async function PostNotificationData(notificationData)
   try {
     await axios.post("http://localhost:3001/api/post-notification", notificationData).then((response)=>{
      // console.log("notification data posted successfully"+response.data)
+     return response.data;
     })
   } catch (error) {
     console.error("Error posting notification data:", error);
+    return false;
   }
   if(response)
   return response.data;
@@ -300,27 +302,35 @@ socket.on("stream-ended",async(data)=>{
 
 //for group joining request
 socket.on("group-join-request",async({groupId,admin,user})=>{
+  try{
   let adminUser = activeusers.find((val) => val.userid === admin);
   const notificationid = uuidv4();
+  //if admin is  a online
   if(adminUser)
   {
+
+    console.log("admin is onlne"  +admin)
     let username=await getFriendname(user)
     let groupname=await getGroupname(groupId)
-    //console.log("group name is ===="+groupname);
-    //console.log("user name is ===="+username)
+    console.log("group name is ===="+groupname);
+    console.log("user name is ===="+username)
     //create notification data and store it in the database
-    const notificationData=new FormData();
-    notificationData.append("notification_id",notificationid);
-    notificationData.append("user_id",user);
-    notificationData.append("user_name",username)
-    notificationData.append("groupId",groupId)
-    notificationData.append("groupname",groupname)
-    notificationData.append("type","group-joining-request")
+    let notificationData={
+      notification_id: notificationid,
+      user_id: user,
+      user_name: username,
+      groupId: groupId,
+      groupname: groupname,
+      type: "group-joining-request"
+    }
     //console.log("notification data is "+notificationData)
-    await PostNotificationData(notificationData);
+    let requestres=await PostNotificationData(notificationData);
+    console.log(requestres)
     //console.log("Notification sent successfully")
+    console.log("Admin user socket id is "+adminUser.socketId)
     if(adminUser.socketId)
     {
+      console.log("admin user socket id is "+adminUser.socketId)
        io.to(adminUser.socketId).emit("group-joining-request",{notificationid,groupId,user,username,groupname})
     }
   }else{
@@ -345,7 +355,12 @@ socket.on("group-join-request",async({groupId,admin,user})=>{
        });
       }
     }
+  } catch (error) {
+    console.error("Error occurred while processing group join request:", error);
+  }
 })
+
+
 //for group getting write code later
 
 socket.on('error', (err) => {

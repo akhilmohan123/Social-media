@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateStreamplay } from '../../Redux/Bandwidthslice';
 import socket from '../Socket/Socket';
 import './Notificationbell.css';
-import { markNotificationAsRead, updateNotificationdata, updateShowNotification } from '../../Redux/SocialCompent';
+import { markNotificationAsRead, updateNotificationdata, updateShowNotification,removeNotification } from '../../Redux/SocialCompent';
 import { _post, apiClient } from '../axios/Axios';
 
 const Notificationbell = () => {
@@ -64,14 +64,16 @@ const Notificationbell = () => {
       // Call backend to accept the group join request
       await _post('/api/socialmedia/groups/join-accept', notification).then((response) => {
         if (response) {
+          console.log(response)
           // Mark the notification as read in Redux
           dispatch(markNotificationAsRead(notification));
 
           // Remove the accepted notification from the local notification list (Redux)
           dispatch(updateNotificationdata(notification.id));
-
+          dispatch(removeNotification(notification.id));
+          dispatch(updateShowNotification(false));
           // Emit the socket event to notify other clients about the acceptance
-          socket.emit('accept-group-request-join', notification);
+  
 
           alert('Group join request accepted!');
         }
@@ -90,10 +92,10 @@ const Notificationbell = () => {
         if (response) {
           // Remove the rejected notification from the local notification list (Redux)
           dispatch(updateNotificationdata(notification.id));
-
+          dispatch(removeNotification(notification.id));
+          dispatch(updateShowNotification(false));
           // Emit a socket event for rejection if needed
-          socket.emit('reject-group-request-join', notification);
-
+          // socket.emit('reject-group-request-join', notification);
           alert('Group join request rejected.');
         }
       });

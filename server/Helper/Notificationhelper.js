@@ -45,6 +45,7 @@ module.exports={
     },
     saveNotification: async (data) => {
   return new Promise(async (resolve, reject) => {
+    console.log("called the save notification function ")
     try {
       console.log(data);
 
@@ -78,6 +79,8 @@ module.exports={
           fromUser: {
             id: user_id,
             name: user_name,
+            groupId: groupId,
+            groupname: groupname
           },
           type: type,
           notificationid: notification_id,

@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import { _post, apiClient } from '../axios/Axios';
+import { _get, _post, apiClient } from '../axios/Axios';
 import { toast } from 'react-toastify';
 import socket from '../Socket/Socket'
+import { useSelector } from 'react-redux';
 
 function GroupDetails({ group, onBack }) {
   const [joined, setJoined] = useState(false);
   const [requested, setRequested] = useState(false);
   const [error,setError]=useState(null);
   const user=localStorage.getItem("userId")
+  const notificationdata=useSelector(state=>state.Social.notificationData)
 
   
   useEffect(()=>{
@@ -23,6 +25,22 @@ function GroupDetails({ group, onBack }) {
     setRequested(true)
   }
   },[group]);
+
+ //in refresh cases whn the socket connection is lost
+ useEffect(()=>{
+  async function fetchStatus(){
+    apiClient.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem("token")}`;
+    let response=await _get('/api/socialmedia/groups/get-group-status',{params:{groupId:group._id,user:user}})
+    if(response.status==200)
+    {
+      if(response.data.isMember)
+      {
+        setJoined(true);
+      }
+    }
+  }
+  fetchStatus();
+ },[group,user,notificationdata]);
 
  async function handleJoin() {
     console.log("called the join")

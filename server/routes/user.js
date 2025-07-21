@@ -14,7 +14,7 @@ const Post = require('../model/postmodel');
 const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
-const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin } = require('../Helper/messagecontroller');
+const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin,Rejectgroupjoin, groupStatus } = require('../Helper/messagecontroller');
 const { saveFcm, getFcm, saveNotification, getNotification, markNotificationAsSeen, markNotificationAsRead } = require('../Helper/Notificationhelper');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
@@ -426,7 +426,7 @@ router.get("/api/get-friendname/:id",async(req,res)=>{
     await getFriendName(userid).then((response)=>{
       if(response)
       {
-        //console.log(response)
+        console.log(response)
         return res.status(200).json(response)
       }
     }).catch((err)=>{
@@ -627,6 +627,7 @@ router.get("/api/get-fcm-token/:id",async(req,res)=>{
 
 //router to post the notification
 router.post("/api/post-notification",async(req,res)=>{
+  console.log("Post notification api called ")
   try {
     console.log(req.body)
     await saveNotification(req.body).then((result)=>{
@@ -695,6 +696,23 @@ router.post("/api/socialmedia/mark-notification-as-seen",async(req,res)=>{
     console.log("Error marking notification as seen:", error);
     return res.status(400).json(false);
   }
+})
+
+  //router to get the group status
+  router.get('/api/socialmedia/groups/get-group-status', async (req, res) => {
+    try{
+      await groupStatus(req).then((result)=>{
+        if(result)
+        {
+          res.status(200).json(result);
+        }
+      })
+
+    }catch(error)
+    {
+      console.log("Error getting group status:",error);
+      res.status(400).json({message:"Error getting group status",error})
+    }
 })
 
 module.exports=router;

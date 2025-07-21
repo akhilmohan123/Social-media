@@ -2,6 +2,7 @@ const { set } = require("mongoose");
 const Group = require("../model/GroupModel");
 const  Messagemodel = require("../model/Messagemodel");
 const { getuserid } = require("./Getuser");
+const Notification = require("../model/Notification");
 
 
 module.exports={
@@ -222,21 +223,26 @@ module.exports={
         })
     },
     Acceptgroupjoin:async (data) => {
+    return new Promise(async(resolve,reject)=>{
+         var updatednotification
     try {
         if(data.id)
         {
-            console.log("date is "+data.id)
+            console.log("data is "+data.id)
             //if data.id is present then find the notification and mark it as read is true
-            await Notification.findByIdAndUpdate({
-                notifictionid:data.id
+          updatednotification= await Notification.findOneAndUpdate({
+                notificationid:data.id
             }, {
-                $set:{$read:true},
-                $set:{$status:"accepted"}
-            })
+                $set:{read:true,
+                    status:"accepted"
+                }
+            },{ new: true })
             console.log("notification marked as read")
+            console.log(updatednotification);
 
         }
         const groupid = data.fromUser.groupId;
+        console.log("group id is "+groupid)
         // Perform the update with the correct syntax
         const updatedGroup = await Group.findByIdAndUpdate(
             groupid, // Pass only groupid, no object wrapping
@@ -247,26 +253,32 @@ module.exports={
             { new: true } // Return the updated document
         );
         console.log("updated one "+updatedGroup); // Log the updated group
-        resolve(updatedGroup); // Resolve the promise with the updated group
+        resolve(updatednotification); // Resolve the promise with the updated group
        }catch (error) {
         console.error("Error accepting group join:", error);
         reject(error) // Reject the promise with the error
     }
+})
 },
 Rejectgroupjoin:async(data)=>{
+    let updatednotification;
+    return new Promise(async(resolve,reject)=>{
     try {
         const groupid = data.fromUser.groupId;
         if(data.id)
         {
             console.log("data is "+data.id)
             //if data is present update the notification as marked 
-            await Notification.findByIdAndUpdate({
+           updatednotification= await Notification.findOneAndUpdate({
                 notifictionid:data.id,
             }, {
-                $set:{$read:true},
-                $set:{$status:"rejected"}
-            })
+                $set:{
+                    read:true,
+                    status:"rejected"
+                },
+            },{new:true})
         }
+        console.log(updatednotification)
         // Perform the update with the correct syntax
         const updatedGroup = await Group.findByIdAndUpdate(
             groupid, // Pass only groupid, no object wrapping
@@ -277,11 +289,33 @@ Rejectgroupjoin:async(data)=>{
         );
 
         console.log("updated one "+updatedGroup); // Log the updated group
-        return updatedGroup; // Resolve the promise with the updated group
+        resolve(updatednotification) // Resolve the promise with the updated group
     } catch (error) {
         console.error("Error accepting group join:", error);
-        throw error; // Reject the promise with the error
+        reject(error)//reject the promise with error
     }
+})
+},
+groupStatus:async(req)=>{
+    return new Promise(async(resolve,reject)=>{
+        try{
+            const {groupId,user}=req.query;
+            if(!groupId || !user)
+            {
+                return reject("Group ID and user ID are required");
+            }
+            const group=await Group.findById(groupId);
+            if(!group)
+            {
+                return reject("Group not found");
+            }
+            const isMember=group.members.includes(user);
+            resolve({groupId,user,isMember});
+        }catch(error)
+        {
+
+        }
+    })
 }
 
 }
