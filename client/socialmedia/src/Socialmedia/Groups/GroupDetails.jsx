@@ -9,6 +9,8 @@ function GroupDetails({ group, onBack }) {
   const [joined, setJoined] = useState(false);
   const [requested, setRequested] = useState(false);
   const [error,setError]=useState(null);
+  const [status,Setstatus]=useState(false)
+  const [reject,setReject]=useState(false);
   const user=localStorage.getItem("userId")
   const notificationdata=useSelector(state=>state.Social.notificationData)
 
@@ -26,19 +28,41 @@ function GroupDetails({ group, onBack }) {
   }
   },[group]);
 
+
+
+
+
  //in refresh cases whn the socket connection is lost
  useEffect(()=>{
   async function fetchStatus(){
     apiClient.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem("token")}`;
     let response=await _get('/api/socialmedia/groups/get-group-status',{params:{groupId:group._id,user:user}})
+    console.log(response)
     if(response.status==200)
     {
       if(response.data.isMember)
       {
         setJoined(true);
+        setReject(false)
+        Setstatus(false)
+        setRequested(false)
+      }else{
+        setJoined(false);
+        setReject(true)
+        Setstatus(false)
+        setRequested(false)
       }
     }
   }
+  socket.on("Group-Join-Accepted",()=>{
+    Setstatus(true)
+    setRequested(false)
+  })
+  socket.on("Group-join-Rejected",()=>{
+   setReject(true)
+   Setstatus(false)
+   setRequested(false)
+  })
   fetchStatus();
  },[group,user,notificationdata]);
 
@@ -49,7 +73,7 @@ function GroupDetails({ group, onBack }) {
     await _post('/api/socialmedia/groups/join',{groupId:group._id}).then((response)=>{
       if(response.status==200)
       {
-        setJoined(true);
+        Setstatus(true);
         console.log(response)
       }else{
         console.log("failed to join the group")
@@ -116,7 +140,7 @@ function GroupDetails({ group, onBack }) {
 
       {/* Conditional Buttons */}
       {!joined && !requested && (
-        group.groupType === 'public' ? (
+        (group.groupType === 'public' && reject) ? (
           <Button variant="success" onClick={handleJoin}>
             ✅ Join Group
           </Button>
@@ -129,7 +153,9 @@ function GroupDetails({ group, onBack }) {
 
       {/* Result Message */}
       {joined && <p className="text-success mt-3">You have joined this group.</p>}
-      {requested && <p className="text-info mt-3">Join request sent successfully.</p>}
+      {requested && !status  &&<p className="text-info mt-3">Join request sent successfully.</p>}
+      {status && <p className='text-info mt-3'>Group Request Accepted</p>}
+      
     </div>
   );
 }

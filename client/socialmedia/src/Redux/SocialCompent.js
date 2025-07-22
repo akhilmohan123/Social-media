@@ -63,8 +63,8 @@ updateNotificationdata(state, action) {
         },
         removeNotification(state, action) {
               console.log("Removing notification ID:", action.payload);
-  console.log("Current notifications:", state.notificationData);
-            state.notificationData = state.notificationData.filter(
+              console.log("Current notifications:", state.notificationData);
+               state.notificationData = state.notificationData.filter(
              n => n.id !== action.payload
          );
         },

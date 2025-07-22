@@ -73,7 +73,7 @@ const Notificationbell = () => {
           dispatch(removeNotification(notification.id));
           dispatch(updateShowNotification(false));
           // Emit the socket event to notify other clients about the acceptance
-  
+          socket.emit("group-request-accepted",{id:notification.id,userid:notification.fromUser.id})
 
           alert('Group join request accepted!');
         }
@@ -97,6 +97,8 @@ const Notificationbell = () => {
           // Emit a socket event for rejection if needed
           // socket.emit('reject-group-request-join', notification);
           alert('Group join request rejected.');
+
+          socket.emit("group-request-rejected",{id:notification.id,userid:notification.fromUser.id})
         }
       });
     } catch (error) {

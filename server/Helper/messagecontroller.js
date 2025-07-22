@@ -253,7 +253,7 @@ module.exports={
             { new: true } // Return the updated document
         );
         console.log("updated one "+updatedGroup); // Log the updated group
-        resolve(updatednotification); // Resolve the promise with the updated group
+        resolve({updatednotification}); // Resolve the promise with the updated group
        }catch (error) {
         console.error("Error accepting group join:", error);
         reject(error) // Reject the promise with the error
@@ -270,7 +270,7 @@ Rejectgroupjoin:async(data)=>{
             console.log("data is "+data.id)
             //if data is present update the notification as marked 
            updatednotification= await Notification.findOneAndUpdate({
-                notifictionid:data.id,
+                notificationid:data.id,
             }, {
                 $set:{
                     read:true,
@@ -313,7 +313,7 @@ groupStatus:async(req)=>{
             resolve({groupId,user,isMember});
         }catch(error)
         {
-
+            reject(error)
         }
     })
 }

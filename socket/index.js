@@ -360,8 +360,21 @@ socket.on("group-join-request",async({groupId,admin,user})=>{
   }
 })
 
+//group join accept event
+socket.on("group-request-accepted",({id,userid})=>{
+ let user=activeusers.find((u)=>u.userid==userid)
+ let userSocketid=user.socketId
+ io.to(userSocketid).emit("Group-Join-Accepted")
+ 
+})
 
-//for group getting write code later
+//group-join reject event
+
+socket.on("group-request-rejected",({id,userid})=>{
+  let user=activeusers.find((u)=>u.userid==userid)
+  let userSocketid=user.socketId;
+  io.to(userSocketid).emit("Group-join-Rejected")
+})
 
 socket.on('error', (err) => {
   //console.error('Socket error:', err.message);
