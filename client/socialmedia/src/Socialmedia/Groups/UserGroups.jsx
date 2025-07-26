@@ -3,13 +3,17 @@ import { _get, apiClient } from '../axios/Axios';
 import { toast } from 'react-toastify';
 import './UserGroups.css';
 import GroupChat from './GroupChat/GroupChat';
+import { updateSetstatus, updateShowCreategroup, updateShowOwngroup,updateGroupchatStatus } from '../../Redux/SocialCompent';
+import { useDispatch } from 'react-redux';
+import { Col, Row } from 'react-bootstrap';
 
 function UserGroups() {
   const [groups, setGroups] = useState([]);
   const [error, setError] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null); // 💡 Track selected group
+  const [selectedGroup, setSelectedGroup] = useState(null); // 💡 Track selected 
+  const [status,setStatus]=useState(false)
   const token = localStorage.getItem("token");
-
+  const dispatch=useDispatch()
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -27,11 +31,20 @@ function UserGroups() {
   }, []);
 
   const handleGroup = (group) => {
+    setStatus(true)
     setSelectedGroup(group); // 💡 Set the selected group
+    dispatch(updateSetstatus(false));
+    dispatch(updateGroupchatStatus(true))
+
+  
+  
   };
 
   const handleBack = () => {
+    alert("back")
     setSelectedGroup(null); // 💡 Reset to show group list again
+    dispatch(updateSetstatus(false))
+    dispatch(updateGroupchatStatus(false))
   };
 
   async function getUsergroups() {
@@ -53,7 +66,9 @@ function UserGroups() {
   }
 
   return (
-    <div className="user-groups-container">
+    <Row className="mt-3">
+      {!status ? 
+       <Col md={12}>
       {selectedGroup ? (
         <GroupChat
           groupName={selectedGroup.groupname}
@@ -77,7 +92,12 @@ function UserGroups() {
           </div>
         </>
       )}
-    </div>
+      </Col>:
+      <Col md={12}>
+          <GroupChat groupName='sample' membersCount={8}/>
+        </Col>
+      }
+    </Row>
   );
 }
 

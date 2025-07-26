@@ -15,7 +15,6 @@ function CreateGroup() {
   const dispatch = useDispatch();
   const token=localStorage.getItem("token")
   //for dummy purpose only
-  let response=true
   function handleClose() {
     dispatch(updateShowCreategroup(false));
   }

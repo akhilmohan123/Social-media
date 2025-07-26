@@ -7,7 +7,9 @@ const initialState={
    showOwngroup:false,
    showNotification:false,
    notificationData:[],
-   latestActivity:[]
+   latestActivity:[],
+   status:false,
+   groupchat:false
 }
 
 const SocialComponentSlice=createSlice({
@@ -70,8 +72,16 @@ updateNotificationdata(state, action) {
         },
         updateLatestActivity(state,action){
             state.latestActivity = action.payload;
+        },
+        updateSetstatus(state,action)
+        {
+            state.status=action.payload
+        },
+        updateGroupchatStatus(state,action)
+        {
+            state.groupchat=action.payload
         }
     }
 });
-export const{updateGroupComponent,updateGroupcomponentBack,updateShowCreategroup,updateShowOwngroup,updateShowNotification,updateNotificationdata,markNotificationAsRead,updateNotificationStatus,clearAllNotifications,removeNotification,updateLatestActivity}=SocialComponentSlice.actions;
+export const{updateGroupComponent,updateGroupcomponentBack,updateShowCreategroup,updateShowOwngroup,updateShowNotification,updateNotificationdata,markNotificationAsRead,updateNotificationStatus,clearAllNotifications,removeNotification,updateLatestActivity,updateSetstatus,updateGroupchatStatus}=SocialComponentSlice.actions;
 export default SocialComponentSlice.reducer;

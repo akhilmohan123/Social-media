@@ -18,7 +18,8 @@ function Group() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [arraygroup,setArraygroup]=useState([])
   const token=localStorage.getItem("token")
-
+  const status=useSelector((state)=>state.Social.status)
+  const groupchat=useSelector((state)=>state.Social.groupchat)
   async function getGroups()
   {
     apiClient.defaults.headers.common['Authorization']=`Bearer ${token}`
@@ -36,8 +37,13 @@ function Group() {
 
   useEffect(()=>{
     getGroups();
-    console.log(arraygroup);
-  },[])
+    console.log("set status status is "+status);
+    console.log("group chat status"+groupchat)
+  },[status,groupchat])
+
+  useEffect(()=>{
+    console.log(selectedGroup)
+  },[selectedGroup])
 
 
   // const arraygroup = [
@@ -78,7 +84,7 @@ const handleShowOwngroups = () => {
     <>
       {groupStatus && !groupBack && (
   <Row className="mt-3">
-    {!selectedGroup && (
+    {(!selectedGroup && !status)&&  (
       <Col md={4}>
         {/* Sidebar Group List */}
         <Card
@@ -91,6 +97,7 @@ const handleShowOwngroups = () => {
           }}
         >
           {/* Header */}
+          {(!status && !groupchat) && (
           <div
             className="d-flex justify-content-between align-items-center p-3 bg-light flex-wrap gap-2"
             style={{
@@ -113,6 +120,7 @@ const handleShowOwngroups = () => {
               </Button>
             </div>
           </div>
+          )}
 
           {/* Scrollable list */}
           {showCreategroup ? (

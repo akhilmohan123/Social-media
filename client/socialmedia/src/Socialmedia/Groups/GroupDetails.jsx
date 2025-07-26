@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import { _get, _post, apiClient } from '../axios/Axios';
 import { toast } from 'react-toastify';
 import socket from '../Socket/Socket'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 function GroupDetails({ group, onBack }) {
   const [joined, setJoined] = useState(false);
@@ -13,7 +13,7 @@ function GroupDetails({ group, onBack }) {
   const [reject,setReject]=useState(false);
   const user=localStorage.getItem("userId")
   const notificationdata=useSelector(state=>state.Social.notificationData)
-
+  
   
   useEffect(()=>{
     if(error)
@@ -22,6 +22,7 @@ function GroupDetails({ group, onBack }) {
     }
   },[error])
   useEffect(()=>{
+    
   if(group.joinRequests.includes(user))
   {
     setRequested(true)

@@ -1,26 +1,17 @@
-.group-chat-container {
-  height: 100vh;
-  background-color: #f8f9fa;
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 20px;
+  word-break: break-word;
 }
 
 .chat-header {
-  background-color: #ffffff;
   border-bottom: 1px solid #dee2e6;
 }
 
 .chat-body {
-  background-color: #f1f3f5;
+  background: #f1f3f5;
 }
 
-.message-bubble {
-  padding: 0.6rem 1rem;
-  border-radius: 1.25rem;
-  max-width: 70%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  word-break: break-word;
-}
-
-.chat-input {
-  background-color: #ffffff;
-  border-top: 1px solid #dee2e6;
+.chat-input input {
+  border: 1px solid #ced4da;
 }
