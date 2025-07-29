@@ -3,6 +3,7 @@ const Group = require("../model/GroupModel");
 const  Messagemodel = require("../model/Messagemodel");
 const { getuserid } = require("./Getuser");
 const Notification = require("../model/Notification");
+const GroupMessage = require("../model/GroupMessage");
 
 
 module.exports={
@@ -316,6 +317,57 @@ groupStatus:async(req)=>{
             reject(error)
         }
     })
+},
+
+saveGroupMessage: (req) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (req.body) {
+                console.log(req.body)
+                const { groupname, groupID, sender, text, timestamp } = req.body;
+
+                const message = new GroupMessage({
+                    groupname,
+                    groupID,
+                    sender,
+                    text,
+                    timestamp
+                });
+
+                const savedMessage = await message.save();
+                console.log(savedMessage)
+                if (savedMessage) {
+                    resolve(true);
+                } else {
+                    reject("Message not saved");
+                }
+            } else {
+                reject("No request body");
+            }
+        } catch (error) {
+            reject(error); // Reject with the actual error for better debugging
+        }
+    });
+},
+fetchGroupmessage:(id)=>{
+    return new Promise(async(resolve,reject)=>{
+        try {
+            if(id)
+            {
+                await GroupMessage.find({groupID:id}).sort({timestamp:1}).then((res)=>{
+                    console.log(res)
+                    resolve(res)
+                }).catch(err=>{
+                    console.log(err)
+                    reject(false)
+                })
+            }
+        } catch (error) {
+            console.log(error)
+            reject(false)
+        }
+    })
 }
+
 
 }

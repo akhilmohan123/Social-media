@@ -1,49 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Form, Badge } from 'react-bootstrap';
 import './GroupChat.css'; // Keep or update with modern styles
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import socket from '../../Socket/Socket'
 import { updateSetstatus, updateShowCreategroup, updateShowOwngroup, updateGroupchatStatus } from '../../../Redux/SocialCompent';
+import { _get, apiClient } from '../../axios/Axios';
 
-function GroupChat({ groupName = "Nature Lovers", membersCount = 12 }) {
+function GroupChat() {
   const dispatch = useDispatch();
   const [view, setView] = useState("chat"); // chat or members
+  const userId=localStorage.getItem("userId")
+  const token=localStorage.getItem("token")
+  const username=useSelector((state)=>state.User.userName)
+  const group=useSelector((state)=>state.Social.group)
   const [messages, setMessages] = useState([
-    {
-      sender: 'me',
-      name: 'You',
-      text: 'Hey everyone!',
-      timestamp: new Date(),
-    },
-    {
-      sender: 'Alice',
-      name: 'Alice',
-      text: 'Hi! Excited for the next hike?',
-      timestamp: new Date(),
-    },
-    {
-      sender: 'me',
-      name: 'You',
-      text: 'Absolutely! Let’s plan soon.',
-      timestamp: new Date(),
-    },
-    {
-      sender: 'Bob',
-      name: 'Bob',
-      text: 'I found a new trail we can explore.',
-      timestamp: new Date(),
-    },
   ]);
+
+  //api to get the username
+
+  useEffect(()=>{
+    console.log(group)
+    fetchMessage()
+    console.log(messages)
+  },[])
+
+
 
   const messagesEndRef = useRef(null);
 
   const handleSend = (newMessage) => {
     const messageObj = {
-      sender: 'me',
-      name: 'You',
+      groupID:group._id,
+      groupname:group.groupname,
+      sender: userId,
+      name: username,
       text: newMessage,
       timestamp: new Date(),
     };
+    console.log(messageObj)
     setMessages(prev => [...prev, messageObj]);
+    socket.emit("group-message-send",messageObj)
+
   };
 
   const handleBack = () => {
@@ -53,9 +50,43 @@ function GroupChat({ groupName = "Nature Lovers", membersCount = 12 }) {
     dispatch(updateGroupchatStatus(false));
   };
 
+  const fetchMessage =async ()=>{
+    try {
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        let response=await _get(`/api/social-media/fetch-message/${group._id}`)
+        console.log(response.data)
+        setMessages(prev=>[...prev,...response.data])
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  //for listening socket event
+useEffect(() => {
+  const handleMessage = (message) => {
+    console.log("message is recived ");
+    console.log(message);
+    if(message.sender !=userId)
+    {
+       setMessages(prev => [...prev, message]);
+    }
+    
+  };
+
+  socket.on("group-message-recieved", handleMessage);
+
+  return () => {
+    socket.off("group-message-recieved", handleMessage); // Clean up on unmount
+  };
+}, []); // ✅ Only run once on mount
+
+
+
 
   return (
     <div className="group-chat-container d-flex flex-column" style={{ height: '100vh', background: '#f8f9fa' }}>
@@ -68,8 +99,8 @@ function GroupChat({ groupName = "Nature Lovers", membersCount = 12 }) {
     backgroundColor: '#ffffff', // important for overlapping
   }}>
         <div>
-          <h5 className="mb-0 text-primary">{groupName}</h5>
-          <small className="text-muted">{membersCount} members</small>
+          <h5 className="mb-0 text-primary">asdasd</h5>
+          <small className="text-muted">20 members</small>
         </div>
         <div className="d-flex align-items-center gap-2">
           <Button variant="outline-info" size="sm" onClick={() => setView("members")}>
@@ -89,18 +120,21 @@ function GroupChat({ groupName = "Nature Lovers", membersCount = 12 }) {
           messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`d-flex flex-column ${msg.sender === 'me' ? 'align-items-end' : 'align-items-start'} mb-3`}
+              className={`d-flex flex-column ${msg.sender === userId ? 'align-items-end' : 'align-items-start'} mb-3`}
+
             >
               <div
-                className={`message-bubble p-2 rounded ${
-                  msg.sender === 'me' ? 'bg-primary text-white' : 'bg-light text-dark'
+                className={`message-bubble p-2 rounded 
+                  ${msg.sender === userId ? 'bg-primary text-white' : 'bg-light text-dark'}
+
                 }`}
                 style={{ maxWidth: '75%' }}
               >
                 <div className="fw-bold">{msg.name}</div>
                 <div>{msg.text}</div>
                 <div className="text-end small text-muted mt-1">
-                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+
                 </div>
               </div>
             </div>

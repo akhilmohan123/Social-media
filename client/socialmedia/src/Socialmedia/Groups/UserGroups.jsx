@@ -3,9 +3,11 @@ import { _get, apiClient } from '../axios/Axios';
 import { toast } from 'react-toastify';
 import './UserGroups.css';
 import GroupChat from './GroupChat/GroupChat';
-import { updateSetstatus, updateShowCreategroup, updateShowOwngroup,updateGroupchatStatus } from '../../Redux/SocialCompent';
+import { updateSetstatus, updateShowCreategroup, updateShowOwngroup,updateGroupchatStatus, updateSelectedGroup } from '../../Redux/SocialCompent';
 import { useDispatch } from 'react-redux';
 import { Col, Row } from 'react-bootstrap';
+import socket from '../Socket/Socket'
+import { updateUsername } from '../../Redux/UserSlice';
 
 function UserGroups() {
   const [groups, setGroups] = useState([]);
@@ -19,6 +21,7 @@ function UserGroups() {
       toast.error(error);
     }
   }, [error]);
+
 
   useEffect(() => {
     async function fetchUserGroups() {
@@ -35,10 +38,29 @@ function UserGroups() {
     setSelectedGroup(group); // 💡 Set the selected group
     dispatch(updateSetstatus(false));
     dispatch(updateGroupchatStatus(true))
+    dispatch(updateSelectedGroup(group))
+    console.log(group)
+    socket.emit("joined-group",{Id:group._id})
+    fetchUsername()
 
   
   
   };
+  async function fetchUsername() {
+  try {
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    const response = await _get("/api/socialmedia/get-username");
+    console.log(response)
+    if (response.status === 200) {
+      dispatch(updateUsername(response.data.result));
+    } else {
+      dispatch(updateUsername("User"));
+    }
+  } catch (error) {
+    dispatch(updateUsername("User"));
+  }
+}
+
 
   const handleBack = () => {
     alert("back")
@@ -94,7 +116,7 @@ function UserGroups() {
       )}
       </Col>:
       <Col md={12}>
-          <GroupChat groupName='sample' membersCount={8}/>
+          <GroupChat/>
         </Col>
       }
     </Row>

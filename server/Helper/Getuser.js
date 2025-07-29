@@ -2,9 +2,10 @@ const jwt = require('jsonwebtoken');
 const usermodel = require('../model/usermodel');
 const Post = require("../model/postmodel");
 require('dotenv').config();
-const fs=require("fs")
+const fs=require("fs");
 module.exports = {
   getuserid: (data) => {
+    console.log(data)
     return new Promise((resolve, reject) => {
       const { authorization } = data;
       if (!authorization) {
@@ -171,6 +172,24 @@ module.exports = {
           }).catch(err=>reject(err))
         }).catch(err=>reject(err))
       } catch (error) {
+        reject(error)
+      }
+    })
+  },
+  getName:(req)=>{
+    return new Promise(async(resolve,reject)=>{
+      try {
+        console.time("token-decode");
+        let user=await module.exports.getuserid(req.headers)
+        let Id=user.userId
+        let userDetails=await usermodel.findById(Id)
+        let Name=userDetails.Fname + userDetails.Lname
+        if(Name)
+        {
+          resolve(Name)
+        }
+      } catch (error) {
+        console.log(error)
         reject(error)
       }
     })

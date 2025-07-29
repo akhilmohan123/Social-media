@@ -142,6 +142,13 @@ async function markNotificationAsRead({userId,type})
   return result.data
 }
 
+async function saveMessage(message)
+{
+  let result=await axios.post("http://localhost:3001/api/socialmedia/group-message",message)
+  return result
+  
+}
+
 let usersStreaming = new Set();
 const userNotificationMap = new Map();
 io.on("connection", (socket) => {
@@ -375,6 +382,23 @@ socket.on("group-request-rejected",({id,userid})=>{
   let userSocketid=user.socketId;
   io.to(userSocketid).emit("Group-join-Rejected")
 })
+
+//regarding group message
+// Handle group joining
+socket.on("joined-group", ({Id}) => {
+  console.log(Id)
+  console.log(`User ${socket.id} joined group ${Id}`);
+  socket.join(Id);
+  io.to(Id).emit("test");
+});
+
+// Handle group message sending (independent of when a user joins)
+socket.on("group-message-send", async (message) => {
+  console.log("Received group message:", message);
+  let result = await saveMessage(message);
+  io.to(message.groupID).emit("group-message-recieved", message);
+});
+
 
 socket.on('error', (err) => {
   //console.error('Socket error:', err.message);

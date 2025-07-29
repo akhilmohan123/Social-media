@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer')
 const upload = multer({ dest: "uploads/",limits: { fileSize: 50 * 1024 * 1024 } });
 const fs=require('file-system');
-const { getuserid, getusername, getpeople, geteditdata, posteditdata, getuserpost } = require('../Helper/Getuser');
+const { getuserid, getusername, getpeople, geteditdata, posteditdata, getuserpost,getName } = require('../Helper/Getuser');
 const { addpost, addlike, removelike, uploadpost } = require('../Helper/Poststore');
 const { addfriend, removefriend } = require('../Helper/Addfriends');
 const Friend = require('../model/Friendsmodel');
@@ -14,8 +14,9 @@ const Post = require('../model/postmodel');
 const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
-const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin,Rejectgroupjoin, groupStatus } = require('../Helper/messagecontroller');
+const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin,Rejectgroupjoin, groupStatus, saveGroupMessage, fetchGroupmessage } = require('../Helper/messagecontroller');
 const { saveFcm, getFcm, saveNotification, getNotification, markNotificationAsSeen, markNotificationAsRead } = require('../Helper/Notificationhelper');
+const Getuser = require('../Helper/Getuser');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
@@ -713,6 +714,43 @@ router.post("/api/socialmedia/mark-notification-as-seen",async(req,res)=>{
       console.log("Error getting group status:",error);
       res.status(400).json({message:"Error getting group status",error})
     }
+})
+
+//router to get the username
+
+router.get("/api/socialmedia/get-username",async(req,res)=>{
+  console.log("get name ")
+  await getName(req).then((result)=>{
+    res.status(200).json({result})
+  }).catch((error)=>{
+    res.status(400).json({error})
+  })
+})
+
+//router to save the group message
+
+router.post("/api/socialmedia/group-message",async(req,res)=>{
+  try {
+    console.log("called the save message")
+      await saveGroupMessage(req).then((result)=>{
+   res.status(200).json({result})
+  })
+  } catch (error) {
+    res.status(400).json({error})
+  }
+
+})
+
+//router to fetch the group messages 
+router.get("/api/social-media/fetch-message/:id",async(req,res)=>{
+  try {
+    let id=req.params.id
+    console.log("group id is ===="+id)
+      let message=await fetchGroupmessage(id)
+      res.status(200).json(message)
+  } catch (error) {
+    res.status(400).json(error)
+  }
 })
 
 module.exports=router;

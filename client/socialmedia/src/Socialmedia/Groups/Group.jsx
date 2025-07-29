@@ -39,7 +39,7 @@ function Group() {
     getGroups();
     console.log("set status status is "+status);
     console.log("group chat status"+groupchat)
-  },[status,groupchat])
+  },[groupchat])
 
   useEffect(()=>{
     console.log(selectedGroup)
