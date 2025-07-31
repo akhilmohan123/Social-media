@@ -14,7 +14,7 @@ const Post = require('../model/postmodel');
 const {getfriendsprofile, getAllFriends, getFriendName} = require('../Helper/getfriendsprofile');
 const { Googleauth, googleAuthMiddleWare } = require('../Helper/Authentication');
 const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require('../Helper/UserAuthentication');
-const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin,Rejectgroupjoin, groupStatus, saveGroupMessage, fetchGroupmessage } = require('../Helper/messagecontroller');
+const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin,Rejectgroupjoin, groupStatus, saveGroupMessage, fetchGroupmessage, fetchGroupmembers } = require('../Helper/messagecontroller');
 const { saveFcm, getFcm, saveNotification, getNotification, markNotificationAsSeen, markNotificationAsRead } = require('../Helper/Notificationhelper');
 const Getuser = require('../Helper/Getuser');
  require('dotenv').config()
@@ -749,6 +749,26 @@ router.get("/api/social-media/fetch-message/:id",async(req,res)=>{
       let message=await fetchGroupmessage(id)
       res.status(200).json(message)
   } catch (error) {
+    res.status(400).json(error)
+  }
+})
+
+//router to fetch members
+router.get("/api/socialmedia/fetch-members/:id",async(req,res)=>{
+  try {
+    console.log("fetch members called ")
+    let id=req.params.id
+    let user=await getuserid(req.headers)
+    console.log(user)
+    let userid=user.userId
+    console.log("user id from fetchmembers is ==="+userid)
+    let userobj={user:userid,groupid:id}
+    console.log("id from fetch members is ===="+id)
+    let response=await fetchGroupmembers(userobj)
+    console.log("response is "+response)
+    res.status(200).json(response)
+  } catch (error) {
+    console.log(error)
     res.status(400).json(error)
   }
 })

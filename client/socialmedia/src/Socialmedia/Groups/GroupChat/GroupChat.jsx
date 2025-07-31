@@ -6,6 +6,7 @@ import socket from '../../Socket/Socket'
 import { updateSetstatus, updateShowCreategroup, updateShowOwngroup, updateGroupchatStatus } from '../../../Redux/SocialCompent';
 import { _get, apiClient } from '../../axios/Axios';
 
+
 function GroupChat() {
   const dispatch = useDispatch();
   const [view, setView] = useState("chat"); // chat or members
@@ -13,15 +14,18 @@ function GroupChat() {
   const token=localStorage.getItem("token")
   const username=useSelector((state)=>state.User.userName)
   const group=useSelector((state)=>state.Social.group)
+  const [membersStatus,setmembersStatus]=useState(true)
   const [messages, setMessages] = useState([
   ]);
-
+  const [members,setMembers]=useState([])
   //api to get the username
 
   useEffect(()=>{
     console.log(group)
     fetchMessage()
     console.log(messages)
+    console.log(view)
+    console.log(members)
   },[])
 
 
@@ -63,6 +67,7 @@ function GroupChat() {
   }
 
   useEffect(() => {
+    if(view=='chat')
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -85,7 +90,15 @@ useEffect(() => {
   };
 }, []); // ✅ Only run once on mount
 
+const handleMembers = async ()=>{
+  setView("members")
+  apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  let result=await _get(`/api/socialmedia/fetch-members/${group._id}`)
+  console.log(result.data)
 
+  setMembers(result.data)
+  console.log(members)
+}
 
 
   return (
@@ -103,7 +116,7 @@ useEffect(() => {
           <small className="text-muted">20 members</small>
         </div>
         <div className="d-flex align-items-center gap-2">
-          <Button variant="outline-info" size="sm" onClick={() => setView("members")}>
+          <Button variant="outline-info" size="sm" onClick={handleMembers}>
             👥 Members
           </Button>
           <Button variant="outline-secondary" size="sm" onClick={handleBack}>
@@ -114,9 +127,24 @@ useEffect(() => {
 
       {/* Chat Body */}
       <div className="chat-body flex-grow-1 px-4 py-3 overflow-auto">
+        
         {view === "members" ? (
-          <div className="text-muted text-center mt-5">Members list feature coming soon...</div>
-        ) : (
+  <div className="px-3">
+    <h6 className="mb-3">Group Members</h6>
+    {members.length > 0 ? (
+      <ul className="list-unstyled">
+        {members.map((name, idx) => (
+          <li key={idx} className="d-flex align-items-center mb-2">
+            <span className="me-2">👤</span>
+            <span>{name}</span>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <div className="text-muted">No members found.</div>
+    )}
+  </div>
+) : (
           messages.map((msg, idx) => (
             <div
               key={idx}

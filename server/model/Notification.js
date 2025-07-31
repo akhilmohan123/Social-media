@@ -4,7 +4,7 @@ const notificationSchema = new mongoose.Schema({
   fromUser: {
     id: {
       type: mongoose.Schema.Types.ObjectId, // Sender (like who started the live stream or made the group request)
-      ref: 'User',
+      ref: 'userdetails',
     },
     name: String,
     groupId: {

@@ -15,3 +15,15 @@
 .chat-input input {
   border: 1px solid #ced4da;
 }
+
+.group-chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.chat-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+}

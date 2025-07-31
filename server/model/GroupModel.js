@@ -3,12 +3,12 @@
 const mongoose=require('mongoose');
 const groupschema=new mongoose.Schema({
     groupname:{type:String,required:true},
-    members:[{type:mongoose.Schema.Types.ObjectId,ref:'usermodel'}],
+    members:[{type:mongoose.Schema.Types.ObjectId,ref:'userdetails'}],
     groupImage:{type:Object},
-    admin:{type:mongoose.Schema.Types.ObjectId,ref:'usermodel',required:true},
+    admin:{type:mongoose.Schema.Types.ObjectId,ref:'userdetails',required:true},
     groupDescription:{type:String},
     groupType:{type:String}, // public or private
-    joinRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'usermodel' }],
+    joinRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userdetails' }],
     timestamp:{type:Date,default:Date.now}
 })
 
