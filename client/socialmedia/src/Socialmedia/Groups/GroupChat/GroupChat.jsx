@@ -1,50 +1,93 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Button, Form, Badge } from 'react-bootstrap';
-import './GroupChat.css'; // Keep or update with modern styles
-import { useDispatch, useSelector } from 'react-redux';
-import socket from '../../Socket/Socket'
-import { updateSetstatus, updateShowCreategroup, updateShowOwngroup, updateGroupchatStatus } from '../../../Redux/SocialCompent';
-import { _get, apiClient } from '../../axios/Axios';
-
+import React, { useState, useEffect, useRef } from "react";
+import { Button, Form, Badge, OverlayTrigger, Tooltip, Spinner } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import socket from "../../Socket/Socket";
+import {
+  updateSetstatus,
+  updateShowCreategroup,
+  updateShowOwngroup,
+  updateGroupchatStatus,
+} from "../../../Redux/SocialCompent";
+import { _get, apiClient } from "../../axios/Axios";
+import { FiArrowLeft, FiUsers, FiSend, FiClock } from "react-icons/fi";
+import { BsThreeDotsVertical, BsCheck2All } from "react-icons/bs";
+import "./GroupChat.css"; // You'll need to update this CSS file
 
 function GroupChat() {
   const dispatch = useDispatch();
-  const [view, setView] = useState("chat"); // chat or members
-  const userId=localStorage.getItem("userId")
-  const token=localStorage.getItem("token")
-  const username=useSelector((state)=>state.User.userName)
-  const group=useSelector((state)=>state.Social.group)
-  const [membersStatus,setmembersStatus]=useState(true)
-  const [messages, setMessages] = useState([
-  ]);
-  const [members,setMembers]=useState([])
-  //api to get the username
-
-  useEffect(()=>{
-    console.log(group)
-    fetchMessage()
-    console.log(messages)
-    console.log(view)
-    console.log(members)
-  },[])
-
-
-
+  const [view, setView] = useState("chat");
+  const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingMember, setTypingMember] = useState("");
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+  const username = useSelector((state) => state.User.userName);
+  const group = useSelector((state) => state.Social.group);
+  const [messages, setMessages] = useState([]);
+  const [members, setMembers] = useState([]);
   const messagesEndRef = useRef(null);
+
+  // Format time for messages
+  const formatTime = (date) => {
+    return new Date(date).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Format date for message grouping
+  const formatDate = (date) => {
+    const today = new Date();
+    const messageDate = new Date(date);
+    
+    if (messageDate.toDateString() === today.toDateString()) {
+      return "Today";
+    }
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    }
+    
+    return messageDate.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setLoading(true);
+      await fetchMessage();
+      setLoading(false);
+    };
+    
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    if (view === "chat") {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    console.log(messages)
+    console.log("username is "+username)
+  }, [messages, view]);
 
   const handleSend = (newMessage) => {
     const messageObj = {
-      groupID:group._id,
-      groupname:group.groupname,
+      groupID: group._id,
+      groupname: group.groupname,
       sender: userId,
       name: username,
       text: newMessage,
       timestamp: new Date(),
+      username:username
     };
-    console.log(messageObj)
-    setMessages(prev => [...prev, messageObj]);
-    socket.emit("group-message-send",messageObj)
-
+    
+    setMessages((prev) => [...prev, messageObj]);
+    socket.emit("group-message-send", messageObj);
   };
 
   const handleBack = () => {
@@ -54,146 +97,174 @@ function GroupChat() {
     dispatch(updateGroupchatStatus(false));
   };
 
-  const fetchMessage =async ()=>{
+  const fetchMessage = async () => {
     try {
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        let response=await _get(`/api/social-media/fetch-message/${group._id}`)
-        console.log(response.data)
-        setMessages(prev=>[...prev,...response.data])
+      apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      let response = await _get(`/api/social-media/fetch-message/${group._id}`);
+      setMessages(response.data);
     } catch (error) {
-      console.log(error)
+      console.error("Error fetching messages:", error);
     }
+  };
 
-  }
-
-  useEffect(() => {
-    if(view=='chat')
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  //for listening socket event
-useEffect(() => {
-  const handleMessage = (message) => {
-    console.log("message is recived ");
-    console.log(message);
-    if(message.sender !=userId)
-    {
-       setMessages(prev => [...prev, message]);
-    }
+  const handleMembers = async () => {
+    setView(view === "members" ? "chat" : "members");
     
+    if (members.length === 0) {
+      try {
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        let result = await _get(`/api/socialmedia/fetch-members/${group._id}`);
+        setMembers(result.data);
+      } catch (error) {
+        console.error("Error fetching members:", error);
+      }
+    }
   };
 
-  socket.on("group-message-recieved", handleMessage);
-
-  return () => {
-    socket.off("group-message-recieved", handleMessage); // Clean up on unmount
-  };
-}, []); // ✅ Only run once on mount
-
-const handleMembers = async ()=>{
-  setView("members")
-  apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  let result=await _get(`/api/socialmedia/fetch-members/${group._id}`)
-  console.log(result.data)
-
-  setMembers(result.data)
-  console.log(members)
-}
-
+  // Group messages by date
+  const groupedMessages = messages.reduce((acc, message) => {
+    const date = formatDate(message.timestamp);
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(message);
+    return acc;
+  }, {});
 
   return (
-    <div className="group-chat-container d-flex flex-column" style={{ height: '100vh', background: '#f8f9fa' }}>
-      
+    <div className="group-chat-container">
       {/* Header */}
-      <div className="chat-header d-flex justify-content-between align-items-center px-4 py-2 bg-white shadow-sm"  style={{
-    position: 'sticky',
-    top: 0,
-    zIndex: 1020, // higher than other elements
-    backgroundColor: '#ffffff', // important for overlapping
-  }}>
-        <div>
-          <h5 className="mb-0 text-primary">asdasd</h5>
-          <small className="text-muted">20 members</small>
+      <div className="chat-header fixed-header">
+        <div className="header-left">
+          <Button variant="link" onClick={handleBack} className="back-button">
+            <FiArrowLeft size={20} />
+          </Button>
+          <div className="group-info">
+            <h5>{group?.groupname || "Group Chat"}</h5>
+            <div className="group-status">
+              {isTyping ? (
+                <span className="typing-indicator">{typingMember} is typing...</span>
+              ) : (
+                <span>{members.length} members</span>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="d-flex align-items-center gap-2">
-          <Button variant="outline-info" size="sm" onClick={handleMembers}>
-            👥 Members
-          </Button>
-          <Button variant="outline-secondary" size="sm" onClick={handleBack}>
-            ← Back
-          </Button>
+        <div className="header-actions">
+          <OverlayTrigger
+            placement="bottom"
+            overlay={<Tooltip>{view === "members" ? "Show Chat" : "Show Members"}</Tooltip>}
+          >
+            <Button variant="link" onClick={handleMembers} className="members-button">
+              <FiUsers size={20} />
+            </Button>
+          </OverlayTrigger>
         </div>
       </div>
 
       {/* Chat Body */}
-      <div className="chat-body flex-grow-1 px-4 py-3 overflow-auto">
-        
-        {view === "members" ? (
-  <div className="px-3">
-    <h6 className="mb-3">Group Members</h6>
-    {members.length > 0 ? (
-      <ul className="list-unstyled">
-        {members.map((name, idx) => (
-          <li key={idx} className="d-flex align-items-center mb-2">
-            <span className="me-2">👤</span>
-            <span>{name}</span>
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <div className="text-muted">No members found.</div>
-    )}
-  </div>
-) : (
-          messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`d-flex flex-column ${msg.sender === userId ? 'align-items-end' : 'align-items-start'} mb-3`}
-
-            >
-              <div
-                className={`message-bubble p-2 rounded 
-                  ${msg.sender === userId ? 'bg-primary text-white' : 'bg-light text-dark'}
-
-                }`}
-                style={{ maxWidth: '75%' }}
-              >
-                <div className="fw-bold">{msg.name}</div>
-                <div>{msg.text}</div>
-                <div className="text-end small text-muted mt-1">
-                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-
-                </div>
-              </div>
+      <div className="chat-body">
+        {loading ? (
+          <div className="loading-container">
+            <Spinner animation="border" variant="primary" />
+          </div>
+        ) : view === "members" ? (
+          <div className="members-view">
+            <div className="members-header">
+              <h6>Group Members</h6>
+              <span className="badge">{members.length}</span>
             </div>
-          ))
+            <div className="members-list">
+              {members.length > 0 ? (
+                members.map((member, idx) => (
+                  <div key={idx} className="member-item">
+                    <div className="member-avatar">
+                      {member.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="member-info">
+                      <span className="member-name">{member}</span>
+                      <span className="member-status">Online</span>
+                    </div>
+                    <Button variant="link" className="member-options">
+                      <BsThreeDotsVertical />
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="no-members">No members found</div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="messages-view">
+            {Object.entries(groupedMessages).map(([date, dateMessages]) => (
+              <React.Fragment key={date}>
+                <div className="date-divider">
+                  <span>{date}</span>
+                </div>
+                {dateMessages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`message-container ${
+                      msg.sender === userId ? "sent" : "received"
+                    }`}
+                  >
+                    {msg.sender !== userId && (
+                      <div className="message-sender">{msg.name}</div>
+                    )}
+                    <div className="message-bubble">
+                    <div className="message-text">
+                        <span className="message-username">{msg.username}</span>
+                        <span className="message-content">{msg.text}</span>
+                      </div>
+                      <div className="message-meta">
+                        <span className="message-time">
+                          <FiClock size={12} /> {formatTime(msg.timestamp)}
+                        </span>
+                        {msg.sender === userId && (
+                          <span className="message-status">
+                            <BsCheck2All size={14} />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </React.Fragment>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Chat Input */}
       {view === "chat" && (
-        <Form
-          className="chat-input d-flex p-3 border-top bg-white"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const text = e.target.message.value.trim();
-            if (text) {
-              handleSend(text);
-              e.target.reset();
-            }
-          }}
-        >
-          <Form.Control
-            type="text"
-            name="message"
-            placeholder="Type a message..."
-            className="me-2 rounded-pill shadow-sm"
-          />
-          <Button variant="primary" type="submit" className="px-4 rounded-pill shadow-sm">
-            Send
-          </Button>
-        </Form>
+        <div className="chat-input-container">
+          <Form
+            className="chat-input-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const text = e.target.message.value.trim();
+              if (text) {
+                handleSend(text);
+                e.target.reset();
+              }
+            }}
+          >
+            <Form.Control
+              as="textarea"
+              name="message"
+              placeholder="Type a message..."
+              rows={1}
+              className="message-input"
+              onFocus={() => socket.emit("typing-start", { userId, groupId: group._id })}
+              onBlur={() => socket.emit("typing-stop", { userId, groupId: group._id })}
+            />
+            <Button type="submit" className="send-button">
+              <FiSend size={18} />
+            </Button>
+          </Form>
+        </div>
       )}
     </div>
   );

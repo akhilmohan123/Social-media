@@ -5,7 +5,8 @@ const groupmessageschema=new mongoose.Schema({
     groupID: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
     sender:{type:mongoose.Schema.Types.ObjectId,ref:'userdetails'},
     text:{type:String},
-    timestamp:{type:Date,default:Date.now}
+    timestamp:{type:Date,default:Date.now},
+    senderName:{type:String}
 })
 const GroupMessage=mongoose.model('GroupMessage',groupmessageschema)
 module.exports=GroupMessage;
