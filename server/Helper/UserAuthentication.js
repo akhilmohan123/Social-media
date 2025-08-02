@@ -27,7 +27,7 @@ module.exports={
                 html:`<p>Your OTP is :<strong>${otp}</strong></p>`
             }
             var s=await transporter.sendMail(mailOptions)
-            console.log("send mail"+s)
+            //console.log("send mail"+s)
             if(s) resolve(true)
             else  reject(false)
         })
@@ -40,12 +40,12 @@ module.exports={
                     Email:email // Ensure otp is string to match your collection
                 });
     
-                console.log( result);
+                //console.log( result);
                 
                 if (result) {
                     let email=result.Email
                 
-                    console.log('OTP verification successful');
+                    //console.log('OTP verification successful');
                     // Delete the OTP after successful verification
                     await usermodel.updateOne({
                         Email:email
@@ -54,7 +54,7 @@ module.exports={
                        })
                     resolve(result);
                 } else {
-                    console.log('OTP verification failed - no matching record');
+                    //console.log('OTP verification failed - no matching record');
                     reject(false);
                 }
             } catch (error) {
@@ -65,24 +65,24 @@ module.exports={
     },
     addOtp:(email)=>{
         return new Promise(async(resolve,reject)=>{
-            console.log(process.env.USER_EMAIL)
+            //console.log(process.env.USER_EMAIL)
             var otp= await module.exports.generateotp();
             var result= await usermodel.findOne({Email:email})
-            console.log(result)
+            //console.log(result)
             if(result!=null){
                    await usermodel.updateOne({
                     Email:email
                    },{
                     $unset:{"otp":"","otpexpiry":""}
                    }).then(async res=>{
-                    console.log(1)
+                    //console.log(1)
                     if(res){
-                        console.log(2)
+                        //console.log(2)
                         const result = await usermodel.findOne({ Email: email });
-                        console.log("Found user:", result); // Should not be null
+                        //console.log("Found user:", result); // Should not be null
                         await usermodel.updateOne({Email:email},{$set:{otp:otp,otpexpiry:new Date()}})
                         module.exports.sendEmail(email,otp).then((res)=>{
-                            console.log(res)
+                            //console.log(res)
                             if(res){
                                 resolve(true)
                             }else{
@@ -97,12 +97,12 @@ module.exports={
                     }
                  
                    }).catch(err=>{
-                    console.log(err)
+                    //console.log(err)
                    })
 
                   
             }else{
-                console.log("No")
+                //console.log("No")
                 reject("User Not Exists")
             }
            
@@ -113,7 +113,7 @@ module.exports={
     resetPassword: async (password, email) => {
         return new Promise(async(resolve,reject)=>{
             try {
-                console.log(`Updating password for ${email}`);
+                //console.log(`Updating password for ${email}`);
                 const result = await usermodel.updateOne(
                   { "Email": email },
                   { "$set": { "Password": password } }
@@ -121,7 +121,7 @@ module.exports={
                 if (result.matchedCount === 0) {
                   reject(false)
                 }
-                console.log("Password updated successfully:", result);
+                //console.log("Password updated successfully:", result);
                 resolve(result)
               } catch (err) {
                 console.error("Error in resetPassword:", err.message);
@@ -141,11 +141,11 @@ module.exports={
             });
             User.save()
             .then((rese) => {
-                console.log(rese)
+                //console.log(rese)
                 resolve(rese)
             })
             .catch((err) => {
-              console.log(err)  
+              //console.log(err)  
               reject(err)
             });
           
@@ -155,16 +155,16 @@ module.exports={
         let userObj={}
         return new Promise(async(resolve,reject)=>{
             try{
-                console.log(password)
+                //console.log(password)
                 let useris=await usermodel.findOne({Email:email}) 
                 if (!useris) {
                     reject(false)
                   }
-                  console.log(useris.Email)
+                  //console.log(useris.Email)
                 
                   await bcrypt.compare(password, useris.Password).then((rese)=>{
                           if(rese){
-                            console.log("response reached")
+                            //console.log("response reached")
                             const token = jwt.sign({ userId: useris._id },process.env.JWT_SECRETKEY , { expiresIn: '1h' });
                             console.log(token)
                             userObj.userId=useris._id

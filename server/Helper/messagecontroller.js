@@ -24,7 +24,7 @@ module.exports = {
   },
   getMessages: async (req, res) => {
     const { chatId } = req.params;
-    console.log("clicked");
+    //console.log("clicked");
     try {
       const result = await Messagemodel.find({ chatId });
       res.status(200).json(result);
@@ -41,9 +41,9 @@ module.exports = {
         if (!user) {
           resolve(false);
         }
-        console.log("group name is ", data.groupName);
+        //console.log("group name is ", data.groupName);
         //if user is there create group
-        console.log(user);
+        //console.log(user);
         let group = new Group({
           groupname: data.name,
           groupImage: data.image,
@@ -55,15 +55,15 @@ module.exports = {
         await group
           .save()
           .then((result) => {
-            console.log("Group created successfully", result);
+            //console.log("Group created successfully", result);
             resolve(result);
           })
           .catch((error) => {
-            console.log("Error in creating group", error);
+            //console.log("Error in creating group", error);
             reject(error);
           });
       } catch (error) {
-        console.log("Error in createGroup:", error);
+        //console.log("Error in createGroup:", error);
         reject(error);
       }
     });
@@ -79,7 +79,7 @@ module.exports = {
         let groups = await Group.find({
           $or: [{ admin: user.userId }, { members: user.userId }],
         });
-        console.log(groups.length);
+        //console.log(groups.length);
         //if the groups are found resolve the groups
         if (groups.length > 0) {
           resolve(groups);
@@ -99,7 +99,7 @@ module.exports = {
           reject("user not found");
           return;
         } else {
-          console.log("user is" + user);
+          //console.log("user is" + user);
           //fetch groups that is not user part
           let groups = await Group.find({
             $and: [
@@ -108,7 +108,7 @@ module.exports = {
             ],
           });
           if (groups) {
-            console.log("groups are", groups);
+            //console.log("groups are", groups);
             resolve(groups);
           } else {
             resolve("No groups found");
@@ -145,7 +145,7 @@ module.exports = {
             $push: { members: user.userId },
           })
           .then((result) => {
-            console.log("user joined the group successfully", result);
+            //console.log("user joined the group successfully", result);
             resolve(result);
           });
       } catch (error) {
@@ -157,7 +157,7 @@ module.exports = {
   requestJoinGroup: async (req) => {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(req.headers);
+        //console.log(req.headers);
         let user = await getuserid(req.headers);
         if (!user) {
           reject("user not found");
@@ -179,15 +179,15 @@ module.exports = {
             $push: { joinRequests: user.userId },
           })
           .then((result) => {
-            console.log("User has requested to join the group" + result);
+            //console.log("User has requested to join the group" + result);
             resolve(result);
           })
           .catch((error) => {
-            console.log("Error in requesting to join the group", error);
+            //console.log("Error in requesting to join the group", error);
             reject("Error in requesting to join the group:" + error);
           });
       } catch (error) {
-        console.log("Error in request join group:", error);
+        //console.log("Error in request join group:", error);
         reject("Error in request join group:" + error);
       }
     });
@@ -197,8 +197,8 @@ module.exports = {
       try {
         await Group.find({ _id: id }).then((response) => {
           if (response) {
-            console.log(9);
-            console.log(response);
+            //console.log(9);
+            //console.log(response);
             resolve(response[0].groupname);
           }
         });
@@ -212,7 +212,7 @@ module.exports = {
       var updatednotification;
       try {
         if (data.id) {
-          console.log("data is " + data.id);
+          //console.log("data is " + data.id);
           //if data.id is present then find the notification and mark it as read is true
           updatednotification = await Notification.findOneAndUpdate(
             {
@@ -223,11 +223,11 @@ module.exports = {
             },
             { new: true }
           );
-          console.log("notification marked as read");
-          console.log(updatednotification);
+          //console.log("notification marked as read");
+          //console.log(updatednotification);
         }
         const groupid = data.fromUser.groupId;
-        console.log("group id is " + groupid);
+        //console.log("group id is " + groupid);
         // Perform the update with the correct syntax
         const updatedGroup = await Group.findByIdAndUpdate(
           groupid, // Pass only groupid, no object wrapping
@@ -237,7 +237,7 @@ module.exports = {
           },
           { new: true } // Return the updated document
         );
-        console.log("updated one " + updatedGroup); // Log the updated group
+        //console.log("updated one " + updatedGroup); // Log the updated group
         resolve({ updatednotification }); // Resolve the promise with the updated group
       } catch (error) {
         console.error("Error accepting group join:", error);
@@ -251,7 +251,7 @@ module.exports = {
       try {
         const groupid = data.fromUser.groupId;
         if (data.id) {
-          console.log("data is " + data.id);
+          //console.log("data is " + data.id);
           //if data is present update the notification as marked
           updatednotification = await Notification.findOneAndUpdate(
             {
@@ -266,7 +266,7 @@ module.exports = {
             { new: true }
           );
         }
-        console.log(updatednotification);
+        //console.log(updatednotification);
         // Perform the update with the correct syntax
         const updatedGroup = await Group.findByIdAndUpdate(
           groupid, // Pass only groupid, no object wrapping
@@ -276,7 +276,7 @@ module.exports = {
           { new: true } // Return the updated document
         );
 
-        console.log("updated one " + updatedGroup); // Log the updated group
+        //console.log("updated one " + updatedGroup); // Log the updated group
         resolve(updatednotification); // Resolve the promise with the updated group
       } catch (error) {
         console.error("Error accepting group join:", error);
@@ -307,7 +307,7 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       try {
         if (req.body) {
-          console.log(req.body);
+          //console.log(req.body);
           const { groupname, groupID, sender, text, timestamp } = req.body;
 
           const message = new GroupMessage({
@@ -319,7 +319,7 @@ module.exports = {
           });
 
           const savedMessage = await message.save();
-          console.log(savedMessage);
+          //console.log(savedMessage);
           if (savedMessage) {
             resolve(true);
           } else {
@@ -340,16 +340,16 @@ module.exports = {
           await GroupMessage.find({ groupID: id })
             .sort({ timestamp: 1 })
             .then((res) => {
-              console.log(res);
+              //console.log(res);
               resolve(res);
             })
             .catch((err) => {
-              console.log(err);
+              //console.log(err);
               reject(false);
             });
         }
       } catch (error) {
-        console.log(error);
+        //console.log(error);
         reject(false);
       }
     });
@@ -365,9 +365,9 @@ module.exports = {
         if (!group) {
           reject(false);
         }
-        console.log(group);
+        //console.log(group);
 
-        console.log(user);
+        //console.log(user);
 
         // Filter out the current user
         const filteredMembers = group.members;
@@ -382,12 +382,12 @@ module.exports = {
           );
         }
 
-        console.log(userDetails);
-        console.log(userDetails);
-        console.log("userfromfetch");
+        //console.log(userDetails);
+        //console.log(userDetails);
+        //console.log("userfromfetch");
         resolve(userDetails);
       } catch (err) {
-        console.log(err);
+        //console.log(err);
         reject(false);
       }
     });

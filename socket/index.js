@@ -149,19 +149,46 @@ async function saveMessage(message)
   
 }
 
+//function to get the active users that is the friend 
+
+async function fetchActiveuser(data)
+{
+  try {
+    console.log("called the function ")
+    let result=await axios.get(`http://localhost:3001/api/social-media/get-active-users/${data}`)
+    console.log(result.data)
+    return result.data
+  } catch (error) {
+    return error
+  }
+}
+
 let usersStreaming = new Set();
 const userNotificationMap = new Map();
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
   // Add new user
-  socket.on("new-user-add", (newUserId) => {
+  socket.on("new-user-add", async(newUserId) => {
     console.log("user id from server is "+newUserId)
     if (!activeusers.some((user) => user.userid === newUserId)) {
       activeusers.push({ userid: newUserId, socketId: socket.id });
       console.log("Active users:", activeusers);
     }
     io.emit("get-users", activeusers);
+    let activeMembers=[]
+     activeusers.forEach((u)=>{
+     activeMembers.push(u.userid)
+    })
+
+    //loop though the active users list'
+    await Promise.all(
+          activeusers.map(async (element) => {
+          let friends = await fetchActiveuser(element.userid);
+          let friendsOnline = friends.filter((u) => activeMembers.includes(u.userid));
+          io.to(element.socketId).emit("friends-list", friendsOnline);
+        })
+        );             
   });
 
   // Send message to a specific user
@@ -403,8 +430,24 @@ socket.on("group-message-send", async (message) => {
 socket.on('error', (err) => {
   //console.error('Socket error:', err.message);
 })
+
+//fetch the active friends
+socket.on("fetch-active-users",async(userId)=>{
+  console.log("fetch active users"+userId)
+  let activeMembers=[]
+  activeusers.forEach((u)=>{
+    activeMembers.push(u.userid)
+  })
+
+  let friends=await fetchActiveuser(userId)
+  let onlineFriends=friends.filter((u)=>activeMembers.includes(u.userid))
+  console.log(onlineFriends)
+  let user=activeusers.find((u)=>u.userid==userId)
+  let userSocketid=user.socketId;
+  io.to(userSocketid).emit("friends-list",onlineFriends) 
+})
   // Handle disconnect
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async() => {
     //console.log("Socket disconnected:", socket.id);
    
      //console.log("Socket disconnected:", socket.id);
@@ -431,5 +474,19 @@ socket.on('error', (err) => {
     //   ffmpegProcess = null;
     //   console.log("FFmpeg process stopped due to no users");
     // }
+
+        let activeMembers=[]
+     activeusers.forEach((u)=>{
+     activeMembers.push(u.userid)
+    })
+
+    //loop though the active users list'
+    await Promise.all(
+          activeusers.map(async (element) => {
+          let friends = await fetchActiveuser(element.userid);
+          let friendsOnline = friends.filter((u) => activeMembers.includes(u.userid));
+          io.to(element.socketId).emit("friends-list", friendsOnline);
+        })
+        );  
   });
 });

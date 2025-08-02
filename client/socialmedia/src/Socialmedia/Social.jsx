@@ -22,12 +22,12 @@ function Social() {
   const notificationData=useSelector(state=>state.Social.notificationData)
 
   useEffect(()=>{
-    console.log(notificationData)
+    //console.log(notificationData)
   },[notificationData])
 
  useEffect(() => {
   const handleGroupJoinRequest = ({ notificationid, groupId, user,username,groupname }) => {
-    console.log(notificationid, groupId, user);
+    //console.log(notificationid, groupId, user);
     dispatch(updateNotificationdata({
       id: notificationid,
       type: 'group-joining-request',
@@ -46,7 +46,7 @@ function Social() {
 
   socket.on("group-joining-request", handleGroupJoinRequest);
   socket.on("notification-update", ({id}) => {
-    console.log("Notification update received"+id);
+    //console.log("Notification update received"+id);
     dispatch(removeNotification(id))
     dispatch(updateShowNotification(false))
   });
@@ -61,7 +61,7 @@ useEffect(() => {
       navigator.serviceWorker
         .register('/firebase-messaging-sw.js')
         .then((registration) => {
-          console.log('Service Worker registered:', registration);
+          //console.log('Service Worker registered:', registration);
         })
         .catch((error) => {
           console.error('Service Worker registration failed:', error);
@@ -73,7 +73,7 @@ useEffect(() => {
     // ✅ Handle foreground messages
     const unsubscribe = onMessage(messaging, (payload) => {
       alert('Received foreground notification!');
-      console.log('[Foreground] Notification received:', payload);
+      //console.log('[Foreground] Notification received:', payload);
 
       // ✅ Use `payload.data` directly (not `payload.notification.data`)
       const data = payload.data;
@@ -122,7 +122,7 @@ useEffect(() => {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log("Checking URL for token...");
+    //console.log("Checking URL for token...");
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
@@ -133,15 +133,15 @@ useEffect(() => {
       localStorage.setItem("token", token);
       localStorage.setItem("userId", id);
       setUserId(id); // update the state
-      console.log("Token stored:", token);
+      //console.log("Token stored:", token);
 
       window.history.replaceState({}, document.title, window.location.pathname);
     } else {
-      console.log("No token in URL");
+      //console.log("No token in URL");
     }
   }, []);
   useEffect(()=>{
-    console.log("user id from redux is "+userID)
+    //console.log("user id from redux is "+userID)
   },[userID])
   useEffect(()=>{
     if(isLive)
@@ -163,7 +163,7 @@ useEffect(() => {
 useEffect(() => { //if the browser refreshes socket got reconnected--------
   const wasDisconnected = sessionStorage.getItem("was_disconnected");
   if (wasDisconnected === "true") {
-    console.log("Socket was disconnected due to browser refresh.");
+    //console.log("Socket was disconnected due to browser refresh.");
 
     sessionStorage.removeItem("was_disconnected");
     socket.connect();
@@ -173,13 +173,13 @@ useEffect(() => { //if the browser refreshes socket got reconnected--------
 
 
   useEffect(() => {
-    console.log("Called")
+    //console.log("Called")
     
   // if (!userId || !socket || !socialRef.current) return;
   //  socialRef.current=true
   // const handleConnect = () => {
   //   socket.emit("new-user-add", userId);
-  //   console.log("Sent new-user-add for:", userId);
+  //   //console.log("Sent new-user-add for:", userId);
   // };
   // socket.connect()
   // socket.on("connect", handleConnect);
@@ -189,10 +189,10 @@ useEffect(() => { //if the browser refreshes socket got reconnected--------
     socket.emit("new-user-add", userId);
   }
   socket.on("live-stream-friend", (data) => {
-    console.log("live stream friend is called")
+    //console.log("live stream friend is called")
     const{notification_id,id,name}=data
-    console.log("notification id is "+notification_id)
-    console.log("name is =="+name)
+    //console.log("notification id is "+notification_id)
+    //console.log("name is =="+name)
     toast.success(`${name} Started Live`)
     dispatch(updateLivename({id:id,name:name}))
     //dispatch the notificationdata//
@@ -206,7 +206,7 @@ useEffect(() => { //if the browser refreshes socket got reconnected--------
     }))
     alert("live started")
     dispatch(updateLiveStatus(true))
-    console.log("yeah live started");
+    //console.log("yeah live started");
   });
   socket.on("disconnect", (reason) => {
   console.warn("Socket disconnected:", reason);
@@ -214,7 +214,7 @@ useEffect(() => { //if the browser refreshes socket got reconnected--------
 });
 
 socket.on("reconnect", (attempt) => {
-  console.log("Reconnected after", attempt, "attempts");
+  //console.log("Reconnected after", attempt, "attempts");
   // Optionally: re-authenticate or re-subscribe
 });
   // return () => {

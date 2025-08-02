@@ -1,11 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ListGroup, Image } from 'react-bootstrap';
 import { _get } from '../../axios/Axios';
 import { useDispatch } from 'react-redux';
 import { removeNotification } from '../../../Redux/SocialCompent';
+import socket from '../../Socket/Socket';
 
 function SocialmediaRCP() {
+  const[activeusers,setActiveusers]=useState([])
   const dispatch=useDispatch()
+  const userId=localStorage.getItem("userId")
+
+  //fetch the active users 
+ useEffect(()=>{
+  console.log(userId)
+  socket.emit("fetch-active-users",userId)
+  socket.on("friends-list",(friendOnline)=>{
+    console.log("this is before fetchactive users")
+    console.log(friendOnline)
+    setActiveusers(friendOnline)
+  })
+   return () => {
+    socket.off("friends-list");
+  };
+ },[userId])
+
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -31,26 +49,20 @@ function SocialmediaRCP() {
     fetchNotifications();
   }, []);
 
-  const activeFriends = [
-    { name: "Alice", image: "/images/alice.jpg" },
-    { name: "Bob", image: "/images/bob.jpg" },
-    { name: "Charlie", image: "/images/charlie.jpg" }
-  ];
+  // const activeFriends = [
+  //   { name: "Alice", image: "/images/alice.jpg" },
+  //   { name: "Bob", image: "/images/bob.jpg" },
+  //   { name: "Charlie", image: "/images/charlie.jpg" }
+  // ];
 
   return (
     <div style={{ width: '250px', padding: '10px' }}>
-      {/* Latest Activity */}
-      <h5 className="mb-3">Latest Activity</h5>
-      <ListGroup variant="flush" className="mb-4">
-        <ListGroup.Item>✅ You liked John’s post</ListGroup.Item>
-        <ListGroup.Item>📝 You commented on Sarah’s photo</ListGroup.Item>
-        <ListGroup.Item>📸 You uploaded a new picture</ListGroup.Item>
-      </ListGroup>
+
 
       {/* Active Friends */}
       <h5 className="mb-3">Active Friends</h5>
       <ListGroup variant="flush">
-        {activeFriends.map((friend, index) => (
+        {activeusers.map((friend, index) => (
           <ListGroup.Item key={index} className="d-flex align-items-center">
             <div style={{ position: 'relative', marginRight: '10px' }}>
               <Image

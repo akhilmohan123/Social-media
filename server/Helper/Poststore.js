@@ -4,7 +4,7 @@ const usermodel = require("../model/usermodel")
 module.exports={
       addpost:(content,image,name)=>{
         return new Promise(async(resolve,reject)=>{
-            console.log(name+"ss iss")
+            //console.log(name+"ss iss")
             let id=name.userId    
             const user=await usermodel.findOne({Email:id})
             const username=user.Fname;
@@ -52,14 +52,14 @@ module.exports={
             Location:location
            })
            postmodel.save().then((res)=>{
-            console.log("Respons is ======",res)
+            //console.log("Respons is ======",res)
             resolve(res)
            }).catch((err)=>{
-            console.log(err)
+            //console.log(err)
             reject(err)
            })
           } catch (error) {
-            console.log(error)
+            //console.log(error)
             reject(error)
           }
         })

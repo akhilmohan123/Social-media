@@ -28,8 +28,8 @@ module.exports={
             friend_details.error=true
         })
         await Friend.find({Userid:id}).then((res)=>{
-            console.log(res)
-             console.log(res.length)
+            //console.log(res)
+             //console.log(res.length)
             followers=res.length;
            
             friend_details.followers=followers;
@@ -43,7 +43,7 @@ module.exports={
         return new Promise(async(resolve,reject)=>{
             try {
             await Friend.find({Userid:id}).then((res)=>{
-            console.log(res)
+            //console.log(res)
             if(res)
             {
                 res.forEach((val)=>{
@@ -65,10 +65,10 @@ module.exports={
         let name="";
         return new Promise(async(resolve,reject)=>{
             try {
-                console.log("called helper function")
+                //console.log("called helper function")
                 await usermodel.findOne({_id:id}).then((res)=>{
-                    //console.log("user found"+res)
-                    //console.log(res)
+                    ////console.log("user found"+res)
+                    ////console.log(res)
                     if(res.Fname='' || res.Fname!=null || res.Fname!=undefined)
                     {
                         name+=res.Fname;
@@ -77,17 +77,17 @@ module.exports={
                     {
                         name+=res.Lname;
                     }
-                    //console.log("name is "+name)
+                    ////console.log("name is "+name)
                     resolve(name)
 
 
                 }).catch(err=>{
-                    console.log("there is an error")
-                    console.log(err)
+                    //console.log("there is an error")
+                    //console.log(err)
                     reject(err)
                 })
             } catch (error) {
-                console.log(error)
+                //console.log(error)
                 reject(error)
 
             } 

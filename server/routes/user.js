@@ -17,11 +17,12 @@ const { addOtp, verifyOtp, resetPassword, Login, Signup, LoginVerify } = require
 const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, getGroupname, Acceptgroupjoin,Rejectgroupjoin, groupStatus, saveGroupMessage, fetchGroupmessage, fetchGroupmembers } = require('../Helper/messagecontroller');
 const { saveFcm, getFcm, saveNotification, getNotification, markNotificationAsSeen, markNotificationAsRead } = require('../Helper/Notificationhelper');
 const Getuser = require('../Helper/Getuser');
+const { fetchActiveusers } = require('../Helper/Chatcontroller');
  require('dotenv').config()
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
    const token = tokennew.split(' ')[1]
-  console.log(token)
+  ////console.log(token)
   if (!token) {
       return res.status(401).send('Access denied. No token provided.');
   }
@@ -36,10 +37,10 @@ const Getuser = require('../Helper/Getuser');
 };
 
 router.get('/',(req,res)=>{
-    console.log("This is req body")
+    ////console.log("This is req body")
 })
 router.post('/signup', upload.single('file'), async (req, res) => {
-  console.log("hitted signup")
+  ////console.log("hitted signup")
   if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
   }
@@ -67,7 +68,7 @@ router.post('/signup', upload.single('file'), async (req, res) => {
 });
 
 router.post('/login',async(req,res)=>{
-    console.log("hitted the login page")
+    ////console.log("hitted the login page")
     const{email,password}=req.body;
     
     await LoginVerify(email,password).then(result=>{
@@ -112,12 +113,12 @@ router.post("/post",upload.single("file"),(req,res)=>{
   })
 })
   } catch (error) {
-    console.log(error)
+    ////console.log(error)
   }
 
 })
 router.get("/profile",(req,res)=>{
-  console.log("profile page called")
+  //console.log("profile page called")
  getuserid(req.headers).then(async(response)=>{
 
   let mail=response.userId;
@@ -140,7 +141,7 @@ router.get("/profile",(req,res)=>{
 router.get("/friends",async(req,res)=>{
 
   const {authorization}=req.headers
-  console.log(authorization)
+  //console.log(authorization)
   await getpeople(authorization).then((response)=>{
   if(response){
     
@@ -152,7 +153,7 @@ router.get("/friends",async(req,res)=>{
 })
 router.post("/add-friend/:key",async(req,res)=>{
   let id=req.params.key
-  console.log(id)
+  //console.log(id)
   getuserid(req.headers).then((rese)=>{
     addfriend(req.params.key,rese.userId).then((result)=>{
       if(result){
@@ -205,10 +206,10 @@ router.post("/add-like/:id",(req,res)=>{
   usermodel.findOne({Email:result.userId}).then(data=>{
     let id=data._id;
     addlike(likes,postid).then(result=>{
-      console.log(result)
+      //console.log(result)
       resulted.valid=result
       resulted.id=id
-      console.log(resulted)
+      //console.log(resulted)
       if(result){
         res.status(200).json(resulted)
       }else{
@@ -228,7 +229,7 @@ router.post(`/remove-like/:id`,(req,res)=>{
       removelike(likes,postid).then((results)=>{
         resulted.valid=results
         resulted.id=id
-        console.log(resulted)
+        //console.log(resulted)
         if(results){
           res.status(200).json(resulted)
         }else{
@@ -260,7 +261,7 @@ router.get(`/get-friend/:id`,async(req,res)=>{
   }   
 })
 router.get('/user/search',async (req,res)=>{
-  console.log("search")
+  //console.log("search")
   const query = req.query.query;
   try {
     const results = await usermodel.find({
@@ -270,7 +271,7 @@ router.get('/user/search',async (req,res)=>{
         { Email: { $regex: query, $options: 'i' } }
       ]
     });
- console.log(results)
+ //console.log(results)
     res.status(200).json(results);
   } catch (error) {
     console.error('Error fetching search results:', error);
@@ -289,7 +290,7 @@ router.get("/edit-profile",(req,res)=>{
 router.post("/edit-profile",upload.single("file"),(req,res)=>{
  const{Fname,Lname}=req.body
 let Image=req.file
- console.log(Image)
+ //console.log(Image)
   getuserid(req.headers).then(result=>{
     posteditdata(result.userId,Fname,Lname,Image).then(result=>{
       res.status(200).json(result)
@@ -317,18 +318,18 @@ router.delete("/delete-post/:id",async(req,res)=>{
   }
 })
 router.get("/google/authenticate",googleAuthMiddleWare.authenticate(),(req,res)=>{
-  console.log("Called")
+  //console.log("Called")
 })
 router.get("/auth/google/callback",googleAuthMiddleWare.callback(),(req,res)=>{
-  console.log(req.user)
+  //console.log(req.user)
    let userId=req.user._id
    const token = jwt.sign({ userId: userId },process.env.JWT_SECRETKEY , { expiresIn: '1h' });
-   console.log(token)
-  // console.log(token)
+   //console.log(token)
+  // //console.log(token)
   res.redirect(`http://localhost:5173/social?token=${token}&id=${userId}`);
 })
 router.post("/auth/send-reset-code",async(req,res)=>{
-  console.log("get otp called")
+  //console.log("get otp called")
  await addOtp(req.body.email).then((result)=>{
     if(res){
      res.status(200).json(result)
@@ -336,12 +337,12 @@ router.post("/auth/send-reset-code",async(req,res)=>{
       res.status(401).json("Otp was not Send")
     }
   }).catch(err=>{
-    console.log(err)
+    //console.log(err)
     res.status(401).json(err)
   })
 })
 router.post("/auth/verify-reset-code",async(req,res)=>{
-  console.log("verify otp was called")
+  //console.log("verify otp was called")
   const otp=req.body.code
   const email=req.body.email
   await verifyOtp(otp,email).then((result)=>{
@@ -351,7 +352,7 @@ router.post("/auth/verify-reset-code",async(req,res)=>{
   })
 })
 router.post("/auth/reset-password",async(req,res)=>{
-  console.log("reset password api called")
+  //console.log("reset password api called")
   let password=req.body.newPassword
   const hashedPassword = await bcrypt.hash(password, 8);
   let email=req.body.email
@@ -372,23 +373,23 @@ router.post("/social/upload",upload.single("file"),async(req,res)=>{
     let email=userresult.userId;
     let user=await usermodel.findOne({Email:email})
     let id=user._id
-  console.log(req.body)
-  console.log(req.file)
+  //console.log(req.body)
+  //console.log(req.file)
   let file=req.file;
   let caption=req.body.caption
   let location=req.body.location
   await uploadpost(id,file,caption,location).then((result)=>{
-    console.log(result)
+    //console.log(result)
     if(result){
       res.status(200).json(result)
     }
   }).catch(err=>{
-    console.log(err)
+    //console.log(err)
     res.status(400).json(err)
   })
 }
 catch(err){
-  console.log(err)
+  //console.log(err)
   res.status(400).json(err)
 }
 }
@@ -402,18 +403,18 @@ router.get("/api/get-friends/:id",async(req,res)=>{
     
     const id=req.params.id
     await getAllFriends(id).then((result)=>{
-      console.log(result)
+      //console.log(result)
       if(result)
       {
         res.status(200).json(result)
       }
     }).catch(err=>{
-      console.log(err)
+      //console.log(err)
       res.status(400).json(err)
     })
   }catch(err)
   {
-    console.log(err)
+    //console.log(err)
     res.status(400).json(err)
   }
 })
@@ -421,13 +422,13 @@ router.get("/api/get-friends/:id",async(req,res)=>{
 //router to get username based on the id
 router.get("/api/get-friendname/:id",async(req,res)=>{
   try {
-    console.log("called get friendname api=========")
+    //console.log("called get friendname api=========")
     let userid=req.params.id
-    //console.log(userid)
+    ////console.log(userid)
     await getFriendName(userid).then((response)=>{
       if(response)
       {
-        console.log(response)
+        //console.log(response)
         return res.status(200).json(response)
       }
     }).catch((err)=>{
@@ -448,24 +449,24 @@ router.post("/group/create",upload.single("image"),async(req,res)=>{
       type:req.body.type,
       image:req.file ? req.file.path : null
     }
-    console.log(groupData)
+    //console.log(groupData)
     await createGroup(header,groupData).then((result)=>{
       if(result)
       {
-        console.log("Group created successfully",result._id)
+        //console.log("Group created successfully",result._id)
         res.status(200).json(result._id);
 
       }else{
         res.status(400).json({message:"Failed to create group"})
       }
     }).catch((error)=>{
-      console.log("Error in creating group",error)
+      //console.log("Error in creating group",error)
       res.status(400).json({message:"Error in creating group",error})
     })
     
   } catch (error) {
     res.status(400).json({message:"Error while creating group",error})
-    console.log("Error while creating group",error);
+    //console.log("Error while creating group",error);
   }
 })
 
@@ -473,27 +474,27 @@ router.post("/group/create",upload.single("image"),async(req,res)=>{
 router.get('/api/socialmedia/groups/user-groups',async(req,res)=>{
   try
   {
-    console.log("Fetching user groups")
+    //console.log("Fetching user groups")
     await getUserGroups(req).then((result)=>{
       if(result)
       {
-        console.log("user groups fetched successfully "+result)
+        //console.log("user groups fetched successfully "+result)
         res.status(200).json(result); 
       }
     }).catch((error)=>{
-      console.log("Error in fetching user groups ",error)
+      //console.log("Error in fetching user groups ",error)
       res.status(400).json({message:"Error in fetching user groups",error})
     })
   }catch(error)
   {
-    console.log("Error in fetching user groups",error)
+    //console.log("Error in fetching user groups",error)
     res.status(400).json({message:"Error in fetching user groups",error})
   }
 })
 
 //fetch all groups that is users not part of
 router.get('/api/socialmedia/groups/all-groups',async(req,res)=>{
-  console.log("inside all groups api")
+  //console.log("inside all groups api")
   try {
     await getAllgroups(req).then((result)=>{
       if(result)
@@ -502,7 +503,7 @@ router.get('/api/socialmedia/groups/all-groups',async(req,res)=>{
       }
     })
   } catch (error) {
-    console.log("Error in fetching all groups"+error)
+    //console.log("Error in fetching all groups"+error)
     res.status(400).json({message:"Error in fetching all groups",error})
   }
 })
@@ -512,13 +513,13 @@ router.post('/api/socialmedia/groups/join',async(req,res)=>{
   try {
     
     await joinGroup(req).then((result)=>{
-      console.log(result)
+      //console.log(result)
       if(result)
       {
         res.status(200).json({message:"Successfully joined the group",result});
       }
     }).catch((error)=>{
-      console.log(error)
+      //console.log(error)
       res.status(400).json({message:"Error in joining the group",error})
     })
   } catch (error) {
@@ -532,12 +533,12 @@ router.post('/api/socialmedia/groups/request-join',async(req,res)=>{
     await requestJoinGroup(req).then((result)=>{
       if(result)
       {
-        console.log("join request sent successfully",result)
+        //console.log("join request sent successfully",result)
         res.status(200).json({message:"join request sent successfully",result})
       }
     })
   } catch (error) {
-    console.log("error in handling join request",error)
+    //console.log("error in handling join request",error)
     res.status(400).json({message:"Error in handling join request",error})
   }
 })
@@ -547,10 +548,10 @@ router.get('/api/get-group-name/:id',async(req,res)=>{
   const id=req.params.id
   try {
     await getGroupname(id).then((response)=>{
-      console.log(response)
+      //console.log(response)
       if(response)
       {
-        console.log(response)
+        //console.log(response)
         return res.status(200).json(response)
       }
     })
@@ -563,7 +564,7 @@ router.get('/api/get-group-name/:id',async(req,res)=>{
 
 router.post("/api/socialmedia/groups/join-accept",async(req,res)=>{
   try {
-    console.log("handle join request is called")
+    //console.log("handle join request is called")
     await Acceptgroupjoin(req.body).then(result=>{
       if(result)
       {
@@ -577,7 +578,7 @@ router.post("/api/socialmedia/groups/join-accept",async(req,res)=>{
 
 router.post("/api/socialmedia/groups/join-reject",async(req,res)=>{
   try {
-    console.log("handle join request is called")
+    //console.log("handle join request is called")
     await Rejectgroupjoin(req.body).then(result=>{
       if(result)
       {
@@ -591,10 +592,10 @@ router.post("/api/socialmedia/groups/join-reject",async(req,res)=>{
 
 //router for saving the fcm token 
 router.post("/api/save-token",async(req,res)=>{
-  console.log("Called save fcm token")
+  //console.log("Called save fcm token")
   try {
     let user=await getuserid(req.headers)
-    console.log(user)
+    //console.log(user)
     if(user)
     {
       await saveFcm(req.body,user.userId).then((result)=>{
@@ -607,7 +608,7 @@ router.post("/api/save-token",async(req,res)=>{
   } catch (error) {
     
   }
-  console.log(req.body)
+  //console.log(req.body)
 })
 
 //router to get the fcm token 
@@ -628,18 +629,18 @@ router.get("/api/get-fcm-token/:id",async(req,res)=>{
 
 //router to post the notification
 router.post("/api/post-notification",async(req,res)=>{
-  console.log("Post notification api called ")
+  //console.log("Post notification api called ")
   try {
-    console.log(req.body)
+    //console.log(req.body)
     await saveNotification(req.body).then((result)=>{
       if(result)
       {
-        console.log("Notification saved successfully")
+        //console.log("Notification saved successfully")
         return res.status(200).json(true);
       }
     })
   } catch (error) {
-    console.log("Error saving notification:", error);
+    //console.log("Error saving notification:", error);
     return res.status(400).json(false);
   }
 })
@@ -651,7 +652,7 @@ router.get("/api/socialmedia/get-notifications",async(req,res)=>{
     if(user)
     {
       await getNotification(user.userId).then((result)=>{
-        console.log(result)
+        //console.log(result)
         if(result){
           return res.status(200).json(result);
         }
@@ -665,14 +666,14 @@ router.get("/api/socialmedia/get-notifications",async(req,res)=>{
 //router to post the notification as read
 router.post("/api/socialmedia/mark-notification-as-read",async(req,res)=>{
   try {
-    console.log("mark notification as read called");
+    //console.log("mark notification as read called");
    let user=await getuserid(req.headers);
    if(user)
    {
     await markNotificationAsRead(req.body).then((result)=>{
       if(result)
       {
-        console.log("Notification marked as read successfully");
+        //console.log("Notification marked as read successfully");
         return res.status(200).json(true);
       }
     })
@@ -685,16 +686,16 @@ router.post("/api/socialmedia/mark-notification-as-read",async(req,res)=>{
 //router to mark the notification as read
 router.post("/api/socialmedia/mark-notification-as-seen",async(req,res)=>{
   try {
-    console.log("mark notification as seen called");
+    //console.log("mark notification as seen called");
     await markNotificationAsSeen(req.body).then((result)=>{
       if(result)
       {
-        console.log("Notification marked as seen successfully");
+        //console.log("Notification marked as seen successfully");
         return res.status(200).json(result);
       }
     })
   } catch (error) {
-    console.log("Error marking notification as seen:", error);
+    //console.log("Error marking notification as seen:", error);
     return res.status(400).json(false);
   }
 })
@@ -711,7 +712,7 @@ router.post("/api/socialmedia/mark-notification-as-seen",async(req,res)=>{
 
     }catch(error)
     {
-      console.log("Error getting group status:",error);
+      //console.log("Error getting group status:",error);
       res.status(400).json({message:"Error getting group status",error})
     }
 })
@@ -719,7 +720,7 @@ router.post("/api/socialmedia/mark-notification-as-seen",async(req,res)=>{
 //router to get the username
 
 router.get("/api/socialmedia/get-username",async(req,res)=>{
-  console.log("get name ")
+  //console.log("get name ")
   await getName(req).then((result)=>{
     res.status(200).json({result})
   }).catch((error)=>{
@@ -731,7 +732,7 @@ router.get("/api/socialmedia/get-username",async(req,res)=>{
 
 router.post("/api/socialmedia/group-message",async(req,res)=>{
   try {
-    console.log("called the save message")
+    //console.log("called the save message")
       await saveGroupMessage(req).then((result)=>{
    res.status(200).json({result})
   })
@@ -745,7 +746,7 @@ router.post("/api/socialmedia/group-message",async(req,res)=>{
 router.get("/api/social-media/fetch-message/:id",async(req,res)=>{
   try {
     let id=req.params.id
-    console.log("group id is ===="+id)
+    //console.log("group id is ===="+id)
       let message=await fetchGroupmessage(id)
       res.status(200).json(message)
   } catch (error) {
@@ -756,21 +757,40 @@ router.get("/api/social-media/fetch-message/:id",async(req,res)=>{
 //router to fetch members
 router.get("/api/socialmedia/fetch-members/:id",async(req,res)=>{
   try {
-    console.log("fetch members called ")
+    //console.log("fetch members called ")
     let id=req.params.id
     let user=await getuserid(req.headers)
-    console.log(user)
+    //console.log(user)
     let userid=user.userId
-    console.log("user id from fetchmembers is ==="+userid)
+    //console.log("user id from fetchmembers is ==="+userid)
     let userobj={user:userid,groupid:id}
-    console.log("id from fetch members is ===="+id)
+    //console.log("id from fetch members is ===="+id)
     let response=await fetchGroupmembers(userobj)
-    console.log("response is "+response)
+    //console.log("response is "+response)
     res.status(200).json(response)
   } catch (error) {
-    console.log(error)
+    //console.log(error)
     res.status(400).json(error)
   }
+})
+
+//router to fetch the active users 
+router.get("/api/social-media/get-active-users/:id",async(req,res)=>{
+  console.clear();
+  let id=req.params.id
+  console.log("user from fetch active is "+id)
+  console.log("fetch active users called")
+  await fetchActiveusers(id).then((result)=>{
+    if(result)
+    {
+      res.status(200).json(result)
+    }
+  }).catch((err)=>{
+    ////console.log(err)
+    res.status(400).json(err)
+  })
+
+
 })
 
 module.exports=router;

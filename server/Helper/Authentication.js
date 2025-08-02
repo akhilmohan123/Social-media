@@ -13,11 +13,11 @@ const googleAuthMiddleWare = {
           callbackURL: "http://localhost:3001/auth/google/callback"
         },
         async(accessToken, refreshToken, profile, done) => {
-          console.log(profile.emails[0].value)
-          console.log(profile.photos[0].value)
+          //console.log(profile.emails[0].value)
+          //console.log(profile.photos[0].value)
           const email=profile.emails[0].value;
           let existingUser = await usermodel.findOne({ Email:email });
-           console.log(existingUser)
+           //console.log(existingUser)
               if(existingUser){
                 return done(null,existingUser)
               }else{

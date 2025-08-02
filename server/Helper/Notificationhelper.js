@@ -17,7 +17,7 @@ module.exports={
         { new: true, upsert: true } // 👈 this avoids duplicate errors
       );
 
-      console.log("✅ FCM token saved or updated:", result);
+      //console.log("✅ FCM token saved or updated:", result);
       resolve(true);
     } catch (error) {
       console.error("❌ Error saving/updating FCM token:", error);
@@ -34,30 +34,30 @@ module.exports={
             {
                token=fcmvalue[0].Token;
             }
-            console.log(fcmvalue)
-            console.log("Token from the fcm is ===="+token)
+            //console.log(fcmvalue)
+            //console.log("Token from the fcm is ===="+token)
             resolve(token)
         } catch (error) {
-          console.log("error from the fcm is ------"+error)
+          //console.log("error from the fcm is ------"+error)
           reject(error);
         }
       })
     },
     saveNotification: async (data) => {
   return new Promise(async (resolve, reject) => {
-    console.log("called the save notification function ")
+    //console.log("called the save notification function ")
     try {
-      console.log(data);
+      //console.log(data);
 
       // Check if notification with the same notificationid already exists
       const existingNotification = await Notification.findOne({ notificationid: data.notification_id });
       if (existingNotification) {
-        console.log("Notification with this ID already exists. Skipping save.");
+        //console.log("Notification with this ID already exists. Skipping save.");
         return resolve(false); // or resolve("duplicate") if you want to distinguish the case
       }
 
       if (data.type === "live-stream") {
-        console.log("Notification type is live-stream");
+        //console.log("Notification type is live-stream");
         let { notification_id, user_id, user_name, type } = data;
         let notificationData = new Notification({
           fromUser: {
@@ -71,7 +71,7 @@ module.exports={
           seen: false
         });
         await notificationData.save();
-        console.log("Notification saved successfully");
+        //console.log("Notification saved successfully");
         resolve(true);
       } else if (data.type === "group-joining-request") {
         let { notification_id, user_id, user_name, type, groupId, groupname } = data;
@@ -91,12 +91,12 @@ module.exports={
           groupname: groupname
         });
         await notificationData.save();
-        console.log("Notification saved successfully");
+        //console.log("Notification saved successfully");
         resolve(true);
       }
 
     } catch (error) {
-      console.log("Error saving notification:", error);
+      //console.log("Error saving notification:", error);
       reject(false);
     }
   });
@@ -104,24 +104,24 @@ module.exports={
     getNotification:async(userid)=>{
       return new Promise(async(resolve,reject)=>{
         try {
-         console.log("user id from the get notifications is "+userid)
+         //console.log("user id from the get notifications is "+userid)
          let friendarray=await Friend.find({Userid:userid});
-         console.log("friend array is "+friendarray)
+         //console.log("friend array is "+friendarray)
          if(friendarray && friendarray.length>0)
          {
           let friends=friendarray[0].Friendsid;
-          console.log("friends from the friend array is "+friends)
+          //console.log("friends from the friend array is "+friends)
           let notifications=await Notification.find({
             "fromUser.id":{$in:friends}
           })
-          console.log("notifications from the database is "+notifications);
+          //console.log("notifications from the database is "+notifications);
           if(notifications)
           {
             resolve(notifications);
           }
          }
         } catch (error) {
-          console.log("Error getting notifications:", error);
+          //console.log("Error getting notifications:", error);
           reject(false);
         }
       })
@@ -134,22 +134,22 @@ module.exports={
             { status: "read" },
             { new: true }
           );
-          console.log("Notification marked as read:", result);
+          //console.log("Notification marked as read:", result);
           resolve(true);
         }catch(error){
-          console.log("Error marking notification as read:", error);
+          //console.log("Error marking notification as read:", error);
           reject(false);
         }
       })
     
     },
     markNotificationAsSeen:async(notification)=>{
-      console.log(notification)
-      console.log("Matching with:");
-console.log("fromUser.id:", notification.userId);
-console.log("type:", notification.type);
-      console.log(notification)
-      console.log(await Notification.find({}))
+      //console.log(notification)
+      //console.log("Matching with:");
+//console.log("fromUser.id:", notification.userId);
+//console.log("type:", notification.type);
+      //console.log(notification)
+      //console.log(await Notification.find({}))
       return new Promise (async(resolve,reject)=>{
         try{
           let result=await Notification.findOneAndUpdate({
@@ -162,13 +162,13 @@ console.log("type:", notification.type);
           },{
             new:true  
           })
-          console.log(result)
+          //console.log(result)
           if(result){
-            console.log("Notification marked as seen:", result);
+            //console.log("Notification marked as seen:", result);
             resolve(result);
           }
         }catch(error){
-          console.log("Error marking notification as seen:", error);  
+          //console.log("Error marking notification as seen:", error);  
           reject(false);
         }
       })
