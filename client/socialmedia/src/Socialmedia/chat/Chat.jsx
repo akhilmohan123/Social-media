@@ -13,9 +13,10 @@ function Chat() {
   const[sendmessage,setsendmessage]=useState("")
   const[recievemessage,Setrecievemessage]=useState(null)
   const token=localStorage.getItem("token")
-  console.log(chats)
+  const userdata=localStorage.getItem("userId")
   const match=useParams('/chat-friend/:id')
-  const data={senderId:user,recieverId:match.id}
+  let recieverId=match.id
+  const data={senderId:userdata,recieverId:recieverId}
 
 
 
@@ -29,28 +30,42 @@ useEffect(()=>{
   }
   callfriend()
 },[user,match.id])
-  useEffect(()=>{
-    if(!user) return
 
-    socket.connect()
-    socket.emit("new-user-add",user)
-    socket.on('get-users',(users)=>{
-    setonlineusers(users)
-    })
+  //  window.addEventListener("load", () => {
+  //     socket.connect()
+  //     socket.emit("new-user-add",user)
+  //   });
+  // useEffect(()=>{
+  //   if(!user) return
+
+  //   socket.connect()
+  //   socket.emit("new-user-add",user)
+  //   socket.on('get-users',(users)=>{
+  //     console.log("new users added ")
+  //     console.log(users)
+  //   setonlineusers(users)
+  //   })
     
-  },[user])
-  useEffect(()=>{
-    if(sendmessage!=null){
-      socket.emit('send-message',sendmessage)
-    }
-  },[sendmessage])
-  useEffect(()=>{
+  // },[user])
+  // useEffect(()=>{
+  //   if(sendmessage!=null){
+  //     socket.emit('send-message',sendmessage)
+  //   }
+  // },[sendmessage])
+  /*useEffect(()=>{
     socket.on("recieve-message",(data)=>{
       Setrecievemessage(data)
     })
+    console.log("user data is ============================="+userdata)
   },[])
-  
-  console.log(onlineusers)
+  */
+//  useEffect(()=>{
+//   if(recieverId)
+//   {
+//     console.log("emiiting the user id "+recieverId)
+//     socket.emit("user-online",recieverId)
+//   }
+//  },[recieverId])
   useEffect(()=>{
     const getChats=async ()=>{
       try {
@@ -74,9 +89,9 @@ useEffect(()=>{
   return (
   
       <div className='Chat-container'>
-      <div className='Right-side-chat'>
-        <Chatbox chat={currentchat} user={user} setsendmessage={setsendmessage} recievemessage={recievemessage}/>
-      </div>
+           <div className='Right-side-chat'>
+              <Chatbox chat={currentchat}  setsendmessage={setsendmessage} recievemessage={recievemessage} data={data}/>
+           </div>
       </div>
       
       

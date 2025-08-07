@@ -160,68 +160,89 @@ useEffect(() => {
   window.addEventListener("beforeunload", handleBeforeUnload);
   return () => window.removeEventListener("beforeunload", handleBeforeUnload);
 }, []);
-useEffect(() => { //if the browser refreshes socket got reconnected--------
-  const wasDisconnected = sessionStorage.getItem("was_disconnected");
-  if (wasDisconnected === "true") {
-    //console.log("Socket was disconnected due to browser refresh.");
+// useEffect(() => { //if the browser refreshes socket got reconnected--------
+//   const wasDisconnected = sessionStorage.getItem("was_disconnected");
+//   if (wasDisconnected === "true") {
+//     //console.log("Socket was disconnected due to browser refresh.");
 
-    sessionStorage.removeItem("was_disconnected");
-    socket.connect();
-    socket.emit("new-user-add", userId)
-  }
-}, []);
+//     sessionStorage.removeItem("was_disconnected");
+//     socket.connect();
+//     socket.emit("new-user-add", userId)
+//   }
+// }, []);
 
 
   useEffect(() => {
-    //console.log("Called")
-    
-  // if (!userId || !socket || !socialRef.current) return;
-  //  socialRef.current=true
-  // const handleConnect = () => {
-  //   socket.emit("new-user-add", userId);
-  //   //console.log("Sent new-user-add for:", userId);
-  // };
-  // socket.connect()
-  // socket.on("connect", handleConnect);
-  if(!socialRef.current && userId)
-  {
-    socialRef.current=true
-    socket.emit("new-user-add", userId);
-  }
-  socket.on("live-stream-friend", (data) => {
-    //console.log("live stream friend is called")
-    const{notification_id,id,name}=data
-    //console.log("notification id is "+notification_id)
-    //console.log("name is =="+name)
-    toast.success(`${name} Started Live`)
-    dispatch(updateLivename({id:id,name:name}))
-    //dispatch the notificationdata//
-    dispatch(updateNotificationdata({
-      id:notification_id,
-      type:'live-stream',
-      fromUser:{id:id,name:name},
-      status:'pending',
-      read:false,
-      timestamp:new Date().toISOString()
-    }))
-    alert("live started")
-    dispatch(updateLiveStatus(true))
-    //console.log("yeah live started");
-  });
-  socket.on("disconnect", (reason) => {
-  console.warn("Socket disconnected:", reason);
-  // Optionally: show "Reconnecting..." UI
-});
+  // if (!userId || socialRef.current) return;
 
-socket.on("reconnect", (attempt) => {
-  //console.log("Reconnected after", attempt, "attempts");
-  // Optionally: re-authenticate or re-subscribe
-});
-  // return () => {
-  //   socket.off("connect", handleConnect);
-  //   socket.off("live-stream-friend");
-  // };
-}, [userId]);
+  // socialRef.current = true;
+
+  // if (!socket.connected) {
+  //   socket.connect();
+  // }
+
+  // socket.emit("new-user-add", userId);
+  // console.log("user id is "+userId)
+  // console.log("🔌 User added:", userId);
+
+  const handleGroupJoinRequest = ({ notificationid, groupId, user, username, groupname }) => {
+    dispatch(updateNotificationdata({
+      id: notificationid,
+      type: 'group-joining-request',
+      fromUser: { id: user, name: username, groupId, groupname },
+      status: 'pending',
+      read: false,
+      timestamp: new Date().toISOString(),
+    }));
+    dispatch(updateShowNotification(true));
+  };
+
+  const handleNotificationUpdate = ({ id }) => {
+    dispatch(removeNotification(id));
+    dispatch(updateShowNotification(false));
+  };
+
+  const handleLiveStreamFriend = ({ notification_id, id, name }) => {
+    toast.success(`${name} Started Live`);
+    dispatch(updateLivename({ id, name }));
+    dispatch(updateNotificationdata({
+      id: notification_id,
+      type: 'live-stream',
+      fromUser: { id, name },
+      status: 'pending',
+      read: false,
+      timestamp: new Date().toISOString(),
+    }));
+    dispatch(updateLiveStatus(true));
+  };
+
+  // Add all listeners
+  socket.on("group-joining-request", handleGroupJoinRequest);
+  socket.on("notification-update", handleNotificationUpdate);
+  socket.on("live-stream-friend", handleLiveStreamFriend);
+
+  // Reconnect events (optional)
+  // socket.on("disconnect", (reason) => {
+  //   console.warn("❌ Socket disconnected:", reason);
+  // });
+
+  // socket.on("reconnect", (attempt) => {
+  //   console.log("✅ Reconnected after", attempt, "attempts");
+  //   socket.emit("new-user-add", userId); // re-emit on reconnect
+  // });
+
+  // ✅ Cleanup on unmount
+  return () => {
+    socket.off("group-joining-request", handleGroupJoinRequest);
+    socket.off("notification-update", handleNotificationUpdate);
+    socket.off("live-stream-friend", handleLiveStreamFriend);
+    // socket.off("disconnect");
+    // socket.off("reconnect");
+    // socket.disconnect(); // Optional: only if you want to fully disconnect on leaving
+    socialRef.current = false;
+  };
+}, [userId, dispatch]);
+
  // Re-run only when userId is available
 
   return (

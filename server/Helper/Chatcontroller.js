@@ -5,10 +5,12 @@ const usermodel = require("../model/usermodel");
 const { getuserid } = require("./Getuser");
 module.exports={
     createChat:async(req,res)=>{
+        console.log("create chat is called")
+        console.log(req.body.senderId)
     const newchat=new Chatmodel({
         members:[req.body.senderId,req.body.recieverId]
     })
-    //console.log(newchat)
+      console.log(newchat)
     try {
         const result=await newchat.save();
         res.status(200).json(result)
@@ -20,15 +22,12 @@ module.exports={
      
     try {
         getuserid(req.headers).then(async(result)=>{
-            let mail=result.userId
+            let id=result.userId
             let userid;
-            let id;
-         const data= await usermodel.find({Email:mail})
-           data.map(data=>id=data._id) 
-           userid=id.toString()
+         const data= await usermodel.findById(id) 
            let friendid=req.params.friendid;
         const chat=await Chatmodel.find({
-            members:{$all:[userid,friendid]}
+            members:{$all:[id,friendid]}
         })
         //console.log(chat)
         res.status(200).json({chat,userid})

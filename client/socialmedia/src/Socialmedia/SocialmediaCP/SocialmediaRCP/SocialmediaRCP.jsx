@@ -19,6 +19,8 @@ function SocialmediaRCP() {
     console.log(friendOnline)
     setActiveusers(friendOnline)
   })
+
+
    return () => {
     socket.off("friends-list");
   };

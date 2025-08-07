@@ -96,7 +96,7 @@ function CreatePost() {
 
           {/* Row 2: Upload + Post Actions */}
           <Row className="mt-3">
-  <Col className="d-flex justify-content-between flex-wrap gap-2 align-items-center">
+       <Col className="d-flex justify-content-between flex-wrap gap-2 align-items-center">
     <div className="d-flex gap-2 flex-wrap">
       {/* Photo/Video with file input */}
       <Form.Group controlId="formFile" className="mb-0">

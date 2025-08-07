@@ -3,14 +3,13 @@ import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardTitle, MDBCardBody, MDBCa
 import { Button } from 'react-bootstrap';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Friends.css'; // Create this CSS file for custom styles
+import './Friends.css';
 
 function Friends({ friend, id }) {
   const token = localStorage.getItem("token");
   const friendId = friend._id;
   const navigate = useNavigate();
   
-  // Follow state management
   const [followState, setFollowState] = useState(() => {
     const isFriendFollowed = localStorage.getItem(`followed_${id}_${friendId}`);
     return isFriendFollowed === 'true';
@@ -53,66 +52,56 @@ function Friends({ friend, id }) {
 
   return (
     <div className="friend-card-container">
-      <MDBContainer>
-        <MDBRow className="justify-content-center">
-          <MDBCol md="10" lg="8" xl="6">
-            <MDBCard className="friend-card" style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
-              <MDBCardBody className="p-4">
-                <div className="d-flex text-black">
-                  <div className="flex-shrink-0">
-                    <MDBCardImage
-                      className="profile-image"
-                      style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover' }}
-                      src={getImageSrc(friend.Image)}
-                      alt='Profile image'
-                      fluid
-                    />
-                  </div>
-                  <div className="flex-grow-1 ms-4 d-flex flex-column justify-content-between">
-                    <div>
-                      <MDBCardTitle className="friend-name">
-                        {friend.Fname} {friend.Lname}
-                        {followState && <span className="verified-badge"><MDBIcon icon="check-circle" /></span>}
-                      </MDBCardTitle>
-                      <p className="friend-bio text-muted mb-3">
-                        {friend.bio || "No bio available"}
-                      </p>
-                    </div>
-                    
-                    <div className="d-flex pt-1 friend-actions">
-                      <Button 
-                        variant={followState ? "outline-primary" : "primary"} 
-                        className="follow-button"
-                        onClick={handleFollowClick}
-                      >
-                        {followState ? (
-                          <>
-                            <MDBIcon icon="user-check" className="me-2" /> Following
-                          </>
-                        ) : (
-                          <>
-                            <MDBIcon icon="user-plus" className="me-2" /> Follow
-                          </>
-                        )}
-                      </Button>
-                      
-                      {followState && (
-                        <Button 
-                          variant="outline-secondary" 
-                          className="view-profile-button ms-2"
-                          onClick={() => viewfriend(friend._id)}
-                        >
-                          <MDBIcon icon="eye" className="me-2" /> View Profile
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </MDBCardBody>
-            </MDBCard>
-          </MDBCol>
-        </MDBRow>
-      </MDBContainer>
+      <MDBCard className="friend-card">
+        <div className="card-horizontal">
+          <div className="img-square-wrapper">
+            <MDBCardImage
+              className="profile-image"
+              src={getImageSrc(friend.Image)}
+              alt='Profile image'
+              fluid
+            />
+          </div>
+          <div className="card-body">
+            <div className="friend-header">
+              <MDBCardTitle className="friend-name">
+                {friend.Fname} {friend.Lname}
+                {followState && <span className="verified-badge"><MDBIcon icon="check-circle" /></span>}
+              </MDBCardTitle>
+              <span className="friend-status">{followState ? 'Following' : 'Not Following'}</span>
+            </div>
+            
+            <p className="friend-bio">
+              {friend.bio || "This user hasn't written a bio yet."}
+            </p>
+            
+            <div className="friend-stats">
+              <div className="stat-item">
+                <MDBIcon icon="calendar" className="me-2" />
+                <span>Joined {new Date(friend.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+            
+            <div className="friend-actions">
+              <Button 
+                variant={followState ? "outline-primary" : "primary"} 
+                className="action-button"
+                onClick={handleFollowClick}
+              >
+                {followState ? 'Following' : 'Follow'}
+              </Button>
+              
+              <Button 
+                variant="outline-secondary" 
+                className="action-button"
+                onClick={() => viewfriend(friend._id)}
+              >
+                View Profile
+              </Button>
+            </div>
+          </div>
+        </div>
+      </MDBCard>
     </div>
   );
 }

@@ -95,9 +95,14 @@ router.get("/test",(req,res)=>{
 })
 router.post("/post",upload.single("file"),(req,res)=>{
   try {
+    let files
      getuserid(req.headers).then((resn)=>{
   const {content}=req.body
-  let files=req.file.path;
+  if(req.file.path!=undefined)
+  {
+     files=req.file.path;
+  }
+ 
   var img = fs.readFileSync(files);
   var encode_image = img.toString('base64');
   var finalImg = {
@@ -113,7 +118,7 @@ router.post("/post",upload.single("file"),(req,res)=>{
   })
 })
   } catch (error) {
-    ////console.log(error)
+    console.log(error)
   }
 
 })

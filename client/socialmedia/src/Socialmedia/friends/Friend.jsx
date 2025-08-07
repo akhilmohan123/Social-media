@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import Friends from './Friends';
 import LoadingSpinnerComponent from 'react-spinners-components';
+import socket from '../Socket/Socket';
 function Friend() {
   const override = {
     display: "block",
@@ -12,9 +13,13 @@ function Friend() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [id,setid]=useState(null)
+  const user=localStorage.getItem("userId")
   let [color, setColor] = useState("#ffffff");
    let token=localStorage.getItem('token')
-
+    //   window.addEventListener("load", () => {
+    //   socket.connect()
+    //   socket.emit("new-user-add",user)
+    // });
    
    useEffect(()=>{
     console.log("toke nin friend page is "+token)
