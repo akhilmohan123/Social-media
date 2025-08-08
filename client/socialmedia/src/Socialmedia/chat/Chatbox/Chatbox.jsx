@@ -1,27 +1,29 @@
-import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
-import { format } from 'timeago.js';
-import InputEmoji from 'react-input-emoji';
-import { FiArrowLeft, FiSend } from 'react-icons/fi';
-import './ChatBox.css'; // Using the same CSS
-import { useNavigate} from "react-router-dom";
-import socket from '../../Socket/Socket';
-function Chatbox({ chat, setsendmessage, recievemessage,data }) {
+import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
+import { format } from "timeago.js";
+import InputEmoji from "react-input-emoji";
+import { FiArrowLeft, FiSend } from "react-icons/fi";
+import "./ChatBox.css"; // Using the same CSS
+import { useNavigate } from "react-router-dom";
+import socket from "../../Socket/Socket";
+function Chatbox({ chat, setsendmessage, recievemessage, data }) {
   const [userdata, setUserdata] = useState(null);
   const [message, setMessage] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [online,setOnline]=useState(false);
+  const [online, setOnline] = useState(false);
   const scroll = useRef();
-  let navigate = useNavigate()
-  let recieverId=data.recieverId
-  let user=localStorage.getItem("userId")
+  let navigate = useNavigate();
+  let recieverId = data.recieverId;
+  let user = localStorage.getItem("userId");
   const handleSend = async (e) => {
     e.preventDefault();
     const messages = {
       senderId: user,
       text: newMessage,
       chatId: chat._id,
+      recieverId: recieverId,
     };
+    socket.emit("send-message", messages);
 
     try {
       const res = await axios.post("http://localhost:3001/message", messages);
@@ -34,19 +36,20 @@ function Chatbox({ chat, setsendmessage, recievemessage,data }) {
     }
   };
 
-  function handleBack(){
-    navigate(-1)
+  function handleBack() {
+    navigate(-1);
   }
-    //  window.addEventListener("load", () => {
+  //  window.addEventListener("load", () => {
 
-    // });
-  
+  // });
 
   useEffect(() => {
     const id = chat?.members?.find((id) => id !== user);
     async function userDetails() {
       try {
-        const result = await axios.get(`http://localhost:3001/get-friend/${id}`);
+        const result = await axios.get(
+          `http://localhost:3001/get-friend/${id}`
+        );
         setUserdata(result.data);
       } catch (error) {
         console.error(error);
@@ -56,15 +59,31 @@ function Chatbox({ chat, setsendmessage, recievemessage,data }) {
   }, [chat, user]);
 
   useEffect(() => {
+    // 1. Fetch old messages from DB
     async function getMessages() {
       try {
-        const result = await axios.get(`http://localhost:3001/message/${chat._id}`);
+        const result = await axios.get(
+          `http://localhost:3001/message/${chat._id}`
+        );
         setMessage(result.data);
       } catch (error) {
         console.error(error);
       }
     }
     if (chat) getMessages();
+
+    // 2. Listen for live socket messages
+    socket.on("recieve-message", (newMessage) => {
+      if (newMessage.chatId === chat._id) {
+        // only add if it's for current chat
+        setMessage((prevMessages) => [...prevMessages, newMessage]);
+      }
+    });
+
+    // Cleanup
+    return () => {
+      socket.off("recieve-message");
+    };
   }, [chat]);
 
   useEffect(() => {
@@ -73,33 +92,27 @@ function Chatbox({ chat, setsendmessage, recievemessage,data }) {
     }
   }, [recievemessage]);
 
-
-  useEffect(()=>{
+  useEffect(() => {
     // socket.connect()
     // socket.emit("new-user-add",user)
-    socket.emit("user-online",data)
-    socket.on("user-online-status",(status)=>{
-      if(status)
-      {
-        setOnline(true)
-      }else{
-        setOnline(false)
+    socket.emit("user-online", data);
+    socket.on("user-online-status", (status) => {
+      if (status) {
+        setOnline(true);
+      } else {
+        setOnline(false);
       }
-
-    })
-    console.log("reciever id is ======"+recieverId)
-  },[recieverId])
-
-
-
+    });
+    console.log("reciever id is ======" + recieverId);
+  }, [recieverId]);
 
   useEffect(() => {
     scroll.current?.scrollIntoView({ behavior: "smooth" });
-    console.log("online status is ===="+online)
+    console.log("online status is ====" + online);
   }, [message]);
 
   const getImageSrc = (imageData) => {
-    if (!imageData || !imageData.image || !imageData.contentType) return '';
+    if (!imageData || !imageData.image || !imageData.contentType) return "";
     return `data:${imageData.contentType};base64,${imageData.image}`;
   };
 
@@ -113,12 +126,15 @@ function Chatbox({ chat, setsendmessage, recievemessage,data }) {
           </button>
           <div className="group-info">
             <h5>
-              {userdata ? userdata.Fname : ''} {userdata ? userdata.Lname : ''}
+              {userdata ? userdata.Fname : ""} {userdata ? userdata.Lname : ""}
             </h5>
-            {online ?(
-            <div className="group-status">
-              <span>Online</span>
-            </div>):(<span></span>)}
+            {online ? (
+              <div className="group-status">
+                <span>Online</span>
+              </div>
+            ) : (
+              <span></span>
+            )}
           </div>
         </div>
       </div>

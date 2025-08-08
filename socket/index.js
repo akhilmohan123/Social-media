@@ -229,7 +229,8 @@ io.on("connection", (socket) => {
 
   // Send message to a specific user
   socket.on("send-message", (data) => {
-    const { receiverId } = data;
+    console.log(typeof data)
+    const  receiverId  = data.recieverId;
     const user = activeusers.find((user) => user.userid === receiverId); // fixed casing
     console.log("Sending message to:", receiverId);
     if (user) {
@@ -475,6 +476,8 @@ io.on("connection", (socket) => {
     let result = await saveMessage(message);
     io.to(message.groupID).emit("group-message-recieved", message);
   });
+
+
 
   socket.on("error", (err) => {
     //console.error('Socket error:', err.message);
