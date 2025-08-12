@@ -88,28 +88,22 @@ function AddPhoto({ imageData }) {
   };
 
   const handleFinalSubmit = async() => {
+  
     try {
-    fetch(croppedImageData).then((response)=>{
-      response.blob().then((blob)=>{
-      var reader = new FileReader();
-    reader.readAsDataURL(blob); 
-    reader.onloadend = function() {
-     var base64data = reader.result;                
-      console.log(base64data);
-      setCroppedImageData(base64data);}
-      })
-    })
+       const blob = await (await fetch(croppedImageData)).blob();
     console.log(caption);
     console.log(location);
     const token=localStorage.getItem("token");
+    const file = new File([blob], "photo.jpg", { type: blob.type });
     apiClient.defaults.headers.common["Authorization"]=`Bearer ${token}`;
-   const payload = {
-  image: croppedImageData, // base64 string
-  caption,
-  location,
-};
+    const form=new FormData()
+    form.append("PostImage",file);
+    form.append("caption",caption)
+    form.append("location",location)
+    console.log("Payload is ========");
 
-     const data=await _post("/social/upload",payload)
+
+     const data=await _post("/social/upload",form)
      console.log(data.status)
      if(data.status==200){
       toast.success("Post uploaded successfully")

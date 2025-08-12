@@ -4,7 +4,7 @@ import Profiledetails from './Profiledetails'
 
 function Profile() {
   return (
-    <div style={{backgroundColor:'white', height:'100vh',width:'100vw'}}>
+    <div style={{backgroundColor:'#9de2ff', height:'100vh',width:'100vw'}}>
         <Socialheader value={true}/>
          <Profiledetails/>
 

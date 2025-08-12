@@ -28,7 +28,7 @@ const userschema=new mongoose.Schema({
     otpexpiry:{
         type:Date
     },
-     Image:Object
+     Image:String
 })
 
 const usermodel=mongoose.model('userdetails',userschema)

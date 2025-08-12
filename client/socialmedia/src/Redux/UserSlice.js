@@ -3,7 +3,8 @@ import {createSlice} from "@reduxjs/toolkit";
 const initialState={
     userId:null,
     token:null,
-    userName:''
+    userName:'',
+    profileData:null
 }
 
 const UserSlice=createSlice({
@@ -19,8 +20,12 @@ const UserSlice=createSlice({
         updateUsername(state,action)
         {
             state.userName=action.payload
+        },
+        updateProfileData(state,action)
+        {
+            state.profileData=action.payload
         }
     }
 })
-export const{updateuserId,updatetoken,updateUsername}=UserSlice.actions;
+export const{updateuserId,updatetoken,updateUsername,updateProfileData}=UserSlice.actions;
 export default UserSlice.reducer;

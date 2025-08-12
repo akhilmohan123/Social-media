@@ -1,15 +1,346 @@
-/* ProfileDetails.css */
+/* Base Styles */
+.profile-container {
+  width: 100vw; /* viewport width */
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding-top: 2rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loading-container {
+  background-color: lightblue;
+  text-align: center;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Profile Card */
+.profile-card {
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+/* Header Section */
+.profile-header {
+  display: flex;
+  align-items: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: relative;
+}
+
+.profile-image-container {
+  width: 150px;
+  height: 150px;
+  margin-right: 2rem;
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.edit-btn {
+  border-radius: 20px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Stats Section */
+.profile-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 1.5rem;
+  background-color: white;
+  border-bottom: 1px solid #eee;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: #333;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+/* Gallery Section */
+.gallery-section {
+  padding: 2rem;
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.gallery-item-container {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gallery-item-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-item-container:hover .image-overlay {
+  opacity: 1;
+}
+
+/* Image Gallery Styles */
 .image-gallery-slide img {
-    width: auto; /* Maintain aspect ratio */
-    height: 400px; /* Set height to medium size */
-    object-fit: contain; /* Contain the image within the given dimensions */
-    margin: 0 auto; /* Center the image */
+  width: auto;
+  height: 500px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+.image-gallery-thumbnail img {
+  height: 80px;
+  width: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.image-gallery-thumbnail.active {
+  border: 3px solid #667eea;
+}
+/* Add these new styles to your existing CSS */
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Post Card Styles */
+.post-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.post-image-container {
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%; /* Square aspect ratio */
+  position: relative;
+}
+
+.post-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.post-image:hover {
+  transform: scale(1.02);
+}
+
+/* Post Actions */
+.post-actions {
+  display: flex;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.like-btn, .comment-btn {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  margin-right: 1.5rem;
+  cursor: pointer;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.like-btn.liked {
+  color: #ed4956;
+}
+
+.action-icon {
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+}
+
+/* Comments Section */
+.comments-section {
+  padding: 0 1rem 1rem;
+}
+
+.comments-list {
+  max-height: 75px;
+  min-height: 75px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+
+}
+
+.comment {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.add-comment {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.comment-input {
+  flex-grow: 1;
+  margin-right: 1rem;
+}
+
+.post-comment-btn {
+  background: none;
+  border: none;
+  color: #0095f6;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.post-comment-btn:hover {
+  color: #007acc;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
   }
   
-  .image-gallery-thumbnail img {
-    height: 75px; /* Adjust the thumbnail size as well */
-    object-fit: cover;
+  .profile-image-container {
+    margin-right: 0;
+    margin-bottom: 1rem;
   }
-  .edit-div{
-    margin-bottom: 0;
+  
+  .post-actions {
+    justify-content: space-around;
   }
+}
+
+.image-gallery-icon--fullscreen {
+  display: none !important;
+}
+
+.custom-fullscreen-overlay {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  cursor: zoom-out;
+}
+
+.fullscreen-img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 8px;
+  object-fit: contain;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+.fullscreen-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  font-size: 36px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  line-height: 36px;
+  text-align: center;
+  transition: background 0.3s ease;
+  z-index: 10001;
+}
+
+.fullscreen-close-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+
+.mdbcolor{
+  background-color: '#9de2ff';
+}

@@ -3,15 +3,16 @@ const usermodel = require("../model/usermodel")
 
 module.exports={
     addfriend:async(friendid,id)=>{
+      console.log("Add friend called ")
         return new Promise(async(resolve,reject)=>{
           //console.log(id+"is ")
           const userFrienddoc = await Friend.findOne({ Userid:id});
-          //console.log(userFrienddoc)
+          console.log(userFrienddoc)
           if (userFrienddoc) {
             if( userFrienddoc.Friendsid.includes(friendid))
             {
-               //console.log("friendid includes in the document")
-              return resolve(false); // Return false if the pair already exists
+               console.log("friendid includes in the document")
+              return resolve(true); // Return false if the pair already exists
             }
             //if user exist but not friend of that user
             userFrienddoc.Friendsid.push(friendid);

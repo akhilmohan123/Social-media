@@ -25,6 +25,8 @@ app.use(bodyParser.urlencoded({  extended: true, limit: '10mb'  }));
 app.use(express.urlencoded({
     extended: true
 }))
+
+app.use('/uploads', express.static('uploads'));
  
 //Initialize passport
 

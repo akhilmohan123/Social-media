@@ -22,6 +22,11 @@ function Friends({ friend, id }) {
     }
   }, [id, friendId]);
 
+
+  useEffect(()=>{
+    console.log("Follow state is ====="+followState)
+  },[followState])
+
   async function handleFollowClick() {
     try {
       if (followState) {
@@ -29,9 +34,10 @@ function Friends({ friend, id }) {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post(`http://localhost:3001/add-friend/${friendId}`, {}, {
+        let response=await axios.post(`http://localhost:3001/add-friend/${friendId}`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        console.log("Response from add friend is ",response)
       }
       const newFollowState = !followState;
       setFollowState(newFollowState);

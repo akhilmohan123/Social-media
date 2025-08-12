@@ -4,7 +4,6 @@ var router=express.Router()
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer')
-const upload = multer({ dest: "uploads/",limits: { fileSize: 50 * 1024 * 1024 } });
 const fs=require('file-system');
 const { getuserid, getusername, getpeople, geteditdata, posteditdata, getuserpost,getName } = require('../Helper/Getuser');
 const { addpost, addlike, removelike, uploadpost } = require('../Helper/Poststore');
@@ -18,7 +17,43 @@ const { createGroup, getUserGroups, getAllgroups, joinGroup, requestJoinGroup, g
 const { saveFcm, getFcm, saveNotification, getNotification, markNotificationAsSeen, markNotificationAsRead } = require('../Helper/Notificationhelper');
 const Getuser = require('../Helper/Getuser');
 const { fetchActiveusers } = require('../Helper/Chatcontroller');
+const { mongoose } = require('mongoose');
+const ObjectId  = mongoose.Types.ObjectId;
+const { v4: uuidv4 } = require("uuid");
+const path=require("path")
  require('dotenv').config()
+//function to get the filename
+
+
+
+//  const upload = multer({
+//    dest: "uploads/",limits: { fileSize: 50 * 1024 * 1024 } }
+//   );
+
+const storage=multer.diskStorage({
+  destination:function(req,file,cb)
+  {
+    if(file.fieldname=='profilePic')
+    {
+      cb(null,'uploads/profilePics');
+    }else{
+      cb(null,'uploads/posts');
+    }
+    
+  },
+  filename:function(req,file,cb)
+  {
+    const uuid=uuidv4()
+    const date=new Date();
+    const month=date.getMonth()+1;
+    const year=date.getFullYear();
+     cb(null, `${year}_${month}_${date.getDate()}_${uuid}${path.extname(file.originalname)}`);
+  }
+})
+const upload=multer({
+  storage:storage,
+  limits:{fileSize:50*1024*1024}
+})
  const verifyToken = async(req, res, next) => {
   const tokennew = req.header('Authorization');
    const token = tokennew.split(' ')[1]
@@ -39,20 +74,28 @@ const { fetchActiveusers } = require('../Helper/Chatcontroller');
 router.get('/',(req,res)=>{
     ////console.log("This is req body")
 })
-router.post('/signup', upload.single('file'), async (req, res) => {
+router.post('/signup', upload.fields([
+  {name:'profilePic',maxCount:1},
+
+
+]), async (req, res) => {
   ////console.log("hitted signup")
-  if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-  }
+ if (!req.files || !req.files['profilePic'] || req.files['profilePic'].length === 0) {
+  return res.status(400).json({ message: 'No profile picture uploaded' });
+}
 
-  let filePath = req.file.path;
-  var img = fs.readFileSync(filePath);
-  var encode_image = img.toString('base64');
-  var finalImg = {
-      contentType: req.file.mimetype,
-      image: Buffer.from(encode_image, 'base64')
-  };
+      const profilePicFile = req.files['profilePic'] ? req.files['profilePic'][0] : null;
+    let profilepicname = profilePicFile ? profilePicFile.filename : null;
+    console.log("Profile pic name is "+profilepicname)
 
+  // let filePath = req.file.path;
+  // var img = fs.readFileSync(filePath);
+  // var encode_image = img.toString('base64');
+  // var finalImg = {
+  //     contentType: req.file.mimetype,
+  //     image: Buffer.from(encode_image, 'base64')
+  // };
+  let finalImg=profilepicname
   const { fname, lname, email, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 8);
 
@@ -94,21 +137,22 @@ router.get("/test",(req,res)=>{
   })
 })
 router.post("/post",upload.single("file"),(req,res)=>{
+  console.log("add post called")
   try {
-    let files
+    let files;
      getuserid(req.headers).then((resn)=>{
   const {content}=req.body
   if(req.file.path!=undefined)
   {
      files=req.file.path;
   }
- 
-  var img = fs.readFileSync(files);
-  var encode_image = img.toString('base64');
-  var finalImg = {
-      contentType: req.file.mimetype,
-      image: Buffer.from(encode_image, 'base64')
-  };
+  
+  // var img = fs.readFileSync(files);
+  // var encode_image = img.toString('base64');
+  // var finalImg = {
+  //     contentType: req.file.mimetype,
+  //     image: Buffer.from(encode_image, 'base64')
+  // };
   addpost(content,finalImg,resn).then(result=>{
     if(result){
       res.status(200).json({data:true})
@@ -126,10 +170,9 @@ router.get("/profile",(req,res)=>{
   //console.log("profile page called")
  getuserid(req.headers).then(async(response)=>{
 
-  let mail=response.userId;
+  let id=response.userId;
   if(response){
-    await usermodel.findOne({Email:mail}).then(result=>{
-     let id=result._id;
+    await usermodel.findById(new ObjectId(id)).then(result=>{
     
        getfriendsprofile(id).then(data=>{
        if(data){
@@ -172,6 +215,7 @@ router.post("/add-friend/:key",async(req,res)=>{
 
 })
 router.get('/get-post', async (req, res) => {
+  console.log("get post is called =======")
   try {
     
     const resee = await getuserid(req.headers);
@@ -180,21 +224,34 @@ router.get('/get-post', async (req, res) => {
       return res.status(400).json({ message: "Invalid token or no token provided" });
     }
 
-    const email = resee.userId;
-    const user = await usermodel.findOne({ Email: email });
+    const Id = resee.userId;
+    console.log("id from the get post is =======" + Id);
+    const user = await usermodel.findById(new ObjectId(Id));
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const id = user._id;
-    const friends = await Friend.find({});
-    const userFriends = friends.filter(data => data.Userid.equals(id));
-    const friendsIds = userFriends.map(data => data.Friendsid);
-    const posts = await Post.find({ Userid: { $in: friendsIds } });
+    const friend = await Friend.find({});
+    const userFriends = friend.filter(data => data.Userid.equals(Id));
+    console.log("after the user friends ")
+    console.log(userFriends)
+    const friends = userFriends.map(data => data.Friendsid,{ Friendsid: 1, _id: 0 });
+    console.log("after the friends ids")
+    let username=await getFriendName(Id);
+    //  const friendsIds = friends.flatMap(f => f.Friendsid);
+    //  console.log("before the posts is ======")
+    //  console.log(friendsIds)
+    let postdata={}
+    const posts = await Post.find({ Userid: { $in: friends[0] } });
+    postdata.name=username;
+    postdata.posts=posts;
+    console.log(postdata)
+    console.log("after the post")
+    console.log(posts)
     
     if (posts.length > 0) {
-      res.status(200).json(posts);
+      res.status(200).json(postdata);
     } else {
       res.status(404).json({ message: "No posts found" });
     }
@@ -208,7 +265,8 @@ router.post("/add-like/:id",(req,res)=>{
   let likes=req.body;
   let resulted={};
   getuserid(req.headers).then((result)=>{
-  usermodel.findOne({Email:result.userId}).then(data=>{
+    console.log("userid from the add like is "+result.userId)
+  usermodel.findById(new ObjectId(result.userId)).then(data=>{
     let id=data._id;
     addlike(likes,postid).then(result=>{
       //console.log(result)
@@ -372,18 +430,22 @@ router.post("/auth/reset-password",async(req,res)=>{
 
 
 //add post image,caption,location router
-router.post("/social/upload",upload.single("file"),async(req,res)=>{
+router.post("/social/upload",upload.fields([{name:"PostImage",maxCount:1}]),async(req,res)=>{
+  console.log("social upload is called ")
   try {
+    console.log(req.headers['content-type']); 
     let userresult=await getuserid(req.headers)
-    let email=userresult.userId;
-    let user=await usermodel.findOne({Email:email})
-    let id=user._id
+    let id=userresult.userId;
+    let user=await usermodel.findById(new ObjectId(id))
   //console.log(req.body)
   //console.log(req.file)
-  let file=req.file;
+    const postFile = req.files['PostImage'] ? req.files['PostImage'][0] : null;
+    let postpicname = postFile ? postFile.filename : null;
+    console.log("postpicname pic name is "+postpicname)
   let caption=req.body.caption
   let location=req.body.location
-  await uploadpost(id,file,caption,location).then((result)=>{
+
+  await uploadpost(id,postpicname,caption,location).then((result)=>{
     //console.log(result)
     if(result){
       res.status(200).json(result)

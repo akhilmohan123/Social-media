@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -6,37 +6,69 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import style from "./socialheader.module.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import image from './live-chat.png'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch,faCommentDots,faBell,faRobot } from '@fortawesome/free-solid-svg-icons';
-import { useSelector } from "react-redux";
+import image from "./live-chat.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSearch,
+  faCommentDots,
+  faBell,
+  faRobot,
+} from "@fortawesome/free-solid-svg-icons";
+import { useDispatch, useSelector } from "react-redux";
 import Notificationbell from "./Notification/Notificationbell";
+import { _get, apiClient } from "./axios/Axios";
+import { updateProfileData } from "../Redux/UserSlice";
 function Socialheader({ value }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const liveStat=useSelector(state => state.Live.LiveStatus)
-  const live=useSelector(state=>state.Live.LiveStatus)
-   const navigate=useNavigate()
+  const liveStat = useSelector((state) => state.Live.LiveStatus);
+  const live = useSelector((state) => state.Live.LiveStatus);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [profilePic,setProfilePic] = useState(null);
+  const token=localStorage.getItem("token");
+  const profileData=useSelector(state => state.User.profileData)
+  async function getProfile() {
+    try {
+      apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      let result = await _get("/profile");
+      console.log(result.data.data)
+      dispatch(updateProfileData(result.data.data))
+    } catch (error) {
+      console.log("Error in fetching the profile"+error);
+    }
+  }
+
+
+  useEffect(()=>{
+    getProfile();
+  },[])
+
+  useEffect(()=>{
+   setProfilePic(`http://localhost:3001/uploads/profilePics/${profileData?.image}`);
+  },[profileData])
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       search();
     }
   };
-function chatclick(){
-  navigate("/message-ai")
-}
+  function chatclick() {
+    navigate("/message-ai");
+  }
   const handleInputChange = (e) => {
     setSearchQuery(e.target.value);
   };
-  function handlelogout(){
-    localStorage.removeItem("token")
-    navigate('/login')
+  function handlelogout() {
+    localStorage.removeItem("token");
+    navigate("/login");
   }
   const search = async () => {
     if (searchQuery.trim()) {
       try {
-        const response = await axios.get(`http://localhost:3001/user/sea?query=${searchQuery}`);
-        console.log(response.data)
+        const response = await axios.get(
+          `http://localhost:3001/user/sea?query=${searchQuery}`
+        );
+        console.log(response.data);
         setSearchResults(response.data);
       } catch (error) {
         console.error("Error fetching search results:", error);
@@ -81,10 +113,9 @@ function chatclick(){
 
           {/* Right: Icons */}
           <div className="d-flex align-items-center gap-4">
-
             {/* Notification Bell */}
 
-           {/* <div
+            {/* <div
                 style={{ position: "relative", cursor: "pointer" }}
                 onClick={() => console.log("Notifications clicked")}
              >
@@ -108,7 +139,7 @@ function chatclick(){
              ></span>}
           
             </div> */}
-            <Notificationbell/>
+            <Notificationbell />
             {/* Message Icon */}
             <FontAwesomeIcon
               icon={faCommentDots}
@@ -133,7 +164,7 @@ function chatclick(){
 
             {/* Profile Picture */}
             <img
-              src="/images/profile.jpg"
+              src={profilePic || "/default-profile.png"}
               alt="Profile"
               className="rounded-circle"
               style={{

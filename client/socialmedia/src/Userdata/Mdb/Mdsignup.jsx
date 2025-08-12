@@ -68,7 +68,7 @@ function Mdbsignup() {
       form.append('lname', value.lname);
       form.append("password", value.password);
       form.append("email", value.email);
-      if (image) form.append('file', image);
+      if (image) form.append('profilePic', image);
   
       try {
         const res = await axios.post("http://localhost:3001/signup", form, {

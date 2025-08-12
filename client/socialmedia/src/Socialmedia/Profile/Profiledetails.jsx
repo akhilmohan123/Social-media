@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   MDBCol,
   MDBContainer,
@@ -7,230 +7,276 @@ import {
   MDBCardText,
   MDBCardBody,
   MDBCardImage,
-  MDBBtn,
   MDBTypography,
+  MDBIcon,
+  MDBInput,
 } from "mdb-react-ui-kit";
-import axios from "axios";
 import { Button } from "react-bootstrap";
-import LoadingSpinnerComponent from "react-spinners-components";
 import ImageGallery from "react-image-gallery";
 import "./Profiledetails.css";
 import "react-image-gallery/styles/css/image-gallery.css";
-import Editprofile from "./Editprofile";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 export default function Profiledetails() {
-  const [data, setdata] = useState(null);
-  const token = localStorage.getItem("token");
-  let [color, setColor] = useState("#ffffff");
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
   const imageGalleryRef = useRef(null);
-  const override = {
-    display: "block",
-    margin: "0 auto",
-    borderColor: "red",
-    backgroundColor: "#9de2ff",
-  };
-  useEffect(() => {
-    axios
-      .get("http://localhost:3001/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+  const data = useSelector((state) => state.User.profileData);
+  const [profilePic, setProfilepic] = useState(null);
+  const [activePostIndex, setActivePostIndex] = useState(null);
+  const [commentInput, setCommentInput] = useState("");
+  const [posts, setPosts] = useState([]);
+  const [fullscreen, setFullscreen] = useState(null);
+
+  // Initialize posts with dummy data when component mounts or data changes
+  React.useEffect(() => {
+    if (data?.image) {
+      setProfilepic(`http://localhost:3001/uploads/profilePics/${data.image}`);
+    }
+
+    if (data?.friendpost) {
+      const initialPosts = data.friendpost.map((image, index) => ({
+        id: index,
+        imageUrl: `http://localhost:3001/uploads/posts/${image}`,
+        likes: Math.floor(Math.random() * 100) + 10, // Random likes between 10-110
+        comments: [
+          { id: 1, user: "user123", text: "Great photo! 😍" },
+          { id: 2, user: "photography_lover", text: "Amazing shot!" },
+        ],
+        isLiked: false,
+        showComments: false,
+      }));
+      setPosts(initialPosts);
+    }
+  }, [data]);
+
+  const handleLike = (postId) => {
+    setPosts(
+      posts.map((post) => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+            isLiked: !post.isLiked,
+          };
+        }
+        return post;
       })
-      .then((res) => {
-        console.log(res);
-        setLoading(false);
-        setdata(res.data.data);
-      });
-  }, [token]);
-  if (loading) {
+    );
+  };
+
+  const handleAddComment = (postId) => {
+    if (!commentInput.trim()) return;
+
+    setPosts(
+      posts.map((post) => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: [
+              ...post.comments,
+              {
+                id: Date.now(),
+                user: "you",
+                text: commentInput,
+              },
+            ],
+          };
+        }
+        return post;
+      })
+    );
+
+    setCommentInput("");
+  };
+
+  const toggleComments = (postId) => {
+    setPosts(
+      posts.map((post) => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            showComments: !post.showComments,
+          };
+        }
+        return post;
+      })
+    );
+  };
+
+  if (!data) {
     return (
-      <div
-        style={{
-          backgroundColor: "lightblue",
-          textAlign: "center",
-          height: "100vh",
-          width: "100vw",
-        }}
-      >
-        <LoadingSpinnerComponent
-          color={color}
-          loading={loading}
-          cssOverride={override}
-          size={150}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        />
+      <div className="loading-container">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
     );
   }
-  console.log(data);
-  const getImageSrc = (imageData) => {
-    if (!imageData || !imageData.image || !imageData.contentType) return "";
-    return `data:${imageData.contentType};base64,${imageData.image}`;
-  };
-  if (!data) {
-    return <div>Loading...</div>;
-  }
-  const handleProfileImageClick = () => {
-    if (imageGalleryRef.current) {
-      const profileImageSrc = getImageSrc(data.image);
-      if (profileImageSrc) {
-        // Create a single image item for the profile image
-        const profileImageItem = {
-          original: profileImageSrc,
-          thumbnail: profileImageSrc,
-        };
-        // Set the gallery items and open full-screen
-        imageGalleryRef.current.slideToIndex(0); // Assuming profile image is the first item
-        imageGalleryRef.current.fullScreen();
-      }
-    }
-  };
-  function editProfile() {
-    navigate("/edit-profile");
-  }
 
-  function handleimageclick(index) {
-    if (imageGalleryRef.current) {
-      imageGalleryRef.current.slideToIndex(index);
-      imageGalleryRef.current.fullScreen();
-    }
-  }
-  const images = data.friendpost.map((result) => ({
-    original: getImageSrc(result),
-    thumbnail: getImageSrc(result),
-  }));
-  function handleview(){
-    navigate("/view-profile")
-  }
   return (
-    <div className="gradient-custom-2" style={{ backgroundColor: "#9de2ff" }}>
-      <MDBContainer className="py-5 h-100">
-        <MDBRow className="justify-content-center align-items-center h-100">
+    <div className="profile-container">
+      <MDBContainer className="py-5 mdbcolor">
+        <MDBRow className="justify-content-center">
           <MDBCol lg="9" xl="7">
-            <MDBCard>
-              <div
-                className="rounded-top text-white d-flex flex-row"
-                style={{ backgroundColor: "#000", height: "200px" }}
-              >
-                <div
-                  className="ms-4 mt-5 d-flex flex-column"
-                  style={{ width: "150px" }}
-                >
+            <MDBCard className="profile-card">
+              {/* Profile Header Section */}
+              <div className="profile-header">
+                <div className="profile-image-container">
                   <MDBCardImage
-                    src={getImageSrc(data.image)}
+                    src={profilePic}
                     alt="Profile"
-                    className="mt-4 mb-2 img-thumbnail"
+                    className="profile-image"
                     fluid
-                    style={{ width: "150px", zIndex: "1" }}
-                    onClick={handleProfileImageClick}
                   />
                 </div>
-                <div
-                  style={{
-                    height: "250px",
-                    position: "relative",
-                    padding: "10px",
-                  }}
-                >
-                  <Button
-                    style={{
-                      position: "absolute",
-                      bottom: "10px",
-                      padding: "5px",
-                    }}
-                    onClick={editProfile}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    style={{
-                      position: "absolute",
-                      bottom: "10px",
-                      left: "80px", // Adjust 'left' to position the button relative to the first one
-                      padding: "5px",
-                    }}
-                    onClick={handleview}
-                  >
-                    View
-                  </Button>
-                </div>
-                <div className="ms-3" style={{ marginTop: "130px" }}>
-                  <MDBTypography tag="h5">
+                <div className="profile-info">
+                  <MDBTypography tag="h4" className="profile-name">
                     {data.Fname} {data.Lname}
                   </MDBTypography>
+                  <Button
+                    className="edit-btn"
+                    onClick={() => navigate("/edit-profile")}
+                    variant="outline-primary"
+                  >
+                    Edit Profile
+                  </Button>
                 </div>
               </div>
-              <div
-                className="p-4 text-black"
-                style={{ backgroundColor: "#f8f9fa" }}
-              >
-                <div className="d-flex justify-content-end text-center py-1">
-                  <div>
-                    <MDBCardText className="mb-1 h5">
-                      {data.totalpost}
-                    </MDBCardText>
-                    <MDBCardText className="small text-muted mb-0">
-                      Photos
-                    </MDBCardText>
-                  </div>
-                  <div className="px-3">
-                    <MDBCardText className="mb-1 h5">
-                      {data.followers}
-                    </MDBCardText>
-                    <MDBCardText className="small text-muted mb-0">
-                      Following
-                    </MDBCardText>
-                  </div>
+
+              {/* Stats Section */}
+              <div className="profile-stats">
+                <div className="stat-item">
+                  <MDBCardText className="stat-number">
+                    {posts.length}
+                  </MDBCardText>
+                  <MDBCardText className="stat-label">Posts</MDBCardText>
+                </div>
+                <div className="stat-item">
+                  <MDBCardText className="stat-number">
+                    {data.followers || 0}
+                  </MDBCardText>
+                  <MDBCardText className="stat-label">Followers</MDBCardText>
+                </div>
+                <div className="stat-item">
+                  <MDBCardText className="stat-number">
+                    {data.following || 0}
+                  </MDBCardText>
+                  <MDBCardText className="stat-label">Following</MDBCardText>
                 </div>
               </div>
-              <MDBCardBody key={data.Fname} className="text-black p-4">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <MDBCardText className="lead fw-normal mb-0">
-                    Recent photos
+
+              {/* Posts Section */}
+              <MDBCardBody className="posts-section">
+                <div className="section-header">
+                  <MDBCardText className="section-title">
+                    Your Posts
                   </MDBCardText>
                 </div>
-                {data
-                  ? data.friendpost.map((result, index) => (
-                      <MDBRow>
-                        <MDBCol className="mb-2">
-                          <MDBCardImage
-                            src={result ? getImageSrc(result) : ""}
-                            alt="image 1"
-                            className="w-100 rounded-3"
-                            style={{
-                              height: "300px",
-                              minWidth: "300px",
-                              objectFit: "contain",
-                              transition: "transform 0.2s",
-                            }}
-                            onMouseOver={(e) => {
-                              e.target.style.transform = "scale(1.1)";
-                            }} // Scale up on hover
-                            onMouseOut={(e) => {
-                              e.target.style.transform = "scale(1)";
-                            }}
-                            onClick={() => handleimageclick(index)}
+
+                {posts.map((post) => (
+                  <div className="post-card" key={post.id}>
+                    {/* Post Image */}
+                    <div className="post-image-container">
+                      <MDBCardImage
+                        src={post.imageUrl}
+                        alt={`Post ${post.id}`}
+                        className="post-image"
+                        onClick={() => {
+                          setActivePostIndex(post.id);
+                          setFullscreen(post.imageUrl);
+                        }}
+                      />
+                    </div>
+
+                    {/* Post Actions */}
+                    <div className="post-actions">
+                      <button
+                        className={`like-btn ${post.isLiked ? "liked" : ""}`}
+                        onClick={() => handleLike(post.id)}
+                      >
+                        <MDBIcon
+                          fas
+                          icon="heart"
+                          size="lg"
+                          className="action-icon"
+                        />
+                        <span>{post.likes} likes</span>
+                      </button>
+
+                      <button
+                        className="comment-btn"
+                        onClick={() => toggleComments(post.id)}
+                      >
+                        <MDBIcon
+                          far
+                          icon="comment"
+                          size="lg"
+                          className="action-icon"
+                        />
+                        <span>{post.comments.length} comments</span>
+                      </button>
+                    </div>
+
+                    {/* Comments Section */}
+                    {post.showComments && (
+                      <div className="comments-section">
+                        <div className="comments-list">
+                          {post.comments.map((comment) => (
+                            <div key={comment.id} className="comment">
+                              <strong>{comment.user}: </strong>
+                              <span>{comment.text}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="add-comment">
+                          <MDBInput
+                            label="Add a comment..."
+                            type="text"
+                            value={commentInput}
+                            onChange={(e) => setCommentInput(e.target.value)}
+                            className="comment-input"
                           />
-                        </MDBCol>
-                      </MDBRow>
-                    ))
-                  : ""}
-                <ImageGallery
-                  ref={imageGalleryRef}
-                  items={images}
-                  showThumbnails={true}
-                  showFullscreenButton={true}
-                  showPlayButton={false}
-                  showBullets={true}
-                />
+                          <button
+                            className="post-comment-btn"
+                            onClick={() => handleAddComment(post.id)}
+                          >
+                            Post
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </MDBCardBody>
             </MDBCard>
           </MDBCol>
         </MDBRow>
       </MDBContainer>
+      {fullscreen && (
+        <div
+          className="custom-fullscreen-overlay"
+          onClick={() => setFullscreen(null)}
+        >
+          <button
+            className="fullscreen-close-btn"
+            onClick={(e) => {
+              e.stopPropagation(); // prevent closing twice
+              setFullscreen(null);
+            }}
+            aria-label="Close fullscreen image"
+          >
+            &times;
+          </button>
+          <img
+            src={fullscreen}
+            alt="Fullscreen"
+            className="fullscreen-img"
+            onClick={(e) => e.stopPropagation()} // prevent modal close when clicking image itself
+          />
+        </div>
+      )}
     </div>
   );
 }
