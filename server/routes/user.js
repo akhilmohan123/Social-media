@@ -350,12 +350,18 @@ router.get("/edit-profile",(req,res)=>{
   })
  })
 })
-router.post("/edit-profile",upload.single("file"),(req,res)=>{
+router.post("/edit-profile",upload.fields([
+  {name:'profilePic',maxCount:1},
+]),(req,res)=>{
  const{Fname,Lname}=req.body
-let Image=req.file
+ console.log(Fname)
+ console.log(Lname)
+ const ediprofilePicFile = req.files['profilePic'] ? req.files['profilePic'][0] : null;
+ let editprofilepicname = ediprofilePicFile ? ediprofilePicFile.filename : null;
+ console.log("Profile pic name is from the editprofile  "+editprofilepicname)
  //console.log(Image)
   getuserid(req.headers).then(result=>{
-    posteditdata(result.userId,Fname,Lname,Image).then(result=>{
+    posteditdata(result.userId,Fname,Lname,editprofilepicname).then(result=>{
       res.status(200).json(result)
     }).catch(err=>{
       res.status(400).json(err)

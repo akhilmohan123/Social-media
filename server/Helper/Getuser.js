@@ -3,6 +3,8 @@ const usermodel = require('../model/usermodel');
 const Post = require("../model/postmodel");
 require('dotenv').config();
 const fs=require("fs");
+const { mongoose } = require('mongoose');
+const ObjectId  = mongoose.Types.ObjectId;
 module.exports = {
   getuserid: (data) => {
     //console.log(data)
@@ -112,49 +114,39 @@ module.exports = {
       }
     })
   },
-  posteditdata:(email,Fname,Lname,Image)=>{
+  posteditdata:(id,Fname,Lname,Image)=>{
     
     return new Promise(async(resolve,reject)=>{
       try {
-        if(Image){
-          var filepath=Image.path
-        var img = fs.readFileSync(filepath);
-        var encode_image = img.toString('base64');
-        
-        var finalImg = {
-            contentType: Image.mimetype,
-            image: Buffer.from(encode_image, 'base64')
-        };
-        //console.log(finalImg)
-        await usermodel.findOne({Email:email}).then(async(result)=>{
-          //console.log(result)
-        let id=result._id
+        //initialize filter obj to store the values that is not undefined
+        let filteredObj={}
+        if(id!=undefined)
+        {
+          if(Fname!=undefined) filteredObj.Fname=Fname
+          if(Lname!=undefined) filteredObj.Lname=Lname
+          if(Image!=undefined) filteredObj.Image=Image
+
+          console.log(filteredObj)
+          console.log(id)
         //console.log(id)
-        await usermodel.findByIdAndUpdate(id,{
-          Fname:Fname,
-          Lname:Lname,
-          Image:finalImg
-        }).then(result=>{
-          //console.log(result)
+        await usermodel.findByIdAndUpdate(id,
+          { $set: filteredObj }, { new: true }
+        ).then(result=>{
+          console.log(result)
           resolve({data:true})
         }).catch(err=>resolve({data:false}))
-        }).catch(err=>resolve({data:false}))
-        }else{
-          await usermodel.findOne({Email:email}).then(async(result)=>{
-          let id=result._id
           //console.log(id)
-          await usermodel.findByIdAndUpdate(id,{
-            Fname:Fname,
-            Lname:Lname,
+          // await usermodel.findByIdAndUpdate(id,{
+          //   Fname:Fname,
+          //   Lname:Lname,
             
-          }).then(result=>{
-            //console.log(result)
-            resolve({data:true})
-          }).catch(err=>resolve({data:false}))
-          }).catch(err=>resolve({data:false}))
-        }
-       
+          // }).then(result=>{
+          //   //console.log(result)
+          //   resolve({data:true})
+          // }).catch(err=>resolve({data:false}))
+      }
       } catch (error) {
+        console.log(error)
         resolve({data:false})
       }
       

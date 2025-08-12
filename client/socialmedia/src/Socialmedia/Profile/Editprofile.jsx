@@ -11,28 +11,38 @@ import {
   MDBRow,
   MDBInput,
 } from "mdb-react-ui-kit";
+import { useSelector } from "react-redux";
 
 function Editprofile() {
 const[value,Setvalue]=useState({Fname:"",Lname:"",Image:null})
 const navigate=useNavigate()
 const token=localStorage.getItem("token")
-useEffect(()=>{
-    try {
-        axios.get("http://localhost:3001/edit-profile",{
-            headers:{
-                Authorization:`Bearer ${token}`
-            }
-        }).then(data=>{
-            Setvalue({
-                Fname:data.data.Fname||"",
-                Lname:data.data.Lname||"",
-                Image:data.data.Image||""
-            })
-        })
-    } catch (error) {
+const profiledata=useSelector((state)=>state.User.profileData)
+// useEffect(()=>{
+//     try {
+//         axios.get("http://localhost:3001/edit-profile",{
+//             headers:{
+//                 Authorization:`Bearer ${token}`
+//             }
+//         }).then(data=>{
+//             Setvalue({
+//                 Fname:data.data.Fname||"",
+//                 Lname:data.data.Lname||"",
+//                 Image:data.data.Image||""
+//             })
+//         })
+//     } catch (error) {
         
-    }
-},[token])
+//     }
+// },[token])
+
+useEffect(()=>{
+  Setvalue({
+    Fname: profiledata?.Fname || "",
+    Lname: profiledata?.Lname || "",
+    Image: profiledata?.image || null
+  })
+},[profiledata]);
 function handlechange(e){
     const {name,value}=e.target
     Setvalue((prevalue)=>({...prevalue,[name]:value}))
@@ -49,7 +59,7 @@ function handlesubmit(e){
     const form=new FormData()
     form.append("Fname",value.Fname)
     form.append("Lname",value.Lname)
-    form.append("file",value.Image)
+    form.append("profilePic",value.Image)
     console.log(form)
    try {
     axios.post("http://localhost:3001/edit-profile",form,{
@@ -61,7 +71,7 @@ function handlesubmit(e){
         navigate("/profile")
     })
    } catch (error) {
-    
+    console.log(error)
    }
 }
 
