@@ -135,15 +135,6 @@ module.exports = {
           console.log(result)
           resolve({data:true})
         }).catch(err=>resolve({data:false}))
-          //console.log(id)
-          // await usermodel.findByIdAndUpdate(id,{
-          //   Fname:Fname,
-          //   Lname:Lname,
-            
-          // }).then(result=>{
-          //   //console.log(result)
-          //   resolve({data:true})
-          // }).catch(err=>resolve({data:false}))
       }
       } catch (error) {
         console.log(error)

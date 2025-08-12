@@ -130,16 +130,28 @@ export default function Profiledetails() {
                     fluid
                   />
                 </div>
-                <div className="profile-info">
+                <div className="profile-info d-flex align-items-center gap-3">
                   <MDBTypography tag="h4" className="profile-name">
                     {data.Fname} {data.Lname}
                   </MDBTypography>
+
                   <Button
                     className="edit-btn"
                     onClick={() => navigate("/edit-profile")}
                     variant="outline-primary"
                   >
                     Edit Profile
+                  </Button>
+
+                  <Button
+                    className="logout-btn"
+                    variant="outline-danger"
+                    onClick={() => {
+                      localStorage.removeItem("token");
+                      navigate("/login"); // or your logout redirect
+                    }}
+                  >
+                    Logout
                   </Button>
                 </div>
               </div>

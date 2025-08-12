@@ -85,7 +85,7 @@ function Socialheader({ value }) {
         >
           {/* Left: Logo + Label */}
           <Navbar.Brand
-            href="#home"
+            href="/social"
             className="text-dark d-flex align-items-center"
             style={{ marginBottom: "5px" }}
           >
