@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef,useEffect } from "react";
 import {
   MDBCol,
   MDBContainer,
@@ -29,7 +29,7 @@ export default function Profiledetails() {
   const [fullscreen, setFullscreen] = useState(null);
 
   // Initialize posts with dummy data when component mounts or data changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (data?.image) {
       setProfilepic(`http://localhost:3001/uploads/profilePics/${data.image}`);
     }

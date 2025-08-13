@@ -97,14 +97,17 @@ function Socialmiddle() {
       {/* Middle Feed */}
       <div style={{ flex: 1, margin: "0 20px" }}>
         {streamstatus ? <StreamPlayer /> : <CreatePost />}
-        {data?.posts?.map((post) => (
+        {data?.map((post) => (
           <Showfeed
             key={post._id}
-            image={post.Image?.trim?.() ? post.Image : "/default-image.png"}
-            description={post.Description}
-            name={data.name}
-            like={post.Like}
-            postid={post._id}
+            image={ post.Image? post.Image : "/default-image.png"}
+            description={post?.Description}
+            name={`${post?.Userid?.Fname || ""} ${post?.Userid?.Lname || ""}`}
+            like={post?.Like}
+            postid={post?._id}
+            comment={post?.Comment}
+            createadAt={post?.createadAt}
+            location={post?.Location}
           />
         ))}
       </div>

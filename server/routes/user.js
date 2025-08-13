@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer')
 const fs=require('file-system');
 const { getuserid, getusername, getpeople, geteditdata, posteditdata, getuserpost,getName } = require('../Helper/Getuser');
-const { addpost, addlike, removelike, uploadpost } = require('../Helper/Poststore');
+const { addpost, addlike, removelike, uploadpost, showPost } = require('../Helper/Poststore');
 const { addfriend, removefriend } = require('../Helper/Addfriends');
 const Friend = require('../model/Friendsmodel');
 const Post = require('../model/postmodel');
@@ -217,81 +217,87 @@ router.post("/add-friend/:key",async(req,res)=>{
 router.get('/get-post', async (req, res) => {
   console.log("get post is called =======")
   try {
-    
-    const resee = await getuserid(req.headers);
-   
-    if (!resee) {
-      return res.status(400).json({ message: "Invalid token or no token provided" });
+    let user=await getuserid(req.headers);
+    let data=await showPost(user.userId)
+    if(data.length>0)
+    {
+      res.status(200).json(data)
+    }else
+    {
+      res.status(200).json([])
+      
     }
 
-    const Id = resee.userId;
-    console.log("id from the get post is =======" + Id);
-    const user = await usermodel.findById(new ObjectId(Id));
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const friend = await Friend.find({});
-    const userFriends = friend.filter(data => data.Userid.equals(Id));
-    console.log("after the user friends ")
-    console.log(userFriends)
-    const friends = userFriends.map(data => data.Friendsid,{ Friendsid: 1, _id: 0 });
-    console.log("after the friends ids")
-    let username=await getFriendName(Id);
-    //  const friendsIds = friends.flatMap(f => f.Friendsid);
-    //  console.log("before the posts is ======")
-    //  console.log(friendsIds)
-    let postdata={}
-    const posts = await Post.find({ Userid: { $in: friends[0] } });
-    postdata.name=username;
-    postdata.posts=posts;
-    console.log(postdata)
-    console.log("after the post")
-    console.log(posts)
-    
-    if (posts.length > 0) {
-      res.status(200).json(postdata);
-    } else {
-      res.status(404).json({ message: "No posts found" });
-    }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    console.log("Error in feteching the post"+error);
+    res.status(400).json({message:"Something went wrong please try again later"})
   }
+  // try {
+    
+  //   const resee = await getuserid(req.headers);
+   
+  //   if (!resee) {
+  //     return res.status(400).json({ message: "Invalid token or no token provided" });
+  //   }
+
+  //   const Id = resee.userId;
+  //   console.log("id from the get post is =======" + Id);
+  //   const user = await usermodel.findById(new ObjectId(Id));
+
+  //   if (!user) {
+  //     return res.status(404).json({ message: "User not found" });
+  //   }
+
+  //   const friend = await Friend.find({});
+  //   const userFriends = friend.filter(data => data.Userid.equals(Id));
+  //   console.log("after the user friends ")
+  //   console.log(userFriends)
+  //   const friends = userFriends.map(data => data.Friendsid,{ Friendsid: 1, _id: 0 });
+  //   console.log("after the friends ids")
+  //   let username=await getFriendName(Id);
+  //   //  const friendsIds = friends.flatMap(f => f.Friendsid);
+  //   //  console.log("before the posts is ======")
+  //   //  console.log(friendsIds)
+  //   let postdata={}
+  //   const posts = await Post.find({ Userid: { $in: friends[0] } });
+  //   postdata.name=username;
+  //   postdata.posts=posts;
+  //   console.log(postdata)
+  //   console.log("after the post")
+  //   console.log(posts)
+    
+  //   if (posts.length > 0) {
+  //     res.status(200).json(postdata);
+  //   } else {
+  //     res.status(404).json({ message: "No posts found" });
+  //   }
+  // } catch (error) {
+  //   console.error(error);
+  //   res.status(500).json({ error: error.message });
+  // }
 });
 router.post("/add-like/:id",(req,res)=>{
   let postid=req.params.id
-  let likes=req.body;
   let resulted={};
   getuserid(req.headers).then((result)=>{
     console.log("userid from the add like is "+result.userId)
-  usermodel.findById(new ObjectId(result.userId)).then(data=>{
-    let id=data._id;
-    addlike(likes,postid).then(result=>{
-      //console.log(result)
-      resulted.valid=result
-      resulted.id=id
+    addlike(result.userId,postid).then(result=>{
+      console.log(result)
+      // resulted.valid=result
+      // resulted.id=id
       //console.log(resulted)
       if(result){
-        res.status(200).json(resulted)
+        res.status(200).json(result)
       }else{
         res.status(400).json({result})
       }
     })
   })
   })
-})
 router.post(`/remove-like/:id`,(req,res)=>{
   let postid=req.params.id
-  let likes=req.body;
-  let resulted={};
   getuserid(req.headers).then((result)=>{
-    usermodel.findOne({Email:result.userId}).then((resp)=>{
-      let id=res._id;
-      removelike(likes,postid).then((results)=>{
-        resulted.valid=results
-        resulted.id=id
+      removelike(result.userId,postid).then((results)=>{
         //console.log(resulted)
         if(results){
           res.status(200).json(resulted)
@@ -301,7 +307,6 @@ router.post(`/remove-like/:id`,(req,res)=>{
       })
     })
   })
-})
 router.post(`/remove-friend/:id`,(req,res)=>{
   let id=req.params.id
   getuserid(req.headers).then((rese)=>{
