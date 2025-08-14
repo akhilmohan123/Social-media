@@ -108,6 +108,7 @@ function Socialmiddle() {
             comment={post?.Comment}
             createadAt={post?.createadAt}
             location={post?.Location}
+            isLikedstatus={post?.isLikedstatus}
           />
         ))}
       </div>

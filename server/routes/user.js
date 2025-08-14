@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer')
 const fs=require('file-system');
 const { getuserid, getusername, getpeople, geteditdata, posteditdata, getuserpost,getName } = require('../Helper/Getuser');
-const { addpost, addlike, removelike, uploadpost, showPost } = require('../Helper/Poststore');
+const { addpost, addlike, removelike, uploadpost, showPost, toggleLike } = require('../Helper/Poststore');
 const { addfriend, removefriend } = require('../Helper/Addfriends');
 const Friend = require('../model/Friendsmodel');
 const Post = require('../model/postmodel');
@@ -281,7 +281,7 @@ router.post("/add-like/:id",(req,res)=>{
   let resulted={};
   getuserid(req.headers).then((result)=>{
     console.log("userid from the add like is "+result.userId)
-    addlike(result.userId,postid).then(result=>{
+    toggleLike(result.userId,postid).then(result=>{
       console.log(result)
       // resulted.valid=result
       // resulted.id=id

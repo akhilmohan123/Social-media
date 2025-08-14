@@ -15,7 +15,8 @@ const Postschema=new mongoose.Schema({
     Description:String,
     Location:String,
     Like: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userdetails' }],
-    Comment: [commentSchema]
+    Comment: [commentSchema],
+    isLiked:{type:Boolean,default:false}
 },{timestamps:true})
 const Post=mongoose.model('Post',Postschema);
 module.exports=Post;

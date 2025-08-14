@@ -2,6 +2,8 @@ const { Schema } = require("mongoose");
 const Post = require("../model/postmodel");
 const usermodel = require("../model/usermodel");
 const { getAllFriends } = require("./getfriendsprofile");
+const { mongoose } = require('mongoose');
+const ObjectId  = mongoose.Types.ObjectId;
 module.exports = {
   addpost: (content, image, name) => {
     return new Promise(async (resolve, reject) => {
@@ -22,25 +24,36 @@ module.exports = {
       });
     });
   },
-  addlike: (userId, postid) => {
-    return new Promise(async (resolve, reject) => {
-      let res = await Post.findByIdAndUpdate(
-        postid,
-        { $addToSet: { Like: userId } }, // ensures no duplicates
-        { new: true }
-      );
-      if (res) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    });
-  },
+  toggleLike: async (userId, postId) => {
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return false; // post not found
+    }
+
+    const alreadyLiked = post.Like.includes(userId);
+
+
+    const update = alreadyLiked
+      ? { $pull: { Like: userId } }  // unlike
+      : { $addToSet: { Like: userId } }; // like
+
+    const res = await Post.findByIdAndUpdate(postId, update, { new: true });
+
+    return res;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
+,
   removelike: (userId, postid) => {
     return new Promise(async (resolve, reject) => {
       let res = await Post.findByIdAndUpdate(
         postid,
-        { $pull: { Like: userId } }, // removes the userId from likes array
+        { $pull: { Like: userId } },
+        { $set: { isLiked: false } }, // removes the userId from likes array
         { new: true }
       );
       if (res) {
@@ -76,19 +89,27 @@ module.exports = {
       }
     });
   },
-  showPost: (id) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let friends = await getAllFriends(id); //get the friends of the user
-        //only need to show the friends posts
-        let posts = await Post.find({ Userid: { $in: friends } }).populate(
-          "Userid"
-        );
-        console.log(posts);
-        resolve(posts);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  },
+showPost: (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let friends = await getAllFriends(id);
+
+      // Fetch posts and make them plain objects
+      let posts = await Post.find({ Userid: { $in: friends } })
+        .populate("Userid")
+        .lean();
+
+      // Add isLiked dynamically
+      posts = posts.map(p => ({
+        ...p,
+        isLikedstatus: p.Like.some(likeId => likeId.toString() === id.toString())
+      }));
+
+      console.log(posts);
+      resolve(posts);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
 };

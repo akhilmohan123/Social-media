@@ -18,6 +18,7 @@ function Showfeed({
   comment = [],
   createdAt,
   location,
+  isLikedstatus,
 }) {
   const [postPic, setPostpic] = useState(null);
   const [likes, setLikes] = useState(like);
@@ -34,8 +35,10 @@ function Showfeed({
   }
 
   useEffect(() => {
+    console.log("Liked status is " + isLikedstatus);
     setPostpic(`http://localhost:3001/uploads/posts/${image}`);
-  }, [image]);
+    if (isLikedstatus) setIsLiked(true);
+  }, [image, isLiked]);
 
   const formattedDate = createdAt
     ? new Date(createdAt).toLocaleString("en-IN", {
@@ -50,12 +53,10 @@ function Showfeed({
   // Toggle like
   const handleLike = async () => {
     apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    
+    await _post(`http://localhost:3001/add-like/${postid}`);
     if (isLiked) {
       setLikes(likes - 1);
-      await _post(`http://localhost:3001/remove-like/${postid}`);
     } else {
-      await _post(`http://localhost:3001/add-like/${postid}`);
       setLikes(likes + 1);
     }
     setIsLiked(!isLiked);
@@ -64,9 +65,9 @@ function Showfeed({
     // axios.post("/like", { postid, liked: !isLiked });
   };
 
-  useEffect(()=>{
-    setLikes(like.length)
-  },[like])
+  useEffect(() => {
+    setLikes(like.length);
+  }, [like]);
 
   // Add comment
   const handleCommentSubmit = (e) => {
