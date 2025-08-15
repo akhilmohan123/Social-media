@@ -8,6 +8,8 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { _post, apiClient } from "./axios/Axios";
+import socket from "./Socket/Socket";
+import { useSelector } from "react-redux";
 
 function Showfeed({
   name = "default",
@@ -19,6 +21,7 @@ function Showfeed({
   createdAt,
   location,
   isLikedstatus,
+  userid
 }) {
   const [postPic, setPostpic] = useState(null);
   const [likes, setLikes] = useState(like);
@@ -26,13 +29,18 @@ function Showfeed({
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState(comment);
-
+  const [currentUser,setCurrentuser]=useState(null)
+  const profileData=useSelector((state)=>state.User.profileData);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   if (!token) {
     navigate("/login");
   }
+
+  useEffect(()=>{
+    setCurrentuser(profileData?.Fname+profileData?.Lname)
+  },[profileData])
 
   useEffect(() => {
     console.log("Liked status is " + isLikedstatus);
@@ -52,15 +60,18 @@ function Showfeed({
 
   // Toggle like
   const handleLike = async () => {
+    console.log("current user name is "+currentUser)
     apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     await _post(`http://localhost:3001/add-like/${postid}`);
     if (isLiked) {
       setLikes(likes - 1);
     } else {
+
       setLikes(likes + 1);
+      socket.emit("add-like",{userid:userid,postid:postid,username:currentUser})
     }
     setIsLiked(!isLiked);
-
+    
     // Send like status to backend (optional)
     // axios.post("/like", { postid, liked: !isLiked });
   };

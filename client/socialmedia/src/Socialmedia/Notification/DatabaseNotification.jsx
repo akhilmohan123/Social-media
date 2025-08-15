@@ -31,7 +31,7 @@ function DatabaseNotification() {
            const exists = existingNotification.some(n => n.notificationid === notificationid);
             console.log("Existing notifications:", existingNotification);   
             //if the status is ended then we dont want to show the notifiction
-              if (status === 'ended' && seen === true) {
+              if (status === 'ended' && seen === true && read === true) {
               try {
                    dispatch(removeNotification(notificationid));
                     console.log("Deleted ended and seen notification:", notificationid);
@@ -73,6 +73,12 @@ function DatabaseNotification() {
            payload.groupname = notification.groupname;
            payload.groupid = notification.groupid;
            payload.admin = notification.admin;
+          }
+
+          if(type=="post-liked")
+          {
+            payload.likedusername = notification.likedusername;
+            payload.postid = notification.postid;
           }
 
            dispatch(updateNotificationdata(payload));

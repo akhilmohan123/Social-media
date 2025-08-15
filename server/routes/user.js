@@ -707,18 +707,18 @@ router.get("/api/get-fcm-token/:id",async(req,res)=>{
 
 //router to post the notification
 router.post("/api/post-notification",async(req,res)=>{
-  //console.log("Post notification api called ")
+  console.log("Post notification api called ")
   try {
     //console.log(req.body)
     await saveNotification(req.body).then((result)=>{
       if(result)
       {
-        //console.log("Notification saved successfully")
+        console.log("Notification saved successfully")
         return res.status(200).json(true);
       }
     })
   } catch (error) {
-    //console.log("Error saving notification:", error);
+    console.log("Error saving notification:", error);
     return res.status(400).json(false);
   }
 })
@@ -744,7 +744,7 @@ router.get("/api/socialmedia/get-notifications",async(req,res)=>{
 //router to post the notification as read
 router.post("/api/socialmedia/mark-notification-as-read",async(req,res)=>{
   try {
-    //console.log("mark notification as read called");
+    console.log("mark notification as read called");
    let user=await getuserid(req.headers);
    if(user)
    {
@@ -867,9 +867,19 @@ router.get("/api/social-media/get-active-users/:id",async(req,res)=>{
     ////console.log(err)
     res.status(400).json(err)
   })
-
-
 })
+
+//router to update the notification status as read
+
+router.post("/api/socialmedia/notification/status",async(req,res)=>{
+  try {
+    
+  } catch (error) {
+    
+  }
+})
+
+
 
 module.exports=router;
 /*"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJha2hpbCIsImlhdCI6MTcyMDIwMDc4MCwiZXhwIjoxNzIwMjA0MzgwfQ.5ZZmIz4SxIqWv3UCDBGN39cCbjBRNdGNimq1e6RY31w"*/

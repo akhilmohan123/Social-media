@@ -128,12 +128,13 @@ async function getUsername(id) {
     .get(`http://localhost:3001/api/get-friendname/${id}`)
     .then((response) => {
       //console.log("friends name is from getusername ======"+response.data)
-      return response.data;
+      return response.data
     });
 }
 //function to post the notification data
 
 async function PostNotificationData(notificationData) {
+  console.log("post notification called ")
   try {
     await axios
       .post("http://localhost:3001/api/post-notification", notificationData)
@@ -476,6 +477,30 @@ io.on("connection", (socket) => {
     let result = await saveMessage(message);
     io.to(message.groupID).emit("group-message-recieved", message);
   });
+   
+  //event to notify the user liked the post
+  socket.on("add-like",async(data)=>{
+    let notificationdata={}
+    console.log("Add like is called ")
+    console.log(data)
+    let {userid,postid,username}=data;
+    let socketid=activeusers.find((u)=>u.userid==userid)?.socketId;
+    console.log("socket id is "+socketid)
+    console.log("userid is "+userid)
+    console.log("post")
+    let notificationid;
+    //create the notification object
+    notificationid=uuidv4();
+    notificationdata.notificationid=notificationid;
+    notificationdata.postid=postid;
+    notificationdata.likedusername=username;
+    notificationdata.type="liked-post";
+    console.log("before notification data is called")
+    let postdata=await PostNotificationData(notificationdata)
+    console.log("AFter the posnofication function")
+    io.to(socketid).emit("post-liked",notificationdata);
+
+  })
 
 
 

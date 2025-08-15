@@ -124,6 +124,7 @@ const Notificationbell = () => {
                 )}
               </Dropdown.Item>
             ))}
+    
           </>
         ) : (
           <div className="text-center text-muted p-3">No new notifications</div>
