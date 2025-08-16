@@ -117,6 +117,24 @@ module.exports = {
           });
           resolve(true);
         }
+        else if (data.type === "add-comment") {
+          let { notificationid, commentusername, type, postid } = data;
+          let notificationData = new Notification({
+            fromUser: {
+              name: commentusername,
+            },
+            type: type,
+            notificationid: notificationid,
+            status: "pending",
+            read: false,
+            seen: false,
+            postId: postid,
+          });
+          await notificationData.save().then((res)=>{
+            console.log("notification "+res)
+          });
+          resolve(true);
+        }
       } catch (error) {
         console.log("Error saving notification:", error);
         reject(false);

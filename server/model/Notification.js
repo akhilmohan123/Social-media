@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema({
   body: String,
   type: {
     type: String,
-    enum: ['live-stream', 'group-joining-request', 'message', 'other','liked-post'],
+    enum: ['live-stream', 'group-joining-request', 'message', 'other','liked-post','add-comment'],
     required: true,
   },
   notificationid: {

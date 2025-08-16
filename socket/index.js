@@ -78,6 +78,15 @@ function startFFmpegProcess() {
   });
   return ffmpegProcess;
 }
+//function to get the socketid of the user
+
+function getSocketid(activeusers, userid) {
+  let user = activeusers.find((user) => user.userid === userid);
+  return user ? user.socketId : null;
+}
+
+//function to create the notification data
+
 //function to get the group name
 
 async function getGroupname(id) {
@@ -128,13 +137,13 @@ async function getUsername(id) {
     .get(`http://localhost:3001/api/get-friendname/${id}`)
     .then((response) => {
       //console.log("friends name is from getusername ======"+response.data)
-      return response.data
+      return response.data;
     });
 }
 //function to post the notification data
 
 async function PostNotificationData(notificationData) {
-  console.log("post notification called ")
+  console.log("post notification called ");
   try {
     await axios
       .post("http://localhost:3001/api/post-notification", notificationData)
@@ -230,8 +239,8 @@ io.on("connection", (socket) => {
 
   // Send message to a specific user
   socket.on("send-message", (data) => {
-    console.log(typeof data)
-    const  receiverId  = data.recieverId;
+    console.log(typeof data);
+    const receiverId = data.recieverId;
     const user = activeusers.find((user) => user.userid === receiverId); // fixed casing
     console.log("Sending message to:", receiverId);
     if (user) {
@@ -477,32 +486,48 @@ io.on("connection", (socket) => {
     let result = await saveMessage(message);
     io.to(message.groupID).emit("group-message-recieved", message);
   });
-   
+
   //event to notify the user liked the post
-  socket.on("add-like",async(data)=>{
-    let notificationdata={}
-    console.log("Add like is called ")
-    console.log(data)
-    let {userid,postid,username}=data;
-    let socketid=activeusers.find((u)=>u.userid==userid)?.socketId;
-    console.log("socket id is "+socketid)
-    console.log("userid is "+userid)
-    console.log("post")
+  socket.on("add-like", async (data) => {
+    let notificationdata = {};
+    console.log("Add like is called ");
+    console.log(data);
+    let { userid, postid, username } = data;
+    let socketid = activeusers.find((u) => u.userid == userid)?.socketId;
+    console.log("socket id is " + socketid);
+    console.log("userid is " + userid);
+    console.log("post");
     let notificationid;
     //create the notification object
-    notificationid=uuidv4();
-    notificationdata.notificationid=notificationid;
-    notificationdata.postid=postid;
-    notificationdata.likedusername=username;
-    notificationdata.type="liked-post";
-    console.log("before notification data is called")
-    let postdata=await PostNotificationData(notificationdata)
-    console.log("AFter the posnofication function")
-    io.to(socketid).emit("post-liked",notificationdata);
+    notificationid = uuidv4();
+    notificationdata.notificationid = notificationid;
+    notificationdata.postid = postid;
+    notificationdata.likedusername = username;
+    notificationdata.type = "liked-post";
+    console.log("before notification data is called");
+    let postdata = await PostNotificationData(notificationdata);
+    console.log("AFter the posnofication function");
+    io.to(socketid).emit("post-liked", notificationdata);
+  });
 
-  })
-
-
+  //socket event for notifying user the comments
+  socket.on("add-comment", async (data) => {
+    let { userid, postid, username,comment} = data;
+    let notificationid
+    let notificationdata = {};
+    console.log("Add notification is called ");
+    let socketid = await getSocketid(activeusers, userid);
+    console.log("socketid from the add comment is " + socketid);
+    notificationid = uuidv4();
+    notificationdata.notificationid = notificationid;
+    notificationdata.postid = postid;
+    notificationdata.likedusername = username;
+    notificationdata.type = "add-comment";
+    let postdata=await PostNotificationData(notificationdata);
+    console.log("Post data after notification is created:");
+    io.to(socketid).emit("post-commented", notificationdata);
+    io.to(socketid).emit("post-commented-user",data)
+  });
 
   socket.on("error", (err) => {
     //console.error('Socket error:', err.message);

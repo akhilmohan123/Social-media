@@ -96,7 +96,7 @@ const Notificationbell = () => {
     }
   }
 
-  async function handleLikedPostClick(notification) {
+  async function handledPostClick(notification) {
     try {
       apiClient.defaults.headers.common[
         "Authorization"
@@ -247,7 +247,7 @@ const Notificationbell = () => {
                     key={notif.id}
                     className="notification-item border-bottom"
                     style={{ padding: "10px" }}
-                    onClick={() => handleLikedPostClick(notif)}
+                    onClick={() => handledPostClick(notif)}
                   >
                     <div className="d-flex justify-content-between">
                       <strong>{notif.fromUser?.name || "Someone"}</strong>
@@ -260,6 +260,29 @@ const Notificationbell = () => {
                       style={{ fontSize: "0.875rem" }}
                     >
                       liked your post
+                    </div>
+                  </Dropdown.Item>
+                );
+              }
+              if (notif.type === "add-comment") {
+                return (
+                  <Dropdown.Item
+                    key={notif.id}
+                    className="notification-item border-bottom"
+                    style={{ padding: "10px" }}
+                    onClick={() => handledPostClick(notif)}
+                  >
+                    <div className="d-flex justify-content-between">
+                      <strong>{notif.fromUser?.name || "Someone"}</strong>
+                      <small className="text-muted">
+                        {new Date(notif.timestamp).toLocaleTimeString()}
+                      </small>
+                    </div>
+                    <div
+                      className="text-muted mb-2"
+                      style={{ fontSize: "0.875rem" }}
+                    >
+                      commented on your post
                     </div>
                   </Dropdown.Item>
                 );

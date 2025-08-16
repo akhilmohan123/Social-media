@@ -7,9 +7,10 @@ import {
   FaRegCommentDots,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { _post, apiClient } from "./axios/Axios";
+import { _get, _post, apiClient } from "./axios/Axios";
 import socket from "./Socket/Socket";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 function Showfeed({
   name = "default",
@@ -21,7 +22,7 @@ function Showfeed({
   createdAt,
   location,
   isLikedstatus,
-  userid
+  userid,
 }) {
   const [postPic, setPostpic] = useState(null);
   const [likes, setLikes] = useState(like);
@@ -29,8 +30,8 @@ function Showfeed({
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState(comment);
-  const [currentUser,setCurrentuser]=useState(null)
-  const profileData=useSelector((state)=>state.User.profileData);
+  const [currentUser, setCurrentuser] = useState(null);
+  const profileData = useSelector((state) => state.User.profileData);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -38,9 +39,9 @@ function Showfeed({
     navigate("/login");
   }
 
-  useEffect(()=>{
-    setCurrentuser(profileData?.Fname+profileData?.Lname)
-  },[profileData])
+  useEffect(() => {
+    setCurrentuser(profileData?.Fname + profileData?.Lname);
+  }, [profileData]);
 
   useEffect(() => {
     console.log("Liked status is " + isLikedstatus);
@@ -60,36 +61,63 @@ function Showfeed({
 
   // Toggle like
   const handleLike = async () => {
-    console.log("current user name is "+currentUser)
+    console.log("current user name is " + currentUser);
     apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     await _post(`http://localhost:3001/add-like/${postid}`);
     if (isLiked) {
       setLikes(likes - 1);
     } else {
-
       setLikes(likes + 1);
-      socket.emit("add-like",{userid:userid,postid:postid,username:currentUser})
+      socket.emit("add-like", {
+        userid: userid,
+        postid: postid,
+        username: currentUser,
+      });
     }
     setIsLiked(!isLiked);
-    
+
     // Send like status to backend (optional)
     // axios.post("/like", { postid, liked: !isLiked });
   };
+
+  useEffect(()=>{
+    console.log(comment)
+    socket.on("post-commented-user",async(data)=>{
+      const {userid, postid, username,comment }=data;
+      console.log("New comment from the user "+data)
+      setComments((prevcomments)=>[...prevcomments,{user:username,text:comment}])
+    })
+  },[])
 
   useEffect(() => {
     setLikes(like.length);
   }, [like]);
 
   // Add comment
-  const handleCommentSubmit = (e) => {
+  const handleCommentSubmit = async (e) => {
+    try{
     e.preventDefault();
     if (commentText.trim() === "") return;
     const newComment = { user: "You", text: commentText };
+    const newCommentData=newComment.text
     setComments([...comments, newComment]);
     setCommentText("");
-
     // Send comment to backend (optional)
-    // axios.post("/comment", { postid, text: commentText });
+    apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+     await _post(`/api/post-comment/${postid}`,{comment:newCommentData}).then((res)=>{
+      console.log("Comment added successfully", res);
+      if(res.status ==200) 
+        socket.emit("add-comment",{
+        userid: userid,
+        postid: postid,
+        username: currentUser,
+        comment:newCommentData
+      })
+
+     })
+    }catch(error){
+      console.error("Error adding comment:", error);
+    }
   };
 
   return (
@@ -186,7 +214,7 @@ function Showfeed({
                         paddingBottom: "5px",
                       }}
                     >
-                      <strong>{c.user}:</strong> {c.text}
+                      <strong>{c?.user|| c?.Username}:</strong> {c.text || c?.Text}
                     </div>
                   ))
                 ) : (

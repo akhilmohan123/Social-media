@@ -1,9 +1,9 @@
 const { Schema } = require("mongoose");
 const Post = require("../model/postmodel");
 const usermodel = require("../model/usermodel");
-const { getAllFriends } = require("./getfriendsprofile");
-const { mongoose } = require('mongoose');
-const ObjectId  = mongoose.Types.ObjectId;
+const { getAllFriends, getFriendName } = require("./getfriendsprofile");
+const { mongoose } = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 module.exports = {
   addpost: (content, image, name) => {
     return new Promise(async (resolve, reject) => {
@@ -25,29 +25,27 @@ module.exports = {
     });
   },
   toggleLike: async (userId, postId) => {
-  try {
-    const post = await Post.findById(postId);
+    try {
+      const post = await Post.findById(postId);
 
-    if (!post) {
-      return false; // post not found
+      if (!post) {
+        return false; // post not found
+      }
+
+      const alreadyLiked = post.Like.includes(userId);
+
+      const update = alreadyLiked
+        ? { $pull: { Like: userId } } // unlike
+        : { $addToSet: { Like: userId } }; // like
+
+      const res = await Post.findByIdAndUpdate(postId, update, { new: true });
+
+      return res;
+    } catch (err) {
+      console.error(err);
+      return false;
     }
-
-    const alreadyLiked = post.Like.includes(userId);
-
-
-    const update = alreadyLiked
-      ? { $pull: { Like: userId } }  // unlike
-      : { $addToSet: { Like: userId } }; // like
-
-    const res = await Post.findByIdAndUpdate(postId, update, { new: true });
-
-    return res;
-  } catch (err) {
-    console.error(err);
-    return false;
-  }
-}
-,
+  },
   removelike: (userId, postid) => {
     return new Promise(async (resolve, reject) => {
       let res = await Post.findByIdAndUpdate(
@@ -89,27 +87,59 @@ module.exports = {
       }
     });
   },
-showPost: (id) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let friends = await getAllFriends(id);
+  showPost: (id) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let friends = await getAllFriends(id);
 
-      // Fetch posts and make them plain objects
-      let posts = await Post.find({ Userid: { $in: friends } })
-        .populate("Userid")
-        .lean();
+        // Fetch posts and make them plain objects
+        let posts = await Post.find({ Userid: { $in: friends } })
+          .populate("Userid")
+          .lean();
 
-      // Add isLiked dynamically
-      posts = posts.map(p => ({
-        ...p,
-        isLikedstatus: p.Like.some(likeId => likeId.toString() === id.toString())
-      }));
+        // Add isLiked dynamically
+        posts = posts.map((p) => ({
+          ...p,
+          isLikedstatus: p.Like.some(
+            (likeId) => likeId.toString() === id.toString()
+          ),
+        }));
 
-      console.log(posts);
-      resolve(posts);
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
+        console.log(posts);
+        resolve(posts);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  saveComment: (data) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let { postid, userid, comment } = data;
+        let friendname = await getFriendName(userid);
+        const newComment = {
+          Userid: userid,
+          Text: comment,
+        };
+        if (friendname) {
+          newComment.Username = friendname;
+        } else {
+          newComment.Username = "Unknown";
+        }
+        await Post.findOneAndUpdate(
+          {
+            _id: postid,
+          },
+          {
+            $push: { Comment: newComment },
+          },{
+            new:true
+          }
+        );
+        resolve(true);
+      } catch (error) {
+        console.log("Error is " + error);
+      }
+    });
+  },
 };

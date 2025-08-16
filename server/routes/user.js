@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer')
 const fs=require('file-system');
 const { getuserid, getusername, getpeople, geteditdata, posteditdata, getuserpost,getName } = require('../Helper/Getuser');
-const { addpost, addlike, removelike, uploadpost, showPost, toggleLike } = require('../Helper/Poststore');
+const { addpost, addlike, removelike, uploadpost, showPost, toggleLike, saveComment } = require('../Helper/Poststore');
 const { addfriend, removefriend } = require('../Helper/Addfriends');
 const Friend = require('../model/Friendsmodel');
 const Post = require('../model/postmodel');
@@ -869,11 +869,20 @@ router.get("/api/social-media/get-active-users/:id",async(req,res)=>{
   })
 })
 
-//router to update the notification status as read
-
-router.post("/api/socialmedia/notification/status",async(req,res)=>{
+//router to post the comment
+router.post("/api/post-comment/:id",async(req,res)=>{
   try {
-    
+    console.log("post commentsad called")
+    let user=await getuserid(req.headers);
+    if(user)
+    {
+      let postid=req.params.id;
+      await saveComment({postid,userid:user.userId,comment:req.body.comment}).then((result)=>{
+        res.status(200).json(result);
+      }).catch((error)=>{
+        res.status(400).json(error);
+      });
+    }
   } catch (error) {
     
   }

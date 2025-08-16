@@ -7,11 +7,12 @@
     height: 80vh; /* Set the height to a fixed value */
     width: 100%;
     max-width: 600px; /* Optional: Set a max-width to keep it from getting too wide */
-    margin: auto; /* Center horizontally */
     background-color: #f5f5f5;
     border: 1px solid #ececec;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-left: 30%;
+    margin-top: 5%;
 }
 
 /* Chat body styles */
@@ -54,4 +55,26 @@
 }
 .ai-message{
     color: blue;
+}
+
+.image-div{
+    height: 40px;
+    width:50px
+}
+
+.imagecomp{
+    height: 60px;
+    width: 40px;
+    display: flex;
+    flex-direction: center;
+}
+.textcolor{
+    color: blue;
+    font-family: "Courier New", Courier, monospace;
+}
+
+
+.user-message{
+    color: green;
+    font-family: "Courier New", Courier, monospace;
 }

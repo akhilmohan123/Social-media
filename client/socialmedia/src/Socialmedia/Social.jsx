@@ -216,17 +216,18 @@ useEffect(() => {
     dispatch(updateLiveStatus(true));
   };
 
-  function handleLikedpost({notificationid,postid,likedusername}){
-    console.log("ALERTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTt")
-    console.log("Liked post notification data:",{notificationid,postid,likedusername})
+  function handlePost({notificationid,postid,likedusername,type}){
+    console.log("Liked post notification data:",{notificationid,postid,likedusername,type})
     dispatch(updateNotificationdata({
       id:notificationid,
-      type:'liked-post',
+      type:type,
       fromUser:{name:likedusername},
       status:'pending',
       read:false,
       timestamp:new Date().toISOString()
     }))
+    
+
 
   }
 
@@ -234,7 +235,8 @@ useEffect(() => {
   socket.on("group-joining-request", handleGroupJoinRequest);
   socket.on("notification-update", handleNotificationUpdate);
   socket.on("live-stream-friend", handleLiveStreamFriend);
-  socket.on("post-liked", handleLikedpost);
+  socket.on("post-liked", handlePost);
+  socket.on("post-commented",handlePost)
 
   // Reconnect events (optional)
   // socket.on("disconnect", (reason) => {
