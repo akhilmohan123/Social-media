@@ -20,10 +20,15 @@ function Social() {
   const userID=useSelector(state=>state.User.userId)
   const socialRef=useRef(false)
   const notificationData=useSelector(state=>state.Social.notificationData)
+  const login=useSelector((state)=>state.User.login)
+
+
 
   useEffect(()=>{
-    //console.log(notificationData)
-  },[notificationData])
+    console.log("login status from the social component is "+login)
+  },[])
+
+  //show the logi
 
  useEffect(() => {
   const handleGroupJoinRequest = ({ notificationid, groupId, user,username,groupname }) => {

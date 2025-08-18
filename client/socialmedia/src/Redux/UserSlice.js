@@ -4,7 +4,8 @@ const initialState={
     userId:null,
     token:null,
     userName:'',
-    profileData:null
+    profileData:null,
+    login:false
 }
 
 const UserSlice=createSlice({
@@ -24,8 +25,11 @@ const UserSlice=createSlice({
         updateProfileData(state,action)
         {
             state.profileData=action.payload
+        },
+        updateLoginstatus(state,action){
+            state.login=action.payload;
         }
     }
 })
-export const{updateuserId,updatetoken,updateUsername,updateProfileData}=UserSlice.actions;
+export const{updateuserId,updatetoken,updateUsername,updateProfileData,updateLoginstatus}=UserSlice.actions;
 export default UserSlice.reducer;

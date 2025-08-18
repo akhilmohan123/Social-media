@@ -16,7 +16,8 @@ import ImageGallery from "react-image-gallery";
 import "./Profiledetails.css";
 import "react-image-gallery/styles/css/image-gallery.css";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { updateLoginstatus } from "../../Redux/UserSlice";
 
 export default function Profiledetails() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function Profiledetails() {
   const [commentInput, setCommentInput] = useState("");
   const [posts, setPosts] = useState([]);
   const [fullscreen, setFullscreen] = useState(null);
-
+  const dispatch=useDispatch()
   // Initialize posts with dummy data when component mounts or data changes
   useEffect(() => {
     if (data?.image) {
@@ -147,7 +148,7 @@ export default function Profiledetails() {
                     className="logout-btn"
                     variant="outline-danger"
                     onClick={() => {
-                      localStorage.removeItem("token");
+                      dispatch(updateLoginstatus(false))
                       navigate("/login"); // or your logout redirect
                     }}
                   >

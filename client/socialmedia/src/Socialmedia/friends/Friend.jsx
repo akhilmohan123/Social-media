@@ -38,7 +38,7 @@ function Friend() {
            })
         }
         fetchfriends();
-    },[token])
+    },[])
     console.log(data)
   console.log(data &&data.map(d=>console.log(d._id)))
   return (

@@ -33,9 +33,9 @@ function Showfeed({
   const [currentUser, setCurrentuser] = useState(null);
   const profileData = useSelector((state) => state.User.profileData);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const login=useSelector((state)=>state.User.login)
 
-  if (!token) {
+  if (!login) {
     navigate("/login");
   }
 

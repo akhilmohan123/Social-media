@@ -4,7 +4,7 @@ import Home from "./Home";
 import Signup from "./Userdata/Signup";
 import Login from "./Userdata/Login";
 import Logout from "./Userdata/Logout";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Social from "./Socialmedia/Social";
 import Profile from "./Socialmedia/Profile/Profile";
 import Friend from "./Socialmedia/friends/Friend";
@@ -23,11 +23,23 @@ import { getMessaging, getToken } from "firebase/messaging";
 import { onMessage } from "firebase/messaging";
 import FirebaseNotificationListener from "./Socialmedia/Notification/FirebaseNotificationListener.jsx";
 import UserSocketInitializer from "./Socialmedia/Socket/UserSocketInitializer.jsx";
+import { useDispatch, useSelector } from "react-redux";
+import { updateLoginstatus } from "./Redux/UserSlice.js";
+import { use } from "react";
 function App() {
   let userid = localStorage.getItem("userId");
+  const location=useLocation()
+  const dispatch=useDispatch()
   useEffect(() => {
     console.log("userid is =-=======" + userid);
-  }, []);
+    console.log("location is ==="+location.pathname);
+    console.log("login status from the app component ==="+login)
+    if(location.pathname ==="/login" || location.pathname ==="/signup")
+    {
+      dispatch(updateLoginstatus(false))
+    }
+  }, [location.pathname]);
+  const login=useSelector((state)=>state.User.login)
   return (
     <>
       <ToastContainer
@@ -41,8 +53,7 @@ function App() {
         draggable
         pauseOnHover
       />
-      <Router>
-        <UserSocketInitializer />
+        {login&&<UserSocketInitializer />}
         <Routes>
           <Route exact path="/" element={<Home />}></Route>
           <Route path="/login" element={<Login />}></Route>
@@ -58,7 +69,6 @@ function App() {
           <Route path="/edit-profile" element={<Editprofile />}></Route>
           <Route path="/view-profile" element={<Viewprofile />}></Route>
         </Routes>
-      </Router>
     </>
   );
 }
