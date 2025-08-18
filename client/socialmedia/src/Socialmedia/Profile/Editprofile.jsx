@@ -11,6 +11,7 @@ import {
   MDBInput,
 } from "mdb-react-ui-kit";
 import { useSelector } from "react-redux";
+import { _post } from "../axios/Axios";
 
 function Editprofile() {
   const [value, Setvalue] = useState({ Fname: "", Lname: "", Image: null });
@@ -61,13 +62,7 @@ function Editprofile() {
     form.append("profilePic", value.Image);
     console.log(form);
     try {
-      axios
-        .post("http://localhost:3001/edit-profile", form, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        })
+      _post("http://localhost:3001/edit-profile", form)
         .then((result) => {
           navigate("/profile");
         });

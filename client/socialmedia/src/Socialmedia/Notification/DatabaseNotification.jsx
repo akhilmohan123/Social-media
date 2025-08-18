@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateNotificationdata, updateShowNotification,removeNotification } from '../../Redux/SocialCompent';
 
 function DatabaseNotification() {
-  const token = localStorage.getItem("token");
   const dispatch = useDispatch();
   const hasFetched = useRef(false);
 
@@ -12,15 +11,14 @@ function DatabaseNotification() {
   const existingNotification = useSelector((state) => state.Social.notificationData);
 
   useEffect(() => {
- if (token && !hasFetched.current) {
+ if (!hasFetched.current) {
       hasFetched.current = true;
       getNotificationFromDatabase();
-    }
-  }, [token]);
+ }
+  }, []);
 
   async function getNotificationFromDatabase() {
     try {
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       const response = await _get('/api/socialmedia/get-notifications');
 
       if (response?.data?.length > 0) {
@@ -31,7 +29,7 @@ function DatabaseNotification() {
            const exists = existingNotification.some(n => n.notificationid === notificationid);
             console.log("Existing notifications:", existingNotification);   
             //if the status is ended then we dont want to show the notifiction
-              if (status === 'ended' && seen === true && read === true) {
+              if (status === 'ended' && seen === true) {
               try {
                    dispatch(removeNotification(notificationid));
                     console.log("Deleted ended and seen notification:", notificationid);

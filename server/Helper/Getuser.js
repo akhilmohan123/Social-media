@@ -6,14 +6,12 @@ const fs=require("fs");
 const { mongoose } = require('mongoose');
 const ObjectId  = mongoose.Types.ObjectId;
 module.exports = {
-  getuserid: (data) => {
+  getuserid: (token) => {
     //console.log(data)
     return new Promise((resolve, reject) => {
-      const { authorization } = data;
-      if (!authorization) {
+      if (!token) {
         return resolve(false);
       }
-      const token = authorization.replace("Bearer ", "");
       jwt.verify(token, process.env.JWT_SECRETKEY, (err, payload) => {
         if (err) {
           return resolve(false);
@@ -43,17 +41,15 @@ module.exports = {
     });
   },
   
-  getpeople: (authorization) => {
+  getpeople: (token) => {
   //console.log("get people called");
   return new Promise(async (resolve, reject) => {
     let res = {};
     try {
-      if (!authorization) {
+      if (!token) {
         res.status = false;
         return resolve(res);
       }
-
-      const token = authorization.replace("Bearer ", "");
 
       jwt.verify(token, process.env.JWT_SECRETKEY, async (err, payload) => {
         if (err) {

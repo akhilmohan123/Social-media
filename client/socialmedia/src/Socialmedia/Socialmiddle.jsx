@@ -8,6 +8,7 @@ import SocialmediaLCP from "./SocialmediaCP/SocialmediaLCP/SocialmediaLCP";
 import SocialmediaRCP from "./SocialmediaCP/SocialmediaRCP/SocialmediaRCP";
 import StreamPlayer from "../HLS/StreamPlayer";
 import { useSelector } from "react-redux";
+import { _get } from "./axios/Axios";
 function Socialmiddle() {
   const token = localStorage.getItem("token");
   const [data, setdata] = useState([]);
@@ -27,12 +28,7 @@ function Socialmiddle() {
     alert("live status of user is ======" + live);
   }, [live]);
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/get-post", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+    _get("http://localhost:3001/get-post")
       .then((res) => {
         console.log(res);
         setLoading(false);

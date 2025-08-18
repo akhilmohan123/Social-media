@@ -22,7 +22,6 @@ const Notificationbell = () => {
     (state) => state.Social.notificationData
   );
   const dispatch = useDispatch();
-  const token=localStorage.getItem("token");
 
   useEffect(() => {
     if (live) {
@@ -49,9 +48,6 @@ const Notificationbell = () => {
   async function handleLiveClick() {
     dispatch(updateStreamplay(true));
     dispatch(markNotificationAsRead(notificationdata));
-    apiClient.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${localStorage.getItem("token")}`;
     await _post(
       "/api/socialmedia/mark-notification-as-read",
       {id:notificationdata.id}
@@ -59,6 +55,7 @@ const Notificationbell = () => {
       if (response) {
         // Remove the live notification from the local notification list (Redux)
         dispatch(updateNotificationdata(notificationdata.id));
+        dispatch(removeNotification(notificationdata.id));
         // Emit a socket event to notify other clients about the live stream
       }
     });
@@ -98,9 +95,6 @@ const Notificationbell = () => {
 
   async function handledPostClick(notification) {
     try {
-      apiClient.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${token}`;
 
       // Call backend to mark the post as liked
       await _post("/api/socialmedia/mark-notification-as-read", {id:notification.id}).then(

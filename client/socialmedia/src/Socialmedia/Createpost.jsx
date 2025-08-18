@@ -14,6 +14,7 @@ import AddPhoto from './AddPhoto/AddPhoto';
 import Live from './HandleLive/Live';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateLivevideocontainer } from '../Redux/Bandwidthslice';
+import { _post } from './axios/Axios';
 
 function CreatePost() {
   const [postContent, setPostContent] = useState('');
@@ -29,14 +30,9 @@ function CreatePost() {
     formData.append('content', postContent);
     if (imageFile) formData.append('file', imageFile);
 
-    const token = localStorage.getItem('token');
 
     try {
-      const res = await axios.post("http://localhost:3001/post", formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
+      const res = await _post("http://localhost:3001/post", formData);
 
       setSuccess(res.data.data);
       alert("Post added");

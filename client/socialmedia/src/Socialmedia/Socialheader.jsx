@@ -149,7 +149,7 @@ function Socialheader({ value }) {
             />
 
             {/* AI Bot Icon */}
-            <div
+            {/* <div
               className="d-flex align-items-center"
               style={{ cursor: "pointer" }}
               onClick={chatclick}
@@ -160,7 +160,7 @@ function Socialheader({ value }) {
                 style={{ fontSize: "1.5rem" }}
               />
               <span className="ms-2 text-dark fw-medium">AiBot</span>
-            </div>
+            </div> */}
 
             {/* Profile Picture */}
             <img

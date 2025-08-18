@@ -13,7 +13,6 @@ function CreateGroup() {
   const showGroup = useSelector((state) => state.Social.showCreategroup);
   const [error, setError] = useState({});
   const dispatch = useDispatch();
-  const token=localStorage.getItem("token")
   //for dummy purpose only
   function handleClose() {
     dispatch(updateShowCreategroup(false));
@@ -44,7 +43,6 @@ function CreateGroup() {
 
 
     //setting the token in header
-    apiClient.defaults.headers.common["Authorization"]=`Bearer ${token}`;
     await _post("/group/create",formData).then((response)=>{
        console.log(response.data);
 

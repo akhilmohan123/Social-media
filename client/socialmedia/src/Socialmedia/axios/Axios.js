@@ -4,7 +4,8 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 100000 // 10 seconds
+  timeout: 100000 ,// 10 seconds
+  withCredentials: true
 });
 
 // Optional: Interceptor to only set JSON header when not sending FormData

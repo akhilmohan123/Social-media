@@ -90,13 +90,15 @@ module.exports = {
   showPost: (id) => {
     return new Promise(async (resolve, reject) => {
       try {
+        //console.log("Fetching posts for user: " + id);
         let friends = await getAllFriends(id);
-
+        if(friends.length > 0) {
+          console.log("Friends are " + friends);
         // Fetch posts and make them plain objects
         let posts = await Post.find({ Userid: { $in: friends } })
           .populate("Userid")
           .lean();
-
+         console.log("Posts are " + posts);
         // Add isLiked dynamically
         posts = posts.map((p) => ({
           ...p,
@@ -107,7 +109,11 @@ module.exports = {
 
         console.log(posts);
         resolve(posts);
+      }else if(friends.length === 0) {
+        resolve([]);
+      }
       } catch (error) {
+        console.log("Error is " + error);
         reject(error);
       }
     });

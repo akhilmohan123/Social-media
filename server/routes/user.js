@@ -111,12 +111,24 @@ router.post('/signup', upload.fields([
 });
 
 router.post('/login',async(req,res)=>{
-    ////console.log("hitted the login page")
+  
+    console.log("hitted the login page")
     const{email,password}=req.body;
     
     await LoginVerify(email,password).then(result=>{
+      //console.log("result from the login verify is "+result)
+      console.log("token is ======"+result.token)
+      let resultdata=result.userId
       if(result){
-        res.status(200).json( result);
+      res
+      .cookie("token", result.token, {
+        httpOnly: true,
+        secure: false,
+         sameSite: "lax",
+        maxAge: 60 * 60 * 1000 // 1 hour
+      })
+      .status(200)
+      .json(resultdata);
       }
     }).catch(err=>{
       res.status(400).json(err)
@@ -140,7 +152,7 @@ router.post("/post",upload.single("file"),(req,res)=>{
   console.log("add post called")
   try {
     let files;
-     getuserid(req.headers).then((resn)=>{
+     getuserid(req.cookies.token).then((resn)=>{
   const {content}=req.body
   if(req.file.path!=undefined)
   {
@@ -168,7 +180,7 @@ router.post("/post",upload.single("file"),(req,res)=>{
 })
 router.get("/profile",(req,res)=>{
   //console.log("profile page called")
- getuserid(req.headers).then(async(response)=>{
+ getuserid(req.cookies.token).then(async(response)=>{
 
   let id=response.userId;
   if(response){
@@ -188,9 +200,9 @@ router.get("/profile",(req,res)=>{
 })
 router.get("/friends",async(req,res)=>{
 
-  const {authorization}=req.headers
+
   //console.log(authorization)
-  await getpeople(authorization).then((response)=>{
+  await getpeople(req.cookies.token).then((response)=>{
   if(response){
     
     res.status(200).json(response);
@@ -202,7 +214,7 @@ router.get("/friends",async(req,res)=>{
 router.post("/add-friend/:key",async(req,res)=>{
   let id=req.params.key
   //console.log(id)
-  getuserid(req.headers).then((rese)=>{
+  getuserid(req.cookies.token).then((rese)=>{
     addfriend(req.params.key,rese.userId).then((result)=>{
       if(result){
       
@@ -215,15 +227,17 @@ router.post("/add-friend/:key",async(req,res)=>{
 
 })
 router.get('/get-post', async (req, res) => {
-  console.log("get post is called =======")
+  //console.log("get post is called =======")
   try {
-    let user=await getuserid(req.headers);
+    let user=await getuserid(req.cookies.token);
     let data=await showPost(user.userId)
     if(data.length>0)
-    {
+      {
+      //console.log("Posts found: ", data);
       res.status(200).json(data)
     }else
     {
+      console.log("No posts found");
       res.status(200).json([])
       
     }
@@ -279,7 +293,7 @@ router.get('/get-post', async (req, res) => {
 router.post("/add-like/:id",(req,res)=>{
   let postid=req.params.id
   let resulted={};
-  getuserid(req.headers).then((result)=>{
+  getuserid(req.cookies.token).then((result)=>{
     console.log("userid from the add like is "+result.userId)
     toggleLike(result.userId,postid).then(result=>{
       console.log(result)
@@ -294,22 +308,22 @@ router.post("/add-like/:id",(req,res)=>{
     })
   })
   })
-router.post(`/remove-like/:id`,(req,res)=>{
-  let postid=req.params.id
-  getuserid(req.headers).then((result)=>{
-      removelike(result.userId,postid).then((results)=>{
-        //console.log(resulted)
-        if(results){
-          res.status(200).json(resulted)
-        }else{
-          res.status(400).json({resulted})
-        }
-      })
-    })
-  })
+// router.post(`/remove-like/:id`,(req,res)=>{
+//   let postid=req.params.id
+//   getuserid(req.headers).then((result)=>{
+//       removelike(result.userId,postid).then((results)=>{
+//         //console.log(resulted)
+//         if(results){
+//           res.status(200).json(resulted)
+//         }else{
+//           res.status(400).json({resulted})
+//         }
+//       })
+//     })
+//   })
 router.post(`/remove-friend/:id`,(req,res)=>{
   let id=req.params.id
-  getuserid(req.headers).then((rese)=>{
+  getuserid(req.cookies.token).then((rese)=>{
     removefriend(id,rese.userId).then((result)=>{
       if(result.acknowledged){
        res.status(200).json(result)
@@ -346,15 +360,15 @@ router.get('/user/search',async (req,res)=>{
     res.status(500).send('Server Error');
   }
 })
-router.get("/edit-profile",(req,res)=>{
- getuserid(req.headers).then(result=>{
-  geteditdata(result.userId).then(data=>{
-    res.status(200).json(data)
-  }).catch(error=>{
-    res.status(400).json(error)
-  })
- })
-})
+// router.get("/edit-profile",(req,res)=>{
+//  getuserid(req.cookies.token).then(result=>{
+//   geteditdata(result.userId).then(data=>{
+//     res.status(200).json(data)
+//   }).catch(error=>{
+//     res.status(400).json(error)
+//   })
+//  })
+// })
 router.post("/edit-profile",upload.fields([
   {name:'profilePic',maxCount:1},
 ]),(req,res)=>{
@@ -365,7 +379,7 @@ router.post("/edit-profile",upload.fields([
  let editprofilepicname = ediprofilePicFile ? ediprofilePicFile.filename : null;
  console.log("Profile pic name is from the editprofile  "+editprofilepicname)
  //console.log(Image)
-  getuserid(req.headers).then(result=>{
+  getuserid(req.cookies.token).then(result=>{
     posteditdata(result.userId,Fname,Lname,editprofilepicname).then(result=>{
       res.status(200).json(result)
     }).catch(err=>{
@@ -374,7 +388,7 @@ router.post("/edit-profile",upload.fields([
   })
 })
 router.get("/user-post",(req,res)=>{
-  getuserid(req.headers).then((result)=>{
+  getuserid(req.cookies.token).then((result)=>{
     
     getuserpost(result.userId).then(response=>{
       res.status(200).json(response)
@@ -444,8 +458,7 @@ router.post("/auth/reset-password",async(req,res)=>{
 router.post("/social/upload",upload.fields([{name:"PostImage",maxCount:1}]),async(req,res)=>{
   console.log("social upload is called ")
   try {
-    console.log(req.headers['content-type']); 
-    let userresult=await getuserid(req.headers)
+    let userresult=await getuserid(req.cookies.token)
     let id=userresult.userId;
     let user=await usermodel.findById(new ObjectId(id))
   //console.log(req.body)
@@ -520,7 +533,7 @@ router.get("/api/get-friendname/:id",async(req,res)=>{
 //router to create a group
 router.post("/group/create",upload.single("image"),async(req,res)=>{
   try {
-    let header=req.headers;
+    let header=req.cookies.token;
     let groupData={
       name:req.body.name,
       description:req.body.description,
@@ -672,7 +685,7 @@ router.post("/api/socialmedia/groups/join-reject",async(req,res)=>{
 router.post("/api/save-token",async(req,res)=>{
   //console.log("Called save fcm token")
   try {
-    let user=await getuserid(req.headers)
+    let user=await getuserid(req.cookies.token)
     //console.log(user)
     if(user)
     {
@@ -726,7 +739,7 @@ router.post("/api/post-notification",async(req,res)=>{
 //router to get the nofification from the database
 router.get("/api/socialmedia/get-notifications",async(req,res)=>{
   try {
-    let user=await getuserid(req.headers);
+    let user=await getuserid(req.cookies.token);
     if(user)
     {
       await getNotification(user.userId).then((result)=>{
@@ -745,7 +758,7 @@ router.get("/api/socialmedia/get-notifications",async(req,res)=>{
 router.post("/api/socialmedia/mark-notification-as-read",async(req,res)=>{
   try {
     console.log("mark notification as read called");
-   let user=await getuserid(req.headers);
+   let user=await getuserid(req.cookies.token);
    if(user)
    {
     await markNotificationAsRead(req.body).then((result)=>{
@@ -757,7 +770,7 @@ router.post("/api/socialmedia/mark-notification-as-read",async(req,res)=>{
     })
    }
   } catch (error) {
-    
+    console.log("Error is ====+++", error);
   }
 })
 
@@ -837,7 +850,7 @@ router.get("/api/socialmedia/fetch-members/:id",async(req,res)=>{
   try {
     //console.log("fetch members called ")
     let id=req.params.id
-    let user=await getuserid(req.headers)
+    let user=await getuserid(req.cookies.token)
     //console.log(user)
     let userid=user.userId
     //console.log("user id from fetchmembers is ==="+userid)
@@ -856,8 +869,8 @@ router.get("/api/socialmedia/fetch-members/:id",async(req,res)=>{
 router.get("/api/social-media/get-active-users/:id",async(req,res)=>{
   console.clear();
   let id=req.params.id
-  console.log("user from fetch active is "+id)
-  console.log("fetch active users called")
+  // console.log("user from fetch active is "+id)
+  // console.log("fetch active users called")
   await fetchActiveusers(id).then((result)=>{
     if(result)
     {

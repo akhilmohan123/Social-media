@@ -93,9 +93,7 @@ function AddPhoto({ imageData }) {
        const blob = await (await fetch(croppedImageData)).blob();
     console.log(caption);
     console.log(location);
-    const token=localStorage.getItem("token");
     const file = new File([blob], "photo.jpg", { type: blob.type });
-    apiClient.defaults.headers.common["Authorization"]=`Bearer ${token}`;
     const form=new FormData()
     form.append("PostImage",file);
     form.append("caption",caption)

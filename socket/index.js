@@ -2,6 +2,8 @@ const { spawn } = require("child_process");
 const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const { response } = require("express");
+const fs = require("fs");
+const path = require("path");
 const io = require("socket.io")(8800, {
   cors: {
     origin: ["http://localhost:3001", "http://localhost:5173"],
@@ -18,50 +20,39 @@ let liveWrite = false;
 // Modified FFmpeg startup
 function startFFmpegProcess() {
   ffmpegProcess = spawn(
-    "ffmpeg",
-    [
-      "-f",
-      "matroska", // Better for chunked input
-      "-i",
-      "pipe:0",
-      "-fflags",
-      "+genpts",
-      "-r",
-      "30",
+  "ffmpeg",
+  [
+    "-f", "matroska",        // input format
+    "-use_wallclock_as_timestamps", "1",  // sync with real time
+    "-i", "pipe:0",
+    "-fflags", "nobuffer",   // <--- disable buffering
+    "-flags", "low_delay",
+    "-strict", "experimental",
 
-      // Video
-      "-c:v",
-      "libx264",
-      "-preset",
-      "ultrafast",
-      "-tune",
-      "zerolatency",
-      "-pix_fmt",
-      "yuv420p",
-      "-g",
-      "60",
-      "-b:v",
-      "2500k",
+    // Video
+    "-c:v", "libx264",
+    "-preset", "ultrafast",
+    "-tune", "zerolatency",
+    "-pix_fmt", "yuv420p",
+    "-g", "30",              // keyframe interval ~ 1s (not 2s like 60 at 30fps)
+    "-r", "30",
+    "-b:v", "2500k",
+    "-maxrate", "2500k",
+    "-bufsize", "5000k",     // <--- smaller buffer = lower latency
 
-      // Audio
-      "-c:a",
-      "aac",
-      "-b:a",
-      "128k",
-      "-ar",
-      "44100",
-      "-ac",
-      "2",
+    // Audio
+    "-c:a", "aac",
+    "-b:a", "128k",
+    "-ar", "44100",
+    "-ac", "2",
 
-      // Output
-      "-f",
-      "flv",
-      "rtmp://localhost:1935/hls/stream",
-    ],
-    {
-      stdio: ["pipe", "inherit", "inherit"], // Better error visibility
-    }
-  );
+    // Output
+    "-f", "flv",
+    "rtmp://localhost:1935/hls/stream",
+  ],
+  { stdio: ["pipe", "inherit", "inherit"] }
+);
+
   ffmpegProcess.stdin.setMaxListeners(50);
   // Error handling
   ffmpegProcess.on("error", (err) => {
@@ -70,6 +61,11 @@ function startFFmpegProcess() {
   ffmpegProcess.stdin.on("error", (err) => {
     console.error("FFmpeg stdin error:", err.message);
   });
+  ffmpegProcess.on("close", (code) =>{
+  console.log(`FFmpeg process exited with code ${code}`);
+  // ✅ Delete HLS files after streaming ends
+
+});
   ffmpegProcess.on("exit", (code) => {
     console.log(`FFmpeg exited with code ${code}`);
     ffmpegProcess = null;
@@ -78,6 +74,28 @@ function startFFmpegProcess() {
   });
   return ffmpegProcess;
 }
+
+//function to delete remaing files in hls
+function clearHLSFolder() {
+  const folder = path.join(__dirname, "hls");
+
+  fs.readdir(folder, (err, files) => {
+    if (err) {
+      console.error("Error reading HLS folder:", err);
+      return;
+    }
+
+    files.forEach(file => {
+      const filePath = path.join(folder, file);
+      fs.unlink(filePath, err => {
+        if (err) console.error("Error deleting:", filePath, err);
+        else console.log("Deleted:", filePath);
+      });
+    });
+  });
+}
+
+
 //function to get the socketid of the user
 
 function getSocketid(activeusers, userid) {
@@ -251,7 +269,8 @@ io.on("connection", (socket) => {
   // Live streaming data from client
   let ffmpegStarted = false;
   let bufferQueue = [];
-
+  let notificationflag = false;
+  let result=[]
   socket.on("live-stream", async ({ userId, data }) => {
     try {
       let notificationid;
@@ -272,7 +291,11 @@ io.on("connection", (socket) => {
         type: "live-stream",
       };
       console.log("notification data is " + notificationData);
-      let result = await PostNotificationData(notificationData);
+      if (notificationflag == false) {
+        result = await PostNotificationData(notificationData);
+        notificationflag=true;
+      }
+
       if (result) {
         console.log("Notification sent successfully");
       }
@@ -385,6 +408,7 @@ io.on("connection", (socket) => {
       console.log(result);
       io.emit("notification-update", { id: result.notificationid });
     });
+    notificationflag=false
     // io.emit("notification-update", {});
   });
 
@@ -512,8 +536,8 @@ io.on("connection", (socket) => {
 
   //socket event for notifying user the comments
   socket.on("add-comment", async (data) => {
-    let { userid, postid, username,comment} = data;
-    let notificationid
+    let { userid, postid, username, comment } = data;
+    let notificationid;
     let notificationdata = {};
     console.log("Add notification is called ");
     let socketid = await getSocketid(activeusers, userid);
@@ -523,10 +547,10 @@ io.on("connection", (socket) => {
     notificationdata.postid = postid;
     notificationdata.likedusername = username;
     notificationdata.type = "add-comment";
-    let postdata=await PostNotificationData(notificationdata);
+    let postdata = await PostNotificationData(notificationdata);
     console.log("Post data after notification is created:");
     io.to(socketid).emit("post-commented", notificationdata);
-    io.to(socketid).emit("post-commented-user",data)
+    io.to(socketid).emit("post-commented-user", data);
   });
 
   socket.on("error", (err) => {

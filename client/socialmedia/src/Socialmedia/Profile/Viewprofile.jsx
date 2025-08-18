@@ -2,18 +2,13 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
 import Detailprofile from './Detailprofile';
+import { _get } from '../axios/Axios';
 
 function Viewprofile() {
     const[data,Setdata]=useState(null)
-    const token=localStorage.getItem("token")
     useEffect(()=>{
         try {
-           axios.get("http://localhost:3001/user-post",
-            {
-                headers:{
-                    Authorization:`Bearer ${token}`
-                }
-            }
+           _get("http://localhost:3001/user-post"
         
            ).then(res=>{
             Setdata(res.data)

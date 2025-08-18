@@ -7,6 +7,7 @@ var chatrouter = require("./routes/Chatroute");
 var connection = require("./connection/connection");
 var openairouter = require("./routes/openai");
 var bodyParser = require("body-parser");
+var cookieParser = require("cookie-parser");
 var cors = require("cors");
 const passport=require("passport")
 const path = require("path");
@@ -20,6 +21,7 @@ app.use(cors({
   origin: "http://localhost:5173", // allow frontend dev server
   credentials: true               // allow cookies or auth headers
 }));
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({  extended: true, limit: '10mb'  }));
 app.use(express.urlencoded({

@@ -169,7 +169,7 @@ module.exports = {
       try {
         console.log(notification)
         let result = await Notification.updateMany(
-          { notificationid:notification.id},
+          { notificationid:notification},
           {
             $set:{
               status:"ended",

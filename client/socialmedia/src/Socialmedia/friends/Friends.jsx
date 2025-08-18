@@ -4,9 +4,9 @@ import { Button } from 'react-bootstrap';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Friends.css';
+import { _post } from '../axios/Axios';
 
 function Friends({ friend, id }) {
-  const token = localStorage.getItem("token");
   const friendId = friend._id;
   const navigate = useNavigate();
   
@@ -30,13 +30,9 @@ function Friends({ friend, id }) {
   async function handleFollowClick() {
     try {
       if (followState) {
-        await axios.post(`http://localhost:3001/remove-friend/${friendId}`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await _post(`http://localhost:3001/remove-friend/${friendId}`, {});
       } else {
-        let response=await axios.post(`http://localhost:3001/add-friend/${friendId}`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        let response=await _post(`http://localhost:3001/add-friend/${friendId}`, {});
         console.log("Response from add friend is ",response)
       }
       const newFollowState = !followState;

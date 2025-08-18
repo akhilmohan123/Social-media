@@ -62,7 +62,6 @@ function Showfeed({
   // Toggle like
   const handleLike = async () => {
     console.log("current user name is " + currentUser);
-    apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     await _post(`http://localhost:3001/add-like/${postid}`);
     if (isLiked) {
       setLikes(likes - 1);
