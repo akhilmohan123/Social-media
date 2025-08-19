@@ -36,7 +36,6 @@ function GroupDetails({ group, onBack }) {
  //in refresh cases whn the socket connection is lost
  useEffect(()=>{
   async function fetchStatus(){
-    apiClient.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem("token")}`;
     let response=await _get('/api/socialmedia/groups/get-group-status',{params:{groupId:group._id,user:user}})
     console.log(response)
     if(response.status==200)
@@ -70,7 +69,6 @@ function GroupDetails({ group, onBack }) {
  async function handleJoin() {
     console.log("called the join")
     // Simulate API call
-    apiClient.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem("token")}`;
     await _post('/api/socialmedia/groups/join',{groupId:group._id}).then((response)=>{
       if(response.status==200)
       {
@@ -88,7 +86,6 @@ function GroupDetails({ group, onBack }) {
   const handleRequest = async() => {
     setRequested(true);
     //api call for requesting to join the group
-    apiClient.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem("token")}`;
     await _post('/api/socialmedia/groups/request-join',{groupId:group._id}).then((response)=>{
       if(response.status==200)
       {

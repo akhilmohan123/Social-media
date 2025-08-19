@@ -22,7 +22,6 @@ function Group() {
   const groupchat=useSelector((state)=>state.Social.groupchat)
   async function getGroups()
   {
-    apiClient.defaults.headers.common['Authorization']=`Bearer ${token}`
     await _get("/api/socialmedia/groups/all-groups").then((response)=>{
       if(response.status===200)
       {

@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100vh;
   background-color: #f5f7fb;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Header Styles */
@@ -80,7 +80,9 @@
   overflow-y: auto;
   padding: 16px;
   background-color: #f5f7fb;
-  padding: 80px 16px 16px 16px; 
+  padding: 80px 16px 16px 16px;
+  margin-bottom: 60px;
+  
 }
 
 .loading-container {
@@ -271,11 +273,11 @@
 }
 
 .message-container.sent .message-time {
-   background-color: #d1e7dd; 
+  background-color: #d1e7dd;
 }
 
 .message-container.received .message-time {
-    background-color: #e2e3e5; /* greyish for received messages */
+  background-color: #e2e3e5; /* greyish for received messages */
   align-self: flex-start;
 }
 
@@ -285,14 +287,15 @@
 
 /* Chat Input Styles */
 .chat-input-container {
-  padding: 12px 16px;
-  background-color: white;
-  border-top: 1px solid #edf2f7;
+  flex-shrink: 0; /* input stays at the bottom */
+  border-top: 1px solid #ddd;
+  padding: 10px;
+  background: #fff;
 }
 
 .chat-input-form {
   display: flex;
-  gap: 8px;
+  align-items: center;
 }
 
 .message-input {
@@ -303,6 +306,8 @@
   resize: none;
   max-height: 120px;
   transition: all 0.2s;
+  min-height: 40px;
+  line-height: 20px;
 }
 
 .message-input:focus {
@@ -362,4 +367,10 @@
 .message-content {
   display: block;
   color: #333;
+}
+.no-messages {
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+  margin-top: 30%;
 }

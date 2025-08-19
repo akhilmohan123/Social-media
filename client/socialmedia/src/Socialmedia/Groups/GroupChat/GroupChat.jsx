@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Form, Badge, OverlayTrigger, Tooltip, Spinner } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Badge,
+  OverlayTrigger,
+  Tooltip,
+  Spinner,
+} from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import socket from "../../Socket/Socket";
 import {
@@ -39,18 +46,18 @@ function GroupChat() {
   const formatDate = (date) => {
     const today = new Date();
     const messageDate = new Date(date);
-    
+
     if (messageDate.toDateString() === today.toDateString()) {
       return "Today";
     }
-    
+
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (messageDate.toDateString() === yesterday.toDateString()) {
       return "Yesterday";
     }
-    
+
     return messageDate.toLocaleDateString([], {
       month: "short",
       day: "numeric",
@@ -63,16 +70,18 @@ function GroupChat() {
       await fetchMessage();
       setLoading(false);
     };
-    
+
     fetchInitialData();
   }, []);
 
   useEffect(() => {
     if (view === "chat") {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 0);
     }
-    console.log(messages)
-    console.log("username is "+username)
+    console.log(messages);
+    console.log("username is " + username);
   }, [messages, view]);
 
   const handleSend = (newMessage) => {
@@ -83,9 +92,11 @@ function GroupChat() {
       name: username,
       text: newMessage,
       timestamp: new Date(),
-      username:username
+      username: username,
     };
-    
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 0);
     setMessages((prev) => [...prev, messageObj]);
     socket.emit("group-message-send", messageObj);
   };
@@ -99,7 +110,6 @@ function GroupChat() {
 
   const fetchMessage = async () => {
     try {
-      apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       let response = await _get(`/api/social-media/fetch-message/${group._id}`);
       setMessages(response.data);
     } catch (error) {
@@ -109,10 +119,9 @@ function GroupChat() {
 
   const handleMembers = async () => {
     setView(view === "members" ? "chat" : "members");
-    
+
     if (members.length === 0) {
       try {
-        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         let result = await _get(`/api/socialmedia/fetch-members/${group._id}`);
         setMembers(result.data);
       } catch (error) {
@@ -143,7 +152,9 @@ function GroupChat() {
             <h5>{group?.groupname || "Group Chat"}</h5>
             <div className="group-status">
               {isTyping ? (
-                <span className="typing-indicator">{typingMember} is typing...</span>
+                <span className="typing-indicator">
+                  {typingMember} is typing...
+                </span>
               ) : (
                 <span>{members.length} members</span>
               )}
@@ -153,9 +164,17 @@ function GroupChat() {
         <div className="header-actions">
           <OverlayTrigger
             placement="bottom"
-            overlay={<Tooltip>{view === "members" ? "Show Chat" : "Show Members"}</Tooltip>}
+            overlay={
+              <Tooltip>
+                {view === "members" ? "Show Chat" : "Show Members"}
+              </Tooltip>
+            }
           >
-            <Button variant="link" onClick={handleMembers} className="members-button">
+            <Button
+              variant="link"
+              onClick={handleMembers}
+              className="members-button"
+            >
               <FiUsers size={20} />
             </Button>
           </OverlayTrigger>
@@ -197,41 +216,49 @@ function GroupChat() {
           </div>
         ) : (
           <div className="messages-view">
-            {Object.entries(groupedMessages).map(([date, dateMessages]) => (
-              <React.Fragment key={date}>
-                <div className="date-divider">
-                  <span>{date}</span>
-                </div>
-                {dateMessages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`message-container ${
-                      msg.sender === userId ? "sent" : "received"
-                    }`}
-                  >
-                    {msg.sender !== userId && (
-                      <div className="message-sender">{msg.name}</div>
-                    )}
-                    <div className="message-bubble">
-                    <div className="message-text">
-                        <span className="message-username">{msg.username}</span>
-                        <span className="message-content">{msg.text}</span>
-                      </div>
-                      <div className="message-meta">
-                        <span className="message-time">
-                          <FiClock size={12} /> {formatTime(msg.timestamp)}
-                        </span>
-                        {msg.sender === userId && (
-                          <span className="message-status">
-                            <BsCheck2All size={14} />
+            {messages.length === 0 ? (
+              <div className="no-messages">
+                <p>✨ Start typing to make connections ✨</p>
+              </div>
+            ) : (
+              Object.entries(groupedMessages).map(([date, dateMessages]) => (
+                <React.Fragment key={date}>
+                  <div className="date-divider">
+                    <span>{date}</span>
+                  </div>
+                  {dateMessages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`message-container ${
+                        msg.sender === userId ? "sent" : "received"
+                      }`}
+                    >
+                      {msg.sender !== userId && (
+                        <div className="message-sender">{msg.name}</div>
+                      )}
+                      <div className="message-bubble">
+                        <div className="message-text">
+                          <span className="message-username">
+                            {msg.username}
                           </span>
-                        )}
+                          <span className="message-content">{msg.text}</span>
+                        </div>
+                        <div className="message-meta">
+                          <span className="message-time">
+                            <FiClock size={12} /> {formatTime(msg.timestamp)}
+                          </span>
+                          {msg.sender === userId && (
+                            <span className="message-status">
+                              <BsCheck2All size={14} />
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </React.Fragment>
-            ))}
+                  ))}
+                </React.Fragment>
+              ))
+            )}
             <div ref={messagesEndRef} />
           </div>
         )}
@@ -257,8 +284,12 @@ function GroupChat() {
               placeholder="Type a message..."
               rows={1}
               className="message-input"
-              onFocus={() => socket.emit("typing-start", { userId, groupId: group._id })}
-              onBlur={() => socket.emit("typing-stop", { userId, groupId: group._id })}
+              onFocus={() =>
+                socket.emit("typing-start", { userId, groupId: group._id })
+              }
+              onBlur={() =>
+                socket.emit("typing-stop", { userId, groupId: group._id })
+              }
             />
             <Button type="submit" className="send-button">
               <FiSend size={18} />

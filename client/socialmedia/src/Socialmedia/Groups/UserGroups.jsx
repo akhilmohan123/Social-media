@@ -24,6 +24,7 @@ function UserGroups() {
 
 
   useEffect(() => {
+    console.log("Group lenght "+groups.length)
     async function fetchUserGroups() {
       const userGroups = await getUsergroups();
       if (userGroups) {
@@ -48,7 +49,6 @@ function UserGroups() {
   };
   async function fetchUsername() {
   try {
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     const response = await _get("/api/socialmedia/get-username");
     console.log(response)
     if (response.status === 200) {
@@ -71,19 +71,21 @@ function UserGroups() {
 
   async function getUsergroups() {
     try {
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       const response = await _get('/api/socialmedia/groups/user-groups');
       if (response.status === 200) {
         if (response.data && response.data.length > 0) {
           return response.data;
         } else {
           setError("No groups found");
+          return [];
         }
       } else {
         setError("Failed to fetch user groups");
+        return [];
       }
     } catch (error) {
       setError("An error occurred while fetching user groups");
+      return [];
     }
   }
 
@@ -102,7 +104,7 @@ function UserGroups() {
           <h2 className="title">My Groups</h2>
           <div className="group-list">
             {groups.length > 0 ? (
-              groups.map(group => (
+              groups?.map(group => (
                 <div key={group._id} className="group-card" onClick={() => handleGroup(group)}>
                   <h5>{group.groupname}</h5>
                   <p>{group.description}</p>

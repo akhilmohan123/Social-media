@@ -565,11 +565,11 @@ router.post("/group/create",upload.single("image"),async(req,res)=>{
 router.get('/api/socialmedia/groups/user-groups',async(req,res)=>{
   try
   {
-    //console.log("Fetching user groups")
+    console.log("Fetching user groups")
     await getUserGroups(req).then((result)=>{
       if(result)
       {
-        //console.log("user groups fetched successfully "+result)
+        console.log("user groups fetched successfully "+result)
         res.status(200).json(result); 
       }
     }).catch((error)=>{

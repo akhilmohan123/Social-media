@@ -141,12 +141,12 @@ function Socialheader({ value }) {
             </div> */}
             <Notificationbell />
             {/* Message Icon */}
-            <FontAwesomeIcon
+            {/* <FontAwesomeIcon
               icon={faCommentDots}
               className="text-dark"
               style={{ fontSize: "1.5rem", cursor: "pointer" }}
               onClick={chatclick}
-            />
+            /> */}
 
             {/* AI Bot Icon */}
             {/* <div

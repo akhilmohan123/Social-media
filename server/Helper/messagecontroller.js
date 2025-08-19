@@ -70,7 +70,7 @@ module.exports = {
   },
   getUserGroups: async (req) => {
     return new Promise(async (resolve, reject) => {
-      let user = await getuserid(req.headers);
+      let user = await getuserid(req.cookies.token);
       if (!user) {
         reject("user not found");
         return;
@@ -84,7 +84,7 @@ module.exports = {
         if (groups.length > 0) {
           resolve(groups);
         } else {
-          resolve("No groups found for the user");
+          resolve([]);
         }
       } catch (error) {
         reject("Error in fetching user groups " + error);
@@ -94,7 +94,7 @@ module.exports = {
   getAllgroups: async (req) => {
     return new Promise(async (resolve, reject) => {
       try {
-        let user = await getuserid(req.headers);
+        let user = await getuserid(req.cookies.token);
         if (!user) {
           reject("user not found");
           return;
@@ -122,7 +122,7 @@ module.exports = {
   joinGroup: async (req) => {
     return new Promise(async (resolve, reject) => {
       try {
-        let user = await getuserid(req.headers);
+        let user = await getuserid(req.cookies.token);
         if (!user) {
           reject("user not found");
           return;
@@ -158,7 +158,7 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       try {
         //console.log(req.headers);
-        let user = await getuserid(req.headers);
+        let user = await getuserid(req.cookies.token);
         if (!user) {
           reject("user not found");
           return;
