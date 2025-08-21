@@ -136,18 +136,18 @@ router.post('/login',async(req,res)=>{
     
          
 })
-router.get("/test",(req,res)=>{
-   const {authorization}= req.headers;
-  if(!authorization){
-   return res.status(400).json({message:"YOu mus logged in"})
-  }
-  const token=authorization.replace("Bearer ","");
-  jwt.verify(token,process.env.JWT_SECRETKEY,async (err,payload)=>{
-    if(err){
-      return res.status(400).json({message:"Error occured",err})
-    }
-  })
-})
+// router.get("/test",(req,res)=>{
+//    const {authorization}= req.headers;
+//   if(!authorization){
+//    return res.status(400).json({message:"YOu mus logged in"})
+//   }
+//   const token=authorization.replace("Bearer ","");
+//   jwt.verify(token,process.env.JWT_SECRETKEY,async (err,payload)=>{
+//     if(err){
+//       return res.status(400).json({message:"Error occured",err})
+//     }
+//   })
+// })
 router.post("/post",upload.single("file"),(req,res)=>{
   console.log("add post called")
   try {
