@@ -8,171 +8,142 @@ import CreateGroup from "./CreateGroup";
 import UserGroups from "./UserGroups";
 import { _get, apiClient } from "../axios/Axios";
 import GroupDetails from "./GroupDetails";
+import { MDBIcon } from "mdb-react-ui-kit";
 
 function Group() {
   const dispatch = useDispatch();
   const groupStatus = useSelector((state) => state.Social.groupComponent);
-  const groupBack=useSelector((state)=>state.Social.handleGroupback)
-  const showOwngroup=useSelector((state)=>state.Social.showOwngroup)
-  const showCreategroup=useSelector((state)=>state.Social.showCreategroup)
+  const groupBack = useSelector((state) => state.Social.handleGroupback)
+  const showOwngroup = useSelector((state) => state.Social.showOwngroup)
+  const showCreategroup = useSelector((state) => state.Social.showCreategroup)
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const [arraygroup,setArraygroup]=useState([])
-  const token=localStorage.getItem("token")
-  const status=useSelector((state)=>state.Social.status)
-  const groupchat=useSelector((state)=>state.Social.groupchat)
-  async function getGroups()
-  {
-    await _get("/api/socialmedia/groups/all-groups").then((response)=>{
-      if(response.status===200)
-      {
+  const [arraygroup, setArraygroup] = useState([])
+  const token = localStorage.getItem("token")
+  const status = useSelector((state) => state.Social.status)
+  const groupchat = useSelector((state) => state.Social.groupchat)
+
+  async function getGroups() {
+    await _get("/api/socialmedia/groups/all-groups").then((response) => {
+      if (response.status === 200) {
         console.log(response.data)
         setArraygroup(response.data)
       }
-    }).catch((error)=>{
+    }).catch((error) => {
       setArraygroup([])
     })
   }
 
-
-  useEffect(()=>{
+  useEffect(() => {
     getGroups();
-    console.log("set status status is "+status);
-    console.log("group chat status"+groupchat)
-  },[groupchat])
+    console.log("set status status is " + status);
+    console.log("group chat status" + groupchat)
+  }, [groupchat])
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(selectedGroup)
-  },[selectedGroup])
+  }, [selectedGroup])
 
+  const handleGoBack = () => {
+    if (showCreategroup || showOwngroup || selectedGroup) {
+      dispatch(updateShowCreategroup(false));
+      dispatch(updateShowOwngroup(false));
+      setSelectedGroup(null);
+    } else {
+      dispatch(updateGroupcomponentBack(true)); // hide full Group component
+    }
+  };
 
-  // const arraygroup = [
-  //   { name: "Group1" }, { name: "Group2" }, { name: "Group3" },
-  //   { name: "Group4" }, { name: "Group5" }, { name: "Group6" },
-  //   { name: "Group7" }, { name: "Group8" }, { name: "Group9" },
-  //   { name: "Group10" }, { name: "Group11" }, { name: "Group12" },
-  //   { name: "Group13" }
-  // ];
-
- const handleGoBack = () => {
-  if (showCreategroup || showOwngroup || selectedGroup) {
-    dispatch(updateShowCreategroup(false));
+  const handleShowCreategroup = () => {
+    dispatch(updateShowCreategroup(true));
     dispatch(updateShowOwngroup(false));
     setSelectedGroup(null);
-  } else {
-    dispatch(updateGroupcomponentBack(true)); // hide full Group component
-  }
-};
+  };
 
-const handleShowCreategroup = () => {
-  dispatch(updateShowCreategroup(true));
-  dispatch(updateShowOwngroup(false));
-  setSelectedGroup(null);
-};
+  const handleShowOwngroups = () => {
+    dispatch(updateShowOwngroup(true));
+    dispatch(updateShowCreategroup(false));
+    setSelectedGroup(null);
+  };
 
-const handleShowOwngroups = () => {
-  dispatch(updateShowOwngroup(true));
-  dispatch(updateShowCreategroup(false));
-  setSelectedGroup(null);
-};
-  useEffect(()=>{
+  useEffect(() => {
     console.log(showCreategroup)
-
-  },[showCreategroup])
+  }, [showCreategroup])
 
   return (
     <>
       {groupStatus && !groupBack && (
-  <Row className="mt-3">
-    {(!selectedGroup && !status)&&  (
-      <Col md={4}>
-        {/* Sidebar Group List */}
-        <Card
-          style={{
-            height: "80vh",
-            borderRadius: "12px",
-            overflow: "hidden",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            width: "260px",
-          }}
-        >
-          {/* Header */}
-          {(!status && !groupchat) && (
-          <div
-            className="d-flex justify-content-between align-items-center p-3 bg-light flex-wrap gap-2"
-            style={{
-              borderBottom: "1px solid #dee2e6",
-              position: "sticky",
-              top: 0,
-              zIndex: 1,
-            }}
-          >
-            <h5 className="mb-0 text-primary">Groups</h5>
-            <div className="d-flex flex-wrap align-items-center gap-2">
-              <Button variant="outline-primary" size="sm" onClick={handleShowCreategroup}>
-                ➕ Create
-              </Button>
-              <Button variant="outline-secondary" size="sm" onClick={handleShowOwngroups}>
-                📁 My Groups
-              </Button>
-              <Button variant="outline-danger" size="sm" onClick={handleGoBack}>
-                ← Go Back
-              </Button>
-            </div>
-          </div>
-          )}
-
-          {/* Scrollable list */}
-          {showCreategroup ? (
-            <CreateGroup />
-          ) : showOwngroup ? (
-            <UserGroups />
-          ) : (
-            <div style={{ overflowY: "auto", height: "100%" }}>
-              {arraygroup.map((group, index) => (
-                <div
-                  key={`${group.name}-${index}`}
-                  className="px-3 py-2"
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: selectedGroup === group.name ? "#e3f2fd" : "white",
-                    fontWeight: selectedGroup === group.name ? "bold" : "normal",
-                    borderBottom: "1px solid #f1f1f1",
-                    transition: "background-color 0.2s",
-                  }}
-                  onClick={() => setSelectedGroup(group)}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      selectedGroup === group.name ? "#e3f2fd" : "white")
-                  }
-                >
-                  {group.groupname}
+        <div className="modern-group-container">
+          {(!selectedGroup && !status) && (
+            <div className="group-sidebar">
+              {/* Header */}
+              {(!status && !groupchat) && (
+                <div className="group-header">
+                  <h5 className="group-title">
+                    <MDBIcon fas icon="users" className="me-2" />
+                    Groups
+                  </h5>
+                  <div className="group-actions">
+                    <Button variant="primary" size="sm" onClick={handleShowCreategroup} className="action-btn">
+                      <MDBIcon fas icon="plus" className="me-1" />
+                      Create
+                    </Button>
+                    <Button variant="outline-primary" size="sm" onClick={handleShowOwngroups} className="action-btn">
+                      <MDBIcon fas icon="user-friends" className="me-1" />
+                      My Groups
+                    </Button>
+                    <Button variant="outline-secondary" size="sm" onClick={handleGoBack} className="action-btn">
+                      <MDBIcon fas icon="arrow-left" className="me-1" />
+                      Back
+                    </Button>
+                  </div>
                 </div>
-              ))}
+              )}
+
+              {/* Scrollable list */}
+              {showCreategroup ? (
+                <CreateGroup />
+              ) : showOwngroup ? (
+                <UserGroups />
+              ) : (
+                <div className="group-list">
+                  {arraygroup.length > 0 ? (
+                    arraygroup.map((group, index) => (
+                      <div
+                        key={`${group._id}-${index}`}
+                        className="group-item"
+                        onClick={() => setSelectedGroup(group)}
+                      >
+                        <div className="group-avatar">
+                          {group.groupname ? group.groupname.charAt(0).toUpperCase() : 'G'}
+                        </div>
+                        <div className="group-info">
+                          <h6 className="group-name">{group.groupname}</h6>
+                          <p className="group-members">{group.members?.length || 0} members</p>
+                        </div>
+                        <div className="group-arrow">
+                          <MDBIcon fas icon="chevron-right" />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-groups">
+                      <MDBIcon fas icon="users" size="2x" className="mb-2" />
+                      <p>No groups available</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
-        </Card>
-      </Col>
-    )}
 
-    {/* Full-width content when group is selected */}
-    {selectedGroup && (
-      <Col md={12}>
-        <Card
-          className="p-4"
-          style={{
-            minHeight: "100vh",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-          }}
-        >
-         <GroupDetails group={selectedGroup} onBack={()=>setSelectedGroup(null)}/>
-        </Card>
-      </Col>
-    )}
-  </Row>
-)}
-
+          {/* Full-width content when group is selected */}
+          {selectedGroup && (
+            <div className="group-detail-view">
+              <GroupDetails group={selectedGroup} onBack={() => setSelectedGroup(null)} />
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

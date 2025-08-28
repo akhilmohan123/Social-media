@@ -592,7 +592,7 @@ io.on("connection", (socket) => {
     let onlineFriends = friends.filter((u) => activeMembers.includes(u.userid));
     console.log(onlineFriends);
     let user = activeusers.find((u) => u.userid == userId);
-    let userSocketid = user.socketId;
+    let userSocketid = user?.socketId;
     io.to(userSocketid).emit("friends-list", onlineFriends);
   });
 

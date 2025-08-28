@@ -5,6 +5,7 @@ import Conversation from './Conversation/Conversation';
 import Chatbox from './Chatbox/Chatbox';
 import { useParams } from 'react-router-dom';
 import socket from '../Socket/Socket';
+import { _get } from '../axios/Axios';
 function Chat() {
   const[chats,setchats]=useState([])
   const[user,setUser]=useState();
@@ -12,7 +13,6 @@ function Chat() {
   const[onlineusers,setonlineusers]=useState([])
   const[sendmessage,setsendmessage]=useState("")
   const[recievemessage,Setrecievemessage]=useState(null)
-  const token=localStorage.getItem("token")
   const userdata=localStorage.getItem("userId")
   const match=useParams('/chat-friend/:id')
   let recieverId=match.id
@@ -69,10 +69,7 @@ useEffect(()=>{
   useEffect(()=>{
     const getChats=async ()=>{
       try {
-        const result=await axios.get(`http://localhost:3001/chat/${match.id}`,{
-           headers:{
-            Authorization:`Bearer ${token}`
-           }
+        const result=await _get(`http://localhost:3001/chat/${match.id}`,{
         }).then(result=>{
           console.log(result.data.chat)
           setchats(result.data.chat)
@@ -84,7 +81,7 @@ useEffect(()=>{
       }
     }
     getChats()
-  },[token])
+  },[])
   console.log(currentchat+"dc")
   return (
   

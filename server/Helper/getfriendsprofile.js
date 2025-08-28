@@ -13,7 +13,7 @@ module.exports = {
         .then((res) => {
           (friend_details.Fname = res.Fname),
             (friend_details.Lname = res.Lname),
-            (friend_details.image = res.Image);
+            (friend_details.image = res.Image)
         })
         .catch((error) => {
           friend_details.error = true;
@@ -22,8 +22,10 @@ module.exports = {
         .then((res) => {
           total_images = res.map((i) => i.Image);
           if (res) {
+            console.log("locztion is ======"+res)
             friend_details.friendpost = total_images;
             friend_details.totalpost = total_images.length;
+            friend_details.location = res[0].Location;
           } else {
             friend_details.friendpost = "";
           }

@@ -62,13 +62,13 @@ function SocialmediaRCP() {
 
 
       {/* Active Friends */}
-      <h5 className="mb-3">Active Friends</h5>
+      <h5 className="mb-3 text-primary">Active Friends</h5>
       <ListGroup variant="flush">
         {activeusers.map((friend, index) => (
           <ListGroup.Item key={index} className="d-flex align-items-center">
             <div style={{ position: 'relative', marginRight: '10px' }}>
               <Image
-                src={friend.image}
+                src={`http://localhost:3001/uploads/profilePics/${friend.Image}`}
                 roundedCircle
                 style={{ width: '35px', height: '35px', objectFit: 'cover' }}
               />

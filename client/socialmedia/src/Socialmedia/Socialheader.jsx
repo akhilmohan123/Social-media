@@ -26,11 +26,9 @@ function Socialheader({ value }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [profilePic,setProfilePic] = useState(null);
-  const token=localStorage.getItem("token");
   const profileData=useSelector(state => state.User.profileData)
   async function getProfile() {
     try {
-      apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       let result = await _get("/profile");
       console.log(result.data.data)
       dispatch(updateProfileData(result.data.data))

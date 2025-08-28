@@ -1,4 +1,4 @@
-import React, { useState, useRef,useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   MDBCol,
   MDBContainer,
@@ -18,7 +18,12 @@ import "react-image-gallery/styles/css/image-gallery.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateLoginstatus } from "../../Redux/UserSlice";
-
+import {
+  FaMapMarkerAlt,
+  FaHeart,
+  FaRegHeart,
+  FaRegCommentDots,
+} from "react-icons/fa";
 export default function Profiledetails() {
   const navigate = useNavigate();
   const imageGalleryRef = useRef(null);
@@ -28,9 +33,10 @@ export default function Profiledetails() {
   const [commentInput, setCommentInput] = useState("");
   const [posts, setPosts] = useState([]);
   const [fullscreen, setFullscreen] = useState(null);
-  const dispatch=useDispatch()
+  const dispatch = useDispatch();
   // Initialize posts with dummy data when component mounts or data changes
   useEffect(() => {
+    console.log(data.location);
     if (data?.image) {
       setProfilepic(`http://localhost:3001/uploads/profilePics/${data.image}`);
     }
@@ -39,11 +45,8 @@ export default function Profiledetails() {
       const initialPosts = data.friendpost.map((image, index) => ({
         id: index,
         imageUrl: `http://localhost:3001/uploads/posts/${image}`,
-        likes: Math.floor(Math.random() * 100) + 10, // Random likes between 10-110
-        comments: [
-          { id: 1, user: "user123", text: "Great photo! 😍" },
-          { id: 2, user: "photography_lover", text: "Amazing shot!" },
-        ],
+        likes: 0, // Random likes between 10-110
+        comments: [],
         isLiked: false,
         showComments: false,
       }));
@@ -148,7 +151,7 @@ export default function Profiledetails() {
                     className="logout-btn"
                     variant="outline-danger"
                     onClick={() => {
-                      dispatch(updateLoginstatus(false))
+                      dispatch(updateLoginstatus(false));
                       navigate("/login"); // or your logout redirect
                     }}
                   >
@@ -190,7 +193,10 @@ export default function Profiledetails() {
                 {posts.map((post) => (
                   <div className="post-card" key={post.id}>
                     {/* Post Image */}
-                    <div className="post-image-container">
+                    <div
+                      className="post-image-container"
+                      style={{ position: "relative" }}
+                    >
                       <MDBCardImage
                         src={post.imageUrl}
                         alt={`Post ${post.id}`}
@@ -200,6 +206,24 @@ export default function Profiledetails() {
                           setFullscreen(post.imageUrl);
                         }}
                       />
+                      {data.location && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "10px",
+                            left: "10px",
+                            color: "white",
+                            backgroundColor: "rgba(0,0,0,0.5)",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <FaMapMarkerAlt style={{ marginRight: "5px" }} />
+                          {data.location}
+                        </div>
+                      )}
                     </div>
 
                     {/* Post Actions */}

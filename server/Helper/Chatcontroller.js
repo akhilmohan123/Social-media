@@ -19,7 +19,7 @@ module.exports = {
   },
   userChats: async (req, res) => {
     try {
-      getuserid(req.headers).then(async (result) => {
+      getuserid(req.cookies.token).then(async (result) => {
         let id = result.userId;
         let userid;
         const data = await usermodel.findById(id);
@@ -69,9 +69,10 @@ module.exports = {
         // Fetch friend details
         const friendDetails = await Promise.all(
           friend.map(async (id) => {
-            const user = await usermodel.findById(id).select("Fname");
+            const user = await usermodel.findById(id).select("Fname _id Image");
+            console.log("user is ===="+user)
             if (user) {
-              return { name: user.Fname, userid: user._id };
+              return { name: user.Fname, userid: user._id,Image:user.Image };
             }
             return null; // skip if not found
           })

@@ -122,7 +122,7 @@ function VideoContainer() {
 
 
   useEffect(() => {
-    alert("livestatus is "+live)
+ //   alert("livestatus is "+live)
     if(live)
     {
       handleVideo()

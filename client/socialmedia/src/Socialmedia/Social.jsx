@@ -77,14 +77,14 @@ useEffect(() => {
 
     // ✅ Handle foreground messages
     const unsubscribe = onMessage(messaging, (payload) => {
-      alert('Received foreground notification!');
+     // alert('Received foreground notification!');
       //console.log('[Foreground] Notification received:', payload);
 
       // ✅ Use `payload.data` directly (not `payload.notification.data`)
       const data = payload.data;
 
       if (data?.type === 'live-stream') {
-        alert("Live stream notification received");
+        //alert("Live stream notification received");
 
         dispatch(updateNotificationdata({
           id: data.notificationid,

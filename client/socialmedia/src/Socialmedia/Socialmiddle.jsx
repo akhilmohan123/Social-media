@@ -9,6 +9,8 @@ import SocialmediaRCP from "./SocialmediaCP/SocialmediaRCP/SocialmediaRCP";
 import StreamPlayer from "../HLS/StreamPlayer";
 import { useSelector } from "react-redux";
 import { _get } from "./axios/Axios";
+import "./Socialmiddle.css"; // We'll create this CSS file
+
 function Socialmiddle() {
   const token = localStorage.getItem("token");
   const [data, setdata] = useState([]);
@@ -18,15 +20,18 @@ function Socialmiddle() {
   const [loading, setLoading] = useState(true);
   const live = useSelector((state) => state.Live.LiveStatus);
   const streamstatus = useSelector((state) => state.Live.streamPlay);
+  
   const override = {
     display: "block",
     margin: "0 auto",
     borderColor: "red",
     backgroundColor: "#9de2ff",
   };
+  
   useEffect(() => {
-    alert("live status of user is ======" + live);
+    // Your existing logic
   }, [live]);
+  
   useEffect(() => {
     _get("http://localhost:3001/get-post")
       .then((res) => {
@@ -39,31 +44,14 @@ function Socialmiddle() {
         seterror(err);
       });
   }, [token]);
+  
   useEffect(() => {
     console.log("stream status is =====" + streamstatus);
   }, [streamstatus]);
 
-  // useEffect(()=>{
-  //   data?.post.forEach((item)=>{
-  //     console.log(data?.name)
-  //     console.log(item?.name)
-  //     console.log(item?.Image)
-  //     console.log(item?.Description)
-  //     console.log(item?.Like)
-  //     console.log(item?.createdAt)
-  //   })
-  // },[data])
-
   if (loading) {
     return (
-      <div
-        style={{
-          backgroundColor: "lightblue",
-          textAlign: "center",
-          height: "100vh",
-          width: "100vw",
-        }}
-      >
+      <div className="socialmiddle-loading">
         <LoadingSpinnerComponent
           color={color}
           loading={loading}
@@ -75,46 +63,48 @@ function Socialmiddle() {
       </div>
     );
   }
+  
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "20px",
-        backgroundColor: "#e3dede",
-        minHeight: "100vh",
-      }}
-    >
+    <div className="socialmiddle-container">
       {/* Left Sidebar */}
-      <div style={{ width: "250px" }}>
+      <div className="socialmiddle-sidebar left-sidebar">
         <SocialmediaLCP />
       </div>
 
       {/* Middle Feed */}
-      <div style={{ flex: 1, margin: "0 20px" }}>
+      <div className="socialmiddle-feed">
         {streamstatus ? <StreamPlayer /> : <CreatePost />}
-        {data?.map((post) => (
-          <Showfeed
-            key={post._id}
-            image={ post.Image? post.Image : "/default-image.png"}
-            description={post?.Description}
-            name={`${post?.Userid?.Fname || ""} ${post?.Userid?.Lname || ""}`}
-            like={post?.Like}
-            postid={post?._id}
-            comment={post?.Comment}
-            createadAt={post?.createadAt}
-            location={post?.Location}
-            isLikedstatus={post?.isLikedstatus}
-            userid={post?.Userid?._id}
-          />
-        ))}
+        
+        {data?.length === 0 ? (
+          <div className="empty-feed-message">
+            <h3>No posts yet</h3>
+            <p>Be the first to share something!</p>
+          </div>
+        ) : (
+          data?.map((post) => (
+            <Showfeed
+              key={post._id}
+              image={post.Image ? post.Image : "/default-image.png"}
+              description={post?.Description}
+              name={`${post?.Userid?.Fname || ""} ${post?.Userid?.Lname || ""}`}
+              like={post?.Like}
+              postid={post?._id}
+              comment={post?.Comment}
+              createadAt={post?.createadAt}
+              location={post?.Location}
+              isLikedstatus={post?.isLikedstatus}
+              userid={post?.Userid?._id}
+            />
+          ))
+        )}
       </div>
 
       {/* Right Sidebar */}
-      <div style={{ width: "250px" }}>
+      <div className="socialmiddle-sidebar right-sidebar">
         <SocialmediaRCP />
       </div>
     </div>
   );
 }
+
 export default Socialmiddle;

@@ -43,10 +43,6 @@ function Friends({ friend, id }) {
     }
   }
 
-  const getImageSrc = (imageData) => {
-    if (!imageData || !imageData.image || !imageData.contentType) return '/default-profile.png';
-    return `data:${imageData.contentType};base64,${imageData.image}`;
-  };
 
   function viewfriend(id) {
     navigate(`/view-friend/${id}`);
@@ -59,7 +55,7 @@ function Friends({ friend, id }) {
           <div className="img-square-wrapper">
             <MDBCardImage
               className="profile-image"
-              src={getImageSrc(friend.Image)}
+              src={`http://localhost:3001/uploads/profilePics/${friend.Image}`}
               alt='Profile image'
               fluid
             />
@@ -77,12 +73,7 @@ function Friends({ friend, id }) {
               {friend.bio || "This user hasn't written a bio yet."}
             </p>
             
-            <div className="friend-stats">
-              <div className="stat-item">
-                <MDBIcon icon="calendar" className="me-2" />
-                <span>Joined {new Date(friend.createdAt).toLocaleDateString()}</span>
-              </div>
-            </div>
+          
             
             <div className="friend-actions">
               <Button 
