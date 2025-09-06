@@ -15,6 +15,12 @@ import { Button } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './ViewFriend.css';
+import {
+  FaMapMarkerAlt,
+  FaHeart,
+  FaRegHeart,
+  FaRegCommentDots,
+} from "react-icons/fa";
 
 export default function ViewFriend() {
   const [data, setData] = useState(null);
@@ -32,6 +38,7 @@ export default function ViewFriend() {
     const fetchData = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/view-friend-profile/${id}`);
+        console.log(response.data.data)
         setData(response.data.data);
         
         if (response.data.data?.image) {
@@ -42,7 +49,7 @@ export default function ViewFriend() {
           const initialPosts = response.data.data.friendpost.map((image, index) => ({
             id: index,
             imageUrl: `http://localhost:3001/uploads/posts/${image}`,
-            likes: Math.floor(Math.random() * 100) + 10,
+            likes: 0,
             comments: [],
             isLiked: false,
             showComments: false,
@@ -201,6 +208,24 @@ export default function ViewFriend() {
                           setFullscreen(post.imageUrl);
                         }}
                       />
+                      {data.location && (
+                                              <div
+                                                style={{
+                                                  position: "absolute",
+                                                  bottom: "10px",
+                                                  left: "10px",
+                                                  color: "white",
+                                                  backgroundColor: "rgba(0,0,0,0.5)",
+                                                  padding: "2px 6px",
+                                                  borderRadius: "4px",
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                }}
+                                              >
+                                                <FaMapMarkerAlt style={{ marginRight: "5px" }} />
+                                                {data.location}
+                                              </div>
+                                            )}
                     </div>
 
                     {/* Post Actions */}

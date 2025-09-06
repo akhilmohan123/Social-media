@@ -107,7 +107,6 @@ function Mdblogin() {
             transition={{ duration: 0.5 }}
             className="w-100 py-5 px-md-5"
           >
-            {!showForgotPassword ? (
               <>
                 <div className="text-center mb-4">
                   <MDBIcon fas icon="crow" size="3x" className="me-3" style={{ color: '#709085' }} />
@@ -182,57 +181,13 @@ function Mdblogin() {
                       setShowForgotPassword(true);
                     }}
                   >
-                    Forgot password?
+            
                   </a>
                   <p className="mt-3">
                     Don't have an account? <a href="/Signup" className="text-primary">Register here</a>
                   </p>
                 </div>
               </>
-            ) : (
-              <div className="forgot-password-form">
-                <div className="text-center mb-4">
-                  <MDBIcon fas icon="key" size="3x" className="me-3" style={{ color: '#709085' }} />
-                  <span className="h1 fw-bold mb-0">Reset Password</span>
-                </div>
-
-                {/* Directly show password reset field for testing */}
-                <p className="text-center mb-4">Enter your new password</p>
-                <MDBInput
-                  wrapperClass='mb-4'
-                  label='New Password'
-                  id='newPassword'
-                  type='password'
-                  size="lg"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  contrast
-                />
-                <Button
-                  className="w-100 mb-3 py-2"
-                  variant="primary"
-                  size="lg"
-                  onClick={handlePasswordReset}
-                  disabled={resetLoading}
-                >
-                  {resetLoading ? 'Resetting...' : 'Reset Password'}
-                </Button>
-
-                <div className="text-center mt-3">
-                  <a 
-                    href="#!" 
-                    className="text-muted small"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowForgotPassword(false);
-                      setNewPassword('');
-                    }}
-                  >
-                    Back to login
-                  </a>
-                </div>
-              </div>
-            )}
           </motion.div>
         </MDBCol>
 

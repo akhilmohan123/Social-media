@@ -36,7 +36,7 @@ export default function Profiledetails() {
   const dispatch = useDispatch();
   // Initialize posts with dummy data when component mounts or data changes
   useEffect(() => {
-    console.log(data.location);
+    console.log(data);
     if (data?.image) {
       setProfilepic(`http://localhost:3001/uploads/profilePics/${data.image}`);
     }

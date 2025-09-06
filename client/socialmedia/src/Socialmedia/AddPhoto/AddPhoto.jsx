@@ -148,9 +148,12 @@ function AddPhoto({ imageData }) {
     setLocation(value);
     setSuggestions([]);
   }
+ const handleClose =()=>{
+  setShow(false)
+ }
   return (
     <Modal show={show} onHide={handleBack} size="lg" centered className="add-photo-modal">
-      <Modal.Header closeButton className="border-0 pb-0">
+      <Modal.Header closeButton className="border-0 pb-0" data-dismiss="modal" onClick={handleClose}>
         <Modal.Title className="fw-bold">Edit Photo</Modal.Title>
       </Modal.Header>
 
