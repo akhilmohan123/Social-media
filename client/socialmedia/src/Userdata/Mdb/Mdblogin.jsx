@@ -1,212 +1,257 @@
-import { useEffect, useState } from 'react';
-import axios from "axios";
+import { useEffect, useState, useRef } from 'react';
 import { MDBContainer, MDBRow, MDBCol, MDBIcon, MDBInput } from 'mdb-react-ui-kit';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import { FcGoogle } from 'react-icons/fc';
 import './Mdcss.css';
-import { _get, _post, apiClient } from '../../Socialmedia/axios/Axios';
+import { _post } from '../../Socialmedia/axios/Axios';
 import { toast } from 'react-toastify';
-import socket from '../../Socialmedia/Socket/Socket';
 import { useDispatch } from 'react-redux';
 import { updateLoginstatus, updatetoken } from '../../Redux/UserSlice';
+import { ArrowLeft } from 'react-bootstrap-icons';
+
 function Mdblogin() {
   const [value, setValue] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [google, setGoogle] = useState(false);
+
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
-  const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+
   const [codeSent, setCodeSent] = useState(false);
   const [verifyMode, setVerifyMode] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
-  const [googleLogin,setGooglelogin]=useState(false)
-  const [normallogin,setNormallogin]=useState(false)
+
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const inputsRef = useRef([]);
+
+  const [timer, setTimer] = useState(0);
 
   const navigate = useNavigate();
-  const dispatch = useDispatch()
-  const URL=import.meta.env.VITE_BACKEND_URL
+  const dispatch = useDispatch();
+  const URL = import.meta.env.VITE_BACKEND_URL;
+
+  // ---------------- LOGIN ----------------
   function handleChange(e) {
     const { name, value } = e.target;
-    setValue((prevValue) => ({ ...prevValue, [name]: value }));
+    setValue((prev) => ({ ...prev, [name]: value }));
   }
 
   async function handleClick() {
     setLoading(true);
     try {
       const data = await _post("/login", value);
-      console.log("token after login is "+data.data.token);
-      console.log("Clicked the login")
-      console.log("user id from the login"+data.data)
+
       if (data.data) {
-         
-        localStorage.setItem('userId',data.data);
+        localStorage.setItem('userId', data.data);
         dispatch(updatetoken(data.data));
-        //  socket.connect();
-         //socket.emit("new-user-add", data.data.userId);
-         dispatch(updateLoginstatus(true))
-        toast.success("Login successfully")
-        navigate("/social")
+        dispatch(updateLoginstatus(true));
+
+        toast.success("Login successfully");
+        navigate("/social");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed. Wrong email or password.");
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   }
-  
-  async function handleGoogleLogin() {
-    setGooglelogin(true)
+
+  // ---------------- GOOGLE LOGIN ----------------
+  function handleGoogleLogin() {
     window.location.href = `${URL}/google/authenticate`;
   }
 
-  async function handlePasswordReset() {
-    if (!newPassword) {
-      toast.warning('Please enter a new password');
+  // ---------------- SEND OTP ----------------
+  async function handleResetClick() {
+    try {
+      const res = await _post("/auth/send-reset-code", { email: resetEmail });
+
+      if (res.status === 200) {
+        toast.success("OTP sent to your email");
+        setCodeSent(true);
+        setTimer(30);
+      }
+    } catch (err) {
+      toast.error("Failed to send OTP");
+    }
+  }
+
+  // ---------------- TIMER ----------------
+  useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  // ---------------- OTP INPUT ----------------
+  const handleOtpChange = (value, index) => {
+    if (!/^[0-9]?$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < 5) {
+      inputsRef.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputsRef.current[index - 1]?.focus();
+    }
+  };
+
+  // ---------------- VERIFY OTP ----------------
+  async function handleVerifyOtp() {
+    const finalOtp = otp.join("");
+
+    if (finalOtp.length !== 6) {
+      toast.warning("Enter full OTP");
       return;
     }
-    if(newPassword.length <6) {
-      toast.warning("Please enter minimum 6 characters")
-      return
-    }
-    
-    setResetLoading(true);
+
     try {
-      // Replace with your actual API endpoint
-      await _post("/auth/reset-password", { 
-        newPassword: newPassword
-      }).then(res=>{
-        console.log(res)
-        if(res){
-          toast.success('Password reset successfully. You can now login with your new password');
-          setShowForgotPassword(false);
-          setNewPassword('');
-        }
-      }).catch(err=>{
-        if(err){
-          toast.error(err.response?.data?.message || "Failed to reset password"); 
-        }
+      const res = await _post("/auth/verify-reset-code", {
+        email: resetEmail,
+        otp: finalOtp,
       });
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to reset password");
-    } finally {
-      setResetLoading(false);
+
+      if (res.status === 200) {
+        toast.success("OTP verified");
+        setVerifyMode(true);
+      }
+    } catch (err) {
+      toast.error("Invalid OTP");
+    }
+  }
+
+  // ---------------- RESET PASSWORD ----------------
+  async function handlePasswordReset() {
+    if (newPassword.length < 6) {
+      toast.warning("Min 6 characters required");
+      return;
+    }
+
+    try {
+      const res = await _post("/auth/reset-password", {
+        email: resetEmail,
+        newPassword,
+      });
+
+      if (res.status === 200) {
+        toast.success("Password reset successful");
+        setShowForgotPassword(false);
+        setVerifyMode(false);
+        setCodeSent(false);
+        setOtp(["", "", "", "", "", ""]);
+      }
+    } catch {
+      toast.error("Reset failed");
     }
   }
 
   return (
-  <MDBContainer fluid className="login-container" style={{ height: "100vh",paddingRight:'0' }}>
-      <MDBRow className="g-0" style={{ height: "100%" }}>
-        {/* Left Column (Form) */}
-        <MDBCol md='6' className="d-none d-md-block p-0" style={{ overflow: "hidden" }}>
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-100 py-5 px-md-5"
-          >
+    <MDBContainer fluid style={{ height: "100vh" }}>
+      <MDBRow className="h-100 g-0">
+
+        {/* LEFT SIDE */}
+        <MDBCol md="6" className="d-flex align-items-center justify-content-center">
+          <div style={{ width: "80%" }}>
+
+            {!showForgotPassword ? (
               <>
-                <div className="text-center mb-4">
-                  <MDBIcon fas icon="crow" size="3x" className="me-3" style={{ color: '#709085' }} />
-                  <span className="h1 fw-bold mb-0">SocialApp</span>
-                </div>
+                <h3 className="text-center mb-4">Login</h3>
 
-                <h3 className="text-center mb-4" style={{ letterSpacing: '1px' }}>Welcome Back!</h3>
+                <MDBInput label="Email" name="email" value={value.email} onChange={handleChange} />
+                <MDBInput label="Password" type="password" name="password" value={value.password} onChange={handleChange} className="mt-3"/>
 
-                {/* Email/Password Form */}
-                <MDBInput
-                  wrapperClass='mb-4'
-                  label='Email address'
-                  id='formControlLg'
-                  type='email'
-                  size="lg"
-                  name='email'
-                  value={value.email}
-                  onChange={handleChange}
-                  contrast
-                />
-
-                <MDBInput
-                  wrapperClass='mb-4'
-                  label='Password'
-                  id='formControlLp'
-                  type='password'
-                  name='password'
-                  value={value.password}
-                  size="lg"
-                  onChange={handleChange}
-                  contrast
-                />
-
-                <Button
-                  className="w-100 mb-3 py-2"
-                  variant="primary"
-                  size="lg"
-                  onClick={handleClick}
-                  disabled={loading}
-                >
-                  {loading ? 'Logging in...' : 'Login'}
+                <Button className="w-100 mt-3" onClick={handleClick}>
+                  Login
                 </Button>
 
-                <div className="divider d-flex align-items-center my-4">
-                  <p className="text-center mx-3 mb-0 text-muted">or connect with</p>
-                </div>
+                <Button className="w-100 mt-2" onClick={handleGoogleLogin}>
+                  <FcGoogle /> Google Login
+                </Button>
 
-                {/* Google Login Button - Moved Below */}
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    variant="outline-primary"
-                    className="w-100 d-flex align-items-center justify-content-center"
-                    onClick={handleGoogleLogin}
-                    style={{
-                      height: '45px',
-                      borderColor: '#ddd',
-                      backgroundColor: 'white',
-                      fontSize: '0.9rem'
-                    }}
-                  >
-                    <FcGoogle size={18} className="me-2" />
-                    Continue with Google
-                  </Button>
-                </motion.div>
-
-                <div className="text-center mt-4">
-                  <a 
-                    href="#!" 
-                    className="text-muted small"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowForgotPassword(true);
-                    }}
-                  >
-            
-                  </a>
-                  <p className="mt-3">
-                    Don't have an account? <a href="/Signup" className="text-primary">Register here</a>
-                  </p>
-                </div>
+                <p className="text-center mt-3" onClick={() => setShowForgotPassword(true)} style={{ cursor: "pointer" }}>
+                  Forgot Password?
+                </p>
               </>
-          </motion.div>
+            ) : (
+              <>
+<div className="position-relative mb-3">
+  <Button
+    variant="outline-dark"
+    onClick={() => setShowForgotPassword(false)}
+    className="position-absolute start-0 top-50 translate-middle-y d-flex align-items-center gap-2"
+  >
+    <ArrowLeft />
+    Back
+  </Button>
+
+  <h4 className="text-center m-0">Reset Password</h4>
+</div>
+                {!codeSent && (
+                  <>
+                    <MDBInput label="Email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+                    <Button className="w-100 mt-3" onClick={handleResetClick} disabled={timer > 0}>
+                      {timer > 0 ? `Wait ${timer}s` : "Send OTP"}
+                    </Button>
+                  </>
+                )}
+
+                {codeSent && !verifyMode && (
+                  <>
+                    <div className="d-flex justify-content-center mt-3">
+                      {otp.map((digit, i) => (
+                        <input
+                          key={i}
+                          value={digit}
+                          maxLength={1}
+                          onChange={(e) => handleOtpChange(e.target.value, i)}
+                          onKeyDown={(e) => handleKeyDown(e, i)}
+                          ref={(el) => (inputsRef.current[i] = el)}
+                          style={{ width: "40px", margin: "5px", textAlign: "center" }}
+                        />
+                      ))}
+                    </div>
+
+                    <Button className="w-100 mt-3" onClick={handleVerifyOtp}>
+                      Verify OTP
+                    </Button>
+
+                    <Button className="w-100 mt-2" disabled={timer > 0} onClick={handleResetClick}>
+                      {timer > 0 ? `Resend in ${timer}s` : "Resend OTP"}
+                    </Button>
+                  </>
+                )}
+
+                {verifyMode && (
+                  <>
+                    <MDBInput label="New Password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                    <Button className="w-100 mt-3" onClick={handlePasswordReset}>
+                      Reset Password
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
         </MDBCol>
 
-        {/* Right Column (Social Media-themed Image) */}
-        <MDBCol md='6' className="d-none d-md-block">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="h-100"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
-              alt="People connecting on social media"
-              className="w-100 h-100"
-              style={{ objectFit: 'cover', objectPosition: 'center',display:'block' }}
-            />
-          </motion.div>
+        {/* RIGHT IMAGE */}
+        <MDBCol md="6" className="d-none d-md-block p-0">
+          <img
+            src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7"
+            alt="img"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
         </MDBCol>
+
       </MDBRow>
     </MDBContainer>
   );

@@ -183,7 +183,26 @@ module.exports={
             }
                 
         })
-      }
-
-
+      },
+    verifyEmail: (email) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let userIs = await usermodel.findOne({ Email: email });
+            if (userIs) {
+                let otpAdded = await module.exports.addOtp(email);
+                if (otpAdded) {
+                        resolve(true);
+                    } else {
+                        reject(false);
+                    }
+                }
+         else {
+                reject("User not found");
+            }
+        } catch (err) {
+            console.log(err);
+            reject(err);
+        }
+    });
+}
 }
