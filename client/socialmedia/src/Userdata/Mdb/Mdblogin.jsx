@@ -27,7 +27,7 @@ function Mdblogin() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch()
-
+  const URL=import.meta.env.VITE_BACKEND_URL
   function handleChange(e) {
     const { name, value } = e.target;
     setValue((prevValue) => ({ ...prevValue, [name]: value }));
@@ -59,7 +59,7 @@ function Mdblogin() {
   
   async function handleGoogleLogin() {
     setGooglelogin(true)
-    window.location.href = "http://localhost:3001/google/authenticate";
+    window.location.href = `${URL}/google/authenticate`;
   }
 
   async function handlePasswordReset() {
@@ -97,10 +97,10 @@ function Mdblogin() {
   }
 
   return (
-    <MDBContainer fluid className="login-container">
-      <MDBRow className="g-0">
+  <MDBContainer fluid className="login-container" style={{ height: "100vh",paddingRight:'0' }}>
+      <MDBRow className="g-0" style={{ height: "100%" }}>
         {/* Left Column (Form) */}
-        <MDBCol md='6' className="d-flex align-items-center">
+        <MDBCol md='6' className="d-none d-md-block p-0" style={{ overflow: "hidden" }}>
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -203,7 +203,7 @@ function Mdblogin() {
               src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
               alt="People connecting on social media"
               className="w-100 h-100"
-              style={{ objectFit: 'cover', objectPosition: 'center' }}
+              style={{ objectFit: 'cover', objectPosition: 'center',display:'block' }}
             />
           </motion.div>
         </MDBCol>

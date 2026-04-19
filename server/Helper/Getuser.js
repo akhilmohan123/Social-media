@@ -4,6 +4,7 @@ const Post = require("../model/postmodel");
 require('dotenv').config();
 const fs=require("fs");
 const { mongoose } = require('mongoose');
+const { log } = require('console');
 const ObjectId  = mongoose.Types.ObjectId;
 module.exports = {
   getuserid: (token) => {
@@ -14,6 +15,8 @@ module.exports = {
       }
       jwt.verify(token, process.env.JWT_SECRETKEY, (err, payload) => {
         if (err) {
+          console.log("Error in verifying token:", err);
+          
           return resolve(false);
         }
         resolve(payload);

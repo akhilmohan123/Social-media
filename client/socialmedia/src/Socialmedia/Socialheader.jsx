@@ -25,26 +25,34 @@ function Socialheader({ value }) {
   const live = useSelector((state) => state.Live.LiveStatus);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [profilePic,setProfilePic] = useState(null);
-  const profileData=useSelector(state => state.User.profileData)
+  const [profilePic, setProfilePic] = useState(null);
+  const profileData = useSelector((state) => state.User.profileData);
+  const URL=import.meta.env.VITE_BACKEND_URL
   async function getProfile() {
     try {
       let result = await _get("/profile");
-      console.log(result.data.data)
-      dispatch(updateProfileData(result.data.data))
+      console.log("Called the get profile ======");
+
+      console.log(result.data.data);
+      dispatch(updateProfileData(result.data.data));
     } catch (error) {
-      console.log("Error in fetching the profile"+error);
+      console.log("Error in fetching the profile" + error);
     }
   }
 
-
-  useEffect(()=>{
+  useEffect(() => {
     getProfile();
-  },[])
+  }, []);
 
-  useEffect(()=>{
-   setProfilePic(`http://localhost:3001/uploads/profilePics/${profileData?.image}`);
-  },[profileData])
+  useEffect(() => {
+    if(profileData?.image && (profileData.image.endsWith(".png") || profileData.image.endsWith(".jpg") || profileData.image.endsWith(".jpeg"))) {
+      setProfilePic(
+        `${URL}/uploads/profilePics/${profileData?.image}`,
+      );
+    } else {
+      setProfilePic(profileData?.image || "https://via.placeholder.com/150"); // Fallback to placeholder if no image
+    }
+  }, [profileData]);
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       search();
@@ -64,7 +72,7 @@ function Socialheader({ value }) {
     if (searchQuery.trim()) {
       try {
         const response = await axios.get(
-          `http://localhost:3001/user/sea?query=${searchQuery}`
+          `http://localhost:3001/user/sea?query=${searchQuery}`,
         );
         console.log(response.data);
         setSearchResults(response.data);

@@ -34,12 +34,20 @@ export default function Profiledetails() {
   const [posts, setPosts] = useState([]);
   const [fullscreen, setFullscreen] = useState(null);
   const dispatch = useDispatch();
+  const URL=import.meta.env.VITE_BACKEND_URL
   // Initialize posts with dummy data when component mounts or data changes
   useEffect(() => {
+    console.log("before the profile displaying");
+    
     console.log(data);
-    if (data?.image) {
-      setProfilepic(`http://localhost:3001/uploads/profilePics/${data.image}`);
-    }
+  if (
+    data?.image &&
+    (data.image.endsWith(".png") || data.image.endsWith(".jpg") || data.image.endsWith(".jpeg"))
+  ) {
+    setProfilepic(`${URL}/uploads/profilePics/${data.image}`);
+  } else {
+    setProfilepic(data?.image || "https://via.placeholder.com/150"); // Fallback to placeholder if no image
+  }
 
     if (data?.friendpost) {
       const initialPosts = data.friendpost.map((image, index) => ({

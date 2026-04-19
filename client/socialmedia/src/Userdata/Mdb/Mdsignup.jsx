@@ -14,6 +14,7 @@ import {
 import { FcGoogle } from 'react-icons/fc';
 import { motion } from 'framer-motion';
 import {toast} from 'react-toastify';
+import { Button } from 'react-bootstrap';
 
 
 function Mdbsignup() {
@@ -24,8 +25,9 @@ function Mdbsignup() {
   const navigate = useNavigate();
   const password_reg=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const email_regex=/^[\w\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    const URL=import.meta.env.VITE_BACKEND_URL
   const handleGoogleSignup = () => {
-    window.location.href = "http://localhost:3001/google/authenticate";
+    window.location.href = `${URL}/google/authenticate`;
   };
 
   function Onvalidation(){
@@ -71,22 +73,21 @@ function Mdbsignup() {
       if (image) form.append('profilePic', image);
   
       try {
-        const res = await axios.post("http://localhost:3001/signup", form, {
+        const res = await axios.post(`${URL}/signup`, form, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
   
         if (res.status === 200) {
-          alert("Account Created Successfully!");
+          toast.success("Account Created Successfully!");
           navigate("/login");
         }
       } catch (error) {
-        alert(error.response?.data?.message || "Registration failed. Please try again.");
+        toast.error(error.response?.data?.message || "Registration failed. Please try again.");
       } finally {
         setLoading(false);
       }
     }else{
       toast.error("Something went wrong !")
-      alert("NO !!!!")
     }
    
   }
@@ -202,14 +203,15 @@ function Mdbsignup() {
                 />
               </div>
 
-              <MDBBtn 
+
+              <Button
                 type='submit'
                 className='w-100 mb-3' 
                 color='primary'
                 disabled={loading}
-              >
+                >
                 {loading ? 'Creating Account...' : 'Sign Up'}
-              </MDBBtn>
+              </Button>
             </form>
 
             <div className="text-center">

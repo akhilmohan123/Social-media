@@ -11,8 +11,8 @@ var cookieParser = require("cookie-parser");
 var cors = require("cors");
 const passport=require("passport")
 const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const { googleAuthMiddleWare } = require("./Helper/Authentication");
-require("dotenv").config();
 
 connection();
 

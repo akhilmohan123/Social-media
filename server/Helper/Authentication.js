@@ -1,7 +1,8 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const usermodel = require("../model/usermodel");
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const googleAuthMiddleWare = {
   initialize: (passport) => {
@@ -10,32 +11,32 @@ const googleAuthMiddleWare = {
         {
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          callbackURL: "http://localhost:3001/auth/google/callback"
+          callbackURL: "http://localhost:3001/auth/google/callback",
         },
-        async(accessToken, refreshToken, profile, done) => {
+        async (accessToken, refreshToken, profile, done) => {
           //console.log(profile.emails[0].value)
           //console.log(profile.photos[0].value)
-          const email=profile.emails[0].value;
-          let existingUser = await usermodel.findOne({ Email:email });
-           //console.log(existingUser)
-              if(existingUser){
-                return done(null,existingUser)
-              }else{
-                const newUser = new usermodel({
-                  Fname: profile.displayName,
-                  Email: profile.emails[0].value,
-                  Image: profile.photos[0].value,
-                  googleId: profile.id,
-                  authType: "google",
-                  Password: null // clearly indicate it's a Google login
-                });
-                await newUser.save();
-              return done(null, newUser);
-              }
-
-
-        }
-      )
+          const email = profile.emails[0].value;
+          let existingUser = await usermodel.findOne({ Email: email });
+          console.log(existingUser);
+          if (existingUser) {
+            return done(null, existingUser);
+          } else {
+            console.log("inside the else")
+            console.log(profile)
+            const newUser = new usermodel({
+              Fname: profile.displayName,
+              Email: profile.emails[0].value,
+              Image: profile.photos[0].value,
+              googleId: profile.id,
+              authType: "google",
+              Password: null, // clearly indicate it's a Google login
+            });
+            await newUser.save();
+            return done(null, newUser);
+          }
+        },
+      ),
     );
 
     // REMOVE session-based behavior
@@ -46,18 +47,16 @@ const googleAuthMiddleWare = {
   authenticate: () =>
     passport.authenticate("google", {
       scope: ["profile", "email"],
-      session: false
+      session: false,
     }),
 
   callback: () =>
     passport.authenticate("google", {
       failureRedirect: "http://localhost:5173/login",
-      session: false
-    })
+      session: false,
+    }),
 };
 
-
-
 module.exports = {
-  googleAuthMiddleWare
+  googleAuthMiddleWare,
 };

@@ -20,7 +20,8 @@ const { fetchActiveusers } = require('../Helper/Chatcontroller');
 const { mongoose } = require('mongoose');
 const ObjectId  = mongoose.Types.ObjectId;
 const { v4: uuidv4 } = require("uuid");
-const path=require("path")
+const path=require("path");
+const { log } = require('console');
  require('dotenv').config()
 //function to get the filename
 
@@ -79,14 +80,13 @@ router.post('/signup', upload.fields([
 
 
 ]), async (req, res) => {
-  ////console.log("hitted signup")
+  try{
  if (!req.files || !req.files['profilePic'] || req.files['profilePic'].length === 0) {
   return res.status(400).json({ message: 'No profile picture uploaded' });
 }
-
-      const profilePicFile = req.files['profilePic'] ? req.files['profilePic'][0] : null;
-    let profilepicname = profilePicFile ? profilePicFile.filename : null;
-    console.log("Profile pic name is "+profilepicname)
+  const profilePicFile = req.files['profilePic'] ? req.files['profilePic'][0] : null;
+  let profilepicname = profilePicFile ? profilePicFile.filename : null;
+  console.log("Profile pic name is "+profilepicname)
 
   // let filePath = req.file.path;
   // var img = fs.readFileSync(filePath);
@@ -108,10 +108,16 @@ router.post('/signup', upload.fields([
     res.status(400).json({ message: 'Server error', err });
   }
  })
+}
+catch(err)
+{
+  console.log("Error in signup"+err);
+  res.status(500).json({message:'Something went wrong',err})
+}
 });
 
 router.post('/login',async(req,res)=>{
-  
+  try{
     console.log("hitted the login page")
     const{email,password}=req.body;
     
@@ -133,6 +139,12 @@ router.post('/login',async(req,res)=>{
     }).catch(err=>{
       res.status(400).json(err)
     })
+  }
+  catch(err)
+  {
+    console.log("Error in login "+err)
+    res.status(500).json({message:'Something went wrong',err})
+  }
     
          
 })
@@ -179,18 +191,23 @@ router.post("/post",upload.single("file"),(req,res)=>{
 
 })
 router.get("/profile",(req,res)=>{
-  //console.log("profile page called")
+  console.log("profile page called")
+  console.log("Token from cookies:", req.cookies.token);
  getuserid(req.cookies.token).then(async(response)=>{
-
+   console.log(response);
+   
   let id=response.userId;
   if(response){
     await usermodel.findById(new ObjectId(id)).then(result=>{
-    
+      console.log("result is ======="+result);
+      //need to change the function name
        getfriendsprofile(id).then(data=>{
        if(data){
+        console.log(data)
         res.status(200).json({data})
        }
        }).catch(err=>{
+        console.log(err)
         res.status(400).json({message:"Error"})
        })
      
@@ -414,7 +431,12 @@ router.get("/auth/google/callback",googleAuthMiddleWare.callback(),(req,res)=>{
    const token = jwt.sign({ userId: userId },process.env.JWT_SECRETKEY , { expiresIn: '1h' });
    //console.log(token)
   // //console.log(token)
-  res.redirect(`http://localhost:5173/social?token=${token}&id=${userId}`);
+  res.cookie("token",token, {
+        httpOnly: true,
+        secure: false,
+         sameSite: "lax",
+        maxAge: 60 * 60 * 1000 // 1 hour
+      }).redirect(`http://localhost:5173/social?token=${token}&id=${userId}`);
 })
 router.post("/auth/send-reset-code",async(req,res)=>{
   //console.log("get otp called")
