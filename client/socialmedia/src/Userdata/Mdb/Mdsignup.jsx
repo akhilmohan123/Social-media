@@ -1,228 +1,488 @@
 import React, { useState } from 'react';
-import axios from "axios";
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { 
-  MDBBtn,
-  MDBContainer,
-  MDBCard,
-  MDBCardBody,
-  MDBCol,
-  MDBRow,
-  MDBInput,
-  MDBIcon
-} from 'mdb-react-ui-kit';
 import { FcGoogle } from 'react-icons/fc';
-import { motion } from 'framer-motion';
-import {toast} from 'react-toastify';
-import { Button } from 'react-bootstrap';
+import { Eye, EyeSlash, ArrowRight } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 
+import './Mdsignup.css';
 
 function Mdbsignup() {
-  const [value, setValue] = useState({ fname: "", lname: "", email: "", password: "" });
+  const [value, setValue] = useState({
+    fname: '',
+    lname: '',
+    email: '',
+    password: ''
+  });
+
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error,Seterror]=useState({email:'',password:''})
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [error, setError] = useState({
+    email: '',
+    password: ''
+  });
+
   const navigate = useNavigate();
-  const password_reg=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const email_regex=/^[\w\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    const URL=import.meta.env.VITE_BACKEND_URL
+
+  const URL = import.meta.env.VITE_BACKEND_URL;
+
+  const emailRegex = /^[\w.+-]+@([\w-]+\.)+[\w-]{2,}$/;
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+
+  // ---------------- GOOGLE SIGNUP ----------------
+
   const handleGoogleSignup = () => {
     window.location.href = `${URL}/google/authenticate`;
   };
 
-  function Onvalidation(){
-  
-    var valid=true;
-    var newError={email:'',password:''}
-    if(!password_reg.test(value.email)){
-      newError.password='Please enter valid password';
-      valid=false;
-    } 
+  // ---------------- VALIDATION ----------------
 
-    if(!email_regex.test(value.email)) {
-      newError.email='Please enter valid email';
-      valid=false;
+  function onValidation() {
+    let valid = true;
+
+    const newError = {
+      email: '',
+      password: ''
+    };
+
+    if (!emailRegex.test(value.email)) {
+      newError.email = 'Please enter a valid email address';
+      valid = false;
+    }
+
+    if (!passwordRegex.test(value.password)) {
+      newError.password =
+        'Password must contain at least 6 characters and a number';
+      valid = false;
+    }
+
+    setError(newError);
+
+    return valid;
   }
-  Seterror(newError)
-  return valid
-}
+
+  // ---------------- INPUT CHANGE ----------------
 
   function handleChange(e) {
-    const { name, value } = e.target;
-    setValue((prevValue) => ({ ...prevValue, [name]: value }));
+    const { name, value: inputValue } = e.target;
+
+    setValue((prevValue) => ({
+      ...prevValue,
+      [name]: inputValue
+    }));
+
+    if (name === 'email' || name === 'password') {
+      setError((prev) => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   }
+
+  // ---------------- IMAGE ----------------
 
   function handleImage(e) {
     const file = e.target.files[0];
+
+    if (!file) {
+      setImage(null);
+      return;
+    }
+
     setImage(file);
   }
 
-  async function handleSubmit(e) {
+  // ---------------- SUBMIT ----------------
 
- 
+  async function handleSubmit(e) {
     e.preventDefault();
-    if(Onvalidation()){
-      
-      setLoading(true);
-    
-      const form = new FormData();
-      form.append('fname', value.fname);
-      form.append('lname', value.lname);
-      form.append("password", value.password);
-      form.append("email", value.email);
-      if (image) form.append('profilePic', image);
-  
-      try {
-        const res = await axios.post(`${URL}/signup`, form, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-  
-        if (res.status === 200) {
-          toast.success("Account Created Successfully!");
-          navigate("/login");
-        }
-      } catch (error) {
-        toast.error(error.response?.data?.message || "Registration failed. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    }else{
-      toast.error("Something went wrong !")
+
+    if (!onValidation()) {
+      toast.error('Please check your details');
+      return;
     }
-   
+
+    setLoading(true);
+
+    const form = new FormData();
+
+    form.append('fname', value.fname);
+    form.append('lname', value.lname);
+    form.append('password', value.password);
+    form.append('email', value.email);
+
+    if (image) {
+      form.append('profilePic', image);
+    }
+
+    try {
+      const res = await axios.post(
+        `${URL}/signup`,
+        form,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (res.status === 200) {
+        toast.success('Account created successfully!');
+
+        navigate('/login');
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+        'Registration failed. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <MDBContainer fluid className="p-0 overflow-hidden">
-      {/* Hero Image with Overlay */}
-      <div className="bg-image position-relative" style={{
-        backgroundImage: 'url(images/signup.jpg)',
-        height: '300px',
-        backgroundPosition: 'center'
-      }}>
-        <div className="mask" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
-          <div className="d-flex justify-content-center align-items-center h-100">
-            <h1 className="text-white mb-0">Join Our Community</h1>
-          </div>
-        </div>
-      </div>
+    <div className="signupPage">
 
-      {/* Signup Card */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="mx-md-5 mx-2"
-        style={{ marginTop: '-80px' }}
-      >
-        <MDBCard className='shadow-5' style={{
-          background: 'hsla(0, 0%, 100%, 0.9)',
-          backdropFilter: 'blur(10px)'
-        }}>
-          <MDBCardBody className='p-md-5 p-4'>
-            <h2 className="fw-bold mb-4 text-center">Create Your Account</h2>
+      {/* ========================================
+          LEFT VISUAL
+      ======================================== */}
 
-            {/* Google Signup Button */}
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <MDBBtn 
-                color='light' 
-                className='w-100 mb-4 d-flex align-items-center justify-content-center'
-                onClick={handleGoogleSignup}
-                style={{ height: '45px' }}
-              >
-                <FcGoogle size={20} className="me-2" />
-                Continue with Google
-              </MDBBtn>
-            </motion.div>
+      <section className="signupVisual">
 
-            <div className="divider d-flex align-items-center my-4">
-              <p className="text-center mx-3 mb-0 text-muted">or register with email</p>
+        <div className="signupVisualOverlay" />
+
+        <div className="signupVisualContent">
+
+          {/* BRAND */}
+
+          <div className="signupBrand">
+
+            <div className="signupBrandIcon">
+              S
             </div>
 
-            {/* Signup Form */}
-            <form onSubmit={handleSubmit}>
-              <MDBRow>
-                <MDBCol md='6' className='mb-3'>
-                  <MDBInput 
-                    label='First name' 
-                    id='fname' 
-                    type='text'
-                    name='fname' 
-                    value={value.fname}
-                    onChange={handleChange}
-                    required
-                  />
-                </MDBCol>
+            <span>
+              Socially
+            </span>
 
-                <MDBCol md='6' className='mb-3'>
-                  <MDBInput 
-                    label='Last name' 
-                    id='lname' 
-                    type='text'
-                    name='lname'
-                    value={value.lname}
-                    onChange={handleChange}
-                    required
-                  />
-                </MDBCol>
-              </MDBRow>
+          </div>
 
-              <MDBInput 
-                wrapperClass='mb-3' 
-                label='Email' 
-                id='email' 
-                type='email'
-                name='email' 
-                value={value.email}
-                onChange={handleChange}
-                required
-              />
-              {error.email && <p style={{color:'red'}}>{error.email}</p>}
+          {/* MAIN TEXT */}
 
-              <MDBInput 
-                wrapperClass='mb-3' 
-                label='Password' 
-                id='password' 
-                type='password'
-                name='password' 
-                value={value.password}
-                onChange={handleChange}
-                required
-                minLength="6"
-              />
-              {error.password && <p style={{color:'red'}}>{error.password}</p>}
+          <div className="signupHeroText">
 
-              <div className='mb-4'>
-                <label htmlFor="profileImage" className="form-label">Profile Image (Optional)</label>
-                <input 
-                  className="form-control" 
-                  type="file" 
-                  id="profileImage"
-                  accept="image/*"
-                  onChange={handleImage}
+            <span className="signupTag">
+              CREATE · CONNECT · SHARE
+            </span>
+
+            <h1>
+              Your story
+              <br />
+              starts <span>here.</span>
+            </h1>
+
+            <p>
+              Create your profile, connect with people
+              and start sharing the moments that matter.
+            </p>
+
+          </div>
+
+          {/* DECORATIVE CARDS */}
+
+          <div className="floatingCard floatingCardOne">
+
+            <div className="miniAvatar">
+              A
+            </div>
+
+            <div>
+              <strong>
+                New connection
+              </strong>
+
+              <small>
+                Someone followed you
+              </small>
+            </div>
+
+          </div>
+
+          <div className="floatingCard floatingCardTwo">
+
+            <span className="heartIcon">
+              ♥
+            </span>
+
+            <div>
+              <strong>
+                1,284
+              </strong>
+
+              <small>
+                people are sharing
+              </small>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* ========================================
+          SIGNUP FORM
+      ======================================== */}
+
+      <section className="signupFormSection">
+
+        <div className="signupFormContainer">
+
+          {/* HEADER */}
+
+          <div className="signupHeader">
+
+            <span className="mobileSignupBrand">
+              SOCIALly
+            </span>
+
+            <h2>
+              Create your account
+            </h2>
+
+            <p>
+              Join the community and start connecting.
+            </p>
+
+          </div>
+
+          {/* GOOGLE */}
+
+          <button
+            type="button"
+            className="signupGoogleButton"
+            onClick={handleGoogleSignup}
+          >
+
+            <FcGoogle size={21} />
+
+            <span>
+              Continue with Google
+            </span>
+
+          </button>
+
+          {/* DIVIDER */}
+
+          <div className="signupDivider">
+            <span>
+              OR CONTINUE WITH EMAIL
+            </span>
+          </div>
+
+          {/* FORM */}
+
+          <form onSubmit={handleSubmit}>
+
+            {/* NAME */}
+
+            <div className="nameInputs">
+
+              <div className="signupInputGroup">
+
+                <label>
+                  First name
+                </label>
+
+                <input
+                  type="text"
+                  name="fname"
+                  value={value.fname}
+                  onChange={handleChange}
+                  placeholder="John"
+                  required
                 />
+
               </div>
 
+              <div className="signupInputGroup">
 
-              <Button
-                type='submit'
-                className='w-100 mb-3' 
-                color='primary'
-                disabled={loading}
-                >
-                {loading ? 'Creating Account...' : 'Sign Up'}
-              </Button>
-            </form>
+                <label>
+                  Last name
+                </label>
 
-            <div className="text-center">
-              <p className="mb-0">Already have an account? 
-                <a href="/login" className="text-primary ms-1">Login here</a>
-              </p>
+                <input
+                  type="text"
+                  name="lname"
+                  value={value.lname}
+                  onChange={handleChange}
+                  placeholder="Doe"
+                  required
+                />
+
+              </div>
+
             </div>
-          </MDBCardBody>
-        </MDBCard>
-      </motion.div>
-    </MDBContainer>
+
+            {/* EMAIL */}
+
+            <div className="signupInputGroup">
+
+              <label>
+                Email address
+              </label>
+
+              <input
+                type="email"
+                name="email"
+                value={value.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                required
+              />
+
+              {error.email && (
+                <span className="signupError">
+                  {error.email}
+                </span>
+              )}
+
+            </div>
+
+            {/* PASSWORD */}
+
+            <div className="signupInputGroup">
+
+              <label>
+                Password
+              </label>
+
+              <div className="signupPasswordWrapper">
+
+                <input
+                  type={
+                    showPassword
+                      ? 'text'
+                      : 'password'
+                  }
+                  name="password"
+                  value={value.password}
+                  onChange={handleChange}
+                  placeholder="Create a password"
+                  required
+                  minLength="6"
+                />
+
+                <button
+                  type="button"
+                  className="signupPasswordToggle"
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
+                >
+                  {showPassword
+                    ? <EyeSlash />
+                    : <Eye />
+                  }
+                </button>
+
+              </div>
+
+              {error.password && (
+                <span className="signupError">
+                  {error.password}
+                </span>
+              )}
+
+              <span className="passwordHint">
+                Minimum 6 characters with at least one number
+              </span>
+
+            </div>
+
+            {/* PROFILE IMAGE */}
+
+            <div className="profileUpload">
+
+              <div className="profileUploadText">
+
+                <div className="profileUploadIcon">
+                  +
+                </div>
+
+                <div>
+
+                  <label htmlFor="profileImage">
+                    Profile picture
+                  </label>
+
+                  <span>
+                    Optional · JPG, PNG or WEBP
+                  </span>
+
+                </div>
+
+              </div>
+
+              <input
+                type="file"
+                id="profileImage"
+                accept="image/*"
+                onChange={handleImage}
+              />
+
+              {image && (
+                <span className="selectedFile">
+                  {image.name}
+                </span>
+              )}
+
+            </div>
+
+            {/* SUBMIT */}
+
+            <button
+              type="submit"
+              className="signupButton"
+              disabled={loading}
+            >
+
+              {loading ? (
+                'Creating account...'
+              ) : (
+                <>
+                  Create account
+                  <ArrowRight />
+                </>
+              )}
+
+            </button>
+
+          </form>
+
+          {/* LOGIN */}
+
+          <p className="alreadyAccount">
+
+            Already have an account?
+
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+            >
+              Sign in
+            </button>
+
+          </p>
+
+        </div>
+
+      </section>
+
+    </div>
   );
 }
 

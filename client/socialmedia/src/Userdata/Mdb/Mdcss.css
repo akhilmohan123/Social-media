@@ -1,26 +1,770 @@
-body{
-    color: white;
+* {
+  box-sizing: border-box;
 }
-/* Add this to your Mdcss.css file */
-.login-container {
-    min-height: 100vh;
-  }
 
-  .login-container img{
-    display: block;
-  }
-  body {
+.loginPage {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+
+  background: #f7f7f5;
+
+  color: #151515;
+}
+
+/* ========================================
+   LEFT VISUAL
+======================================== */
+
+.loginVisual {
+  position: relative;
+
+  width: 52%;
+  min-height: 100vh;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      #111827 0%,
+      #172554 45%,
+      #312e81 100%
+    );
+}
+
+.visualOverlay {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(99, 102, 241, 0.35),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(236, 72, 153, 0.25),
+      transparent 35%
+    );
+}
+
+.loginVisual::after {
+  content: '';
+
+  position: absolute;
+
+  width: 450px;
+  height: 450px;
+
+  right: -180px;
+  bottom: -180px;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  box-shadow:
+    0 0 0 60px rgba(255, 255, 255, 0.025),
+    0 0 0 120px rgba(255, 255, 255, 0.02);
+}
+
+.visualContent {
+  position: relative;
+  z-index: 2;
+
+  min-height: 100vh;
+
+  padding: 45px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Brand */
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  color: white;
+
+  font-size: 20px;
+  font-weight: 700;
+
+  letter-spacing: -0.5px;
+}
+
+.brandIcon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: white;
+
+  color: #312e81;
+
+  font-weight: 800;
+}
+
+/* Visual Text */
+
+.visualText {
+  max-width: 570px;
+
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.visualTag {
+  display: inline-block;
+
+  margin-bottom: 22px;
+
+  color: rgba(255, 255, 255, 0.6);
+
+  font-size: 11px;
+
+  letter-spacing: 2px;
+
+  font-weight: 600;
+}
+
+.visualText h1 {
+  margin: 0;
+
+  color: white;
+
+  font-size: clamp(42px, 4.5vw, 70px);
+
+  line-height: 1.02;
+
+  letter-spacing: -3px;
+
+  font-weight: 700;
+}
+
+.visualText h1 span {
+  color: #a5b4fc;
+}
+
+.visualText p {
+  max-width: 430px;
+
+  margin-top: 25px;
+
+  color: rgba(255, 255, 255, 0.62);
+
+  font-size: 16px;
+
+  line-height: 1.7;
+}
+
+/* Bottom */
+
+.visualBottom {
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 13px;
+}
+
+.onlineUsers {
+  display: flex;
+}
+
+.userBubble {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-left: -7px;
+
+  border: 2px solid #172554;
+
+  border-radius: 50%;
+
+  background: #6366f1;
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.userBubble:first-child {
+  margin-left: 0;
+}
+
+/* ========================================
+   RIGHT FORM
+======================================== */
+
+.loginFormSection {
+  width: 48%;
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f7f7f5;
+}
+
+.loginFormContainer {
+  width: min(430px, 85%);
+
+  padding: 40px 0;
+}
+
+/* Header */
+
+.formHeader {
+  margin-bottom: 35px;
+}
+
+.mobileBrand {
+  display: none;
+}
+
+.formHeader h2 {
+  margin: 0;
+
+  font-size: 36px;
+
+  letter-spacing: -1.5px;
+
+  font-weight: 700;
+}
+
+.formHeader p {
+  margin-top: 10px;
+
+  color: #777;
+
+  font-size: 14px;
+}
+
+/* Inputs */
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.inputGroup label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #333;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.inputGroup input {
+  width: 100%;
+
+  height: 52px;
+
+  padding: 0 16px;
+
+  border: 1px solid #dededb;
+
+  border-radius: 12px;
+
+  outline: none;
+
+  background: white;
+
+  color: #151515;
+
+  font-size: 14px;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.inputGroup input::placeholder {
+  color: #aaa;
+}
+
+.inputGroup input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.08);
+}
+
+/* Password */
+
+.passwordLabel {
+  display: flex;
+  justify-content: space-between;
+}
+
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordWrapper input {
+  padding-right: 50px;
+}
+
+.passwordToggle {
+  position: absolute;
+
+  right: 15px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  border: none;
+
+  background: transparent;
+
+  color: #777;
+
+  cursor: pointer;
+}
+
+/* Forgot */
+
+.forgotRow {
+  display: flex;
+
+  justify-content: flex-end;
+
+  margin-top: -8px;
+
+  margin-bottom: 20px;
+}
+
+.forgotRow button {
+  border: none;
+
+  background: none;
+
+  color: #5b5bd6;
+
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+/* Login Button */
+
+.loginButton {
+  width: 100%;
+
+  height: 52px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #151515;
+
+  color: white;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.loginButton:hover:not(:disabled) {
+  background: #292929;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.loginButton:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+/* Divider */
+
+.divider {
+  position: relative;
+
+  margin: 25px 0;
+
+  text-align: center;
+}
+
+.divider::before {
+  content: '';
+
+  position: absolute;
+
+  left: 0;
+  right: 0;
+
+  top: 50%;
+
+  height: 1px;
+
+  background: #e2e2df;
+}
+
+.divider span {
+  position: relative;
+
+  padding: 0 12px;
+
+  background: #f7f7f5;
+
+  color: #999;
+
+  font-size: 10px;
+
+  letter-spacing: 1px;
+}
+
+/* Google */
+
+.googleButton {
+  width: 100%;
+
+  height: 52px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  border: 1px solid #dededb;
+
+  border-radius: 12px;
+
+  background: white;
+
+  color: #222;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.googleButton:hover {
+  background: #fafafa;
+
+  box-shadow:
+    0 5px 15px rgba(0, 0, 0, 0.06);
+}
+
+/* Signup */
+
+.signupText {
+  margin-top: 28px;
+
+  text-align: center;
+
+  color: #888;
+
+  font-size: 13px;
+}
+
+.signupText button {
+  margin-left: 5px;
+
+  border: none;
+
+  background: none;
+
+  color: #5b5bd6;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+/* ========================================
+   RESET PASSWORD
+======================================== */
+
+.resetHeader {
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+
+  margin-bottom: 40px;
+}
+
+.resetHeader h2 {
+  margin: 0;
+
+  font-size: 30px;
+
+  letter-spacing: -1px;
+}
+
+.resetHeader p {
+  margin: 6px 0 0;
+
+  color: #888;
+
+  font-size: 13px;
+}
+
+.backButton {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #dededb;
+
+  border-radius: 10px;
+
+  background: white;
+
+  cursor: pointer;
+
+  transition: background 0.2s;
+}
+
+.backButton:hover {
+  background: #eee;
+}
+
+.resetIcon {
+  width: 60px;
+  height: 60px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 25px;
+
+  border-radius: 18px;
+
+  background: #eeefff;
+
+  color: #5b5bd6;
+
+  font-size: 25px;
+}
+
+.otpDescription {
+  margin-bottom: 25px;
+
+  color: #777;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+.otpDescription p {
   margin: 0;
 }
-  
-  .divider {
-    color: #6c757d;
+
+.otpDescription strong {
+  color: #222;
+}
+
+/* OTP */
+
+.otpContainer {
+  display: flex;
+
+  gap: 8px;
+
+  margin-bottom: 25px;
+}
+
+.otpContainer input {
+  width: 100%;
+
+  height: 56px;
+
+  text-align: center;
+
+  border: 1px solid #dededb;
+
+  border-radius: 12px;
+
+  outline: none;
+
+  background: white;
+
+  font-size: 20px;
+
+  font-weight: 600;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.otpContainer input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.08);
+}
+
+/* Resend */
+
+.resendButton {
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 12px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #5b5bd6;
+
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+.resendButton:disabled {
+  color: #aaa;
+
+  cursor: default;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 900px) {
+
+  .loginVisual {
+    width: 45%;
   }
-  
-  .divider::before,
-  .divider::after {
-    content: "";
-    flex: 1;
-    border-bottom: 1px solid #dee2e6;
-    margin: auto 0.5rem;
+
+  .loginFormSection {
+    width: 55%;
   }
+
+  .visualContent {
+    padding: 30px;
+  }
+
+  .visualText h1 {
+    font-size: 45px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .loginPage {
+    min-height: 100vh;
+
+    display: block;
+  }
+
+  .loginVisual {
+    display: none;
+  }
+
+  .loginFormSection {
+    width: 100%;
+    min-height: 100vh;
+
+    background: #f7f7f5;
+  }
+
+  .loginFormContainer {
+    width: min(430px, 90%);
+  }
+
+  .mobileBrand {
+    display: block;
+
+    margin-bottom: 25px;
+
+    color: #151515;
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.5px;
+  }
+
+  .formHeader h2 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 420px) {
+
+  .loginFormContainer {
+    width: 88%;
+  }
+
+  .formHeader h2 {
+    font-size: 29px;
+  }
+
+  .otpContainer {
+    gap: 5px;
+  }
+
+  .otpContainer input {
+    height: 50px;
+
+    font-size: 18px;
+  }
+}

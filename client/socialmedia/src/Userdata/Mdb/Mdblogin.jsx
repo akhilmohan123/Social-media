@@ -1,19 +1,24 @@
-import { useEffect, useState, useRef } from 'react';
-import { MDBContainer, MDBRow, MDBCol, MDBIcon, MDBInput } from 'mdb-react-ui-kit';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from 'react-bootstrap';
-import { motion } from 'framer-motion';
 import { FcGoogle } from 'react-icons/fc';
-import './Mdcss.css';
-import { _post } from '../../Socialmedia/axios/Axios';
+import { ArrowLeft, Eye, EyeSlash } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
+
+import { _post } from '../../Socialmedia/axios/Axios';
 import { updateLoginstatus, updatetoken } from '../../Redux/UserSlice';
-import { ArrowLeft } from 'react-bootstrap-icons';
+
+import './Mdcss.css';
 
 function Mdblogin() {
-  const [value, setValue] = useState({ email: '', password: '' });
+  const [value, setValue] = useState({
+    email: '',
+    password: ''
+  });
+
   const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -22,238 +27,619 @@ function Mdblogin() {
   const [codeSent, setCodeSent] = useState(false);
   const [verifyMode, setVerifyMode] = useState(false);
 
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState([
+    '',
+    '',
+    '',
+    '',
+    '',
+    ''
+  ]);
+
   const inputsRef = useRef([]);
 
   const [timer, setTimer] = useState(0);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const URL = import.meta.env.VITE_BACKEND_URL;
 
   // ---------------- LOGIN ----------------
+
   function handleChange(e) {
     const { name, value } = e.target;
-    setValue((prev) => ({ ...prev, [name]: value }));
+
+    setValue((prev) => ({
+      ...prev,
+      [name]: value
+    }));
   }
 
   async function handleClick() {
+    if (!value.email || !value.password) {
+      toast.warning('Please enter your email and password');
+      return;
+    }
+
     setLoading(true);
+
     try {
-      const data = await _post("/login", value);
+      const data = await _post('/login', value);
 
       if (data.data) {
         localStorage.setItem('userId', data.data);
+
         dispatch(updatetoken(data.data));
         dispatch(updateLoginstatus(true));
 
-        toast.success("Login successfully");
-        navigate("/social");
+        toast.success('Login successfully');
+
+        navigate('/social');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed");
+      toast.error(
+        error.response?.data?.message || 'Login failed'
+      );
     } finally {
       setLoading(false);
     }
   }
 
   // ---------------- GOOGLE LOGIN ----------------
+
   function handleGoogleLogin() {
     window.location.href = `${URL}/google/authenticate`;
   }
 
   // ---------------- SEND OTP ----------------
+
   async function handleResetClick() {
+    if (!resetEmail) {
+      toast.warning('Enter your email address');
+      return;
+    }
+
     try {
-      const res = await _post("/auth/send-reset-code", { email: resetEmail });
+      const res = await _post(
+        '/auth/send-reset-code',
+        {
+          email: resetEmail
+        }
+      );
 
       if (res.status === 200) {
-        toast.success("OTP sent to your email");
+        toast.success('OTP sent to your email');
+
         setCodeSent(true);
         setTimer(30);
       }
     } catch (err) {
-      toast.error("Failed to send OTP");
+      toast.error('Failed to send OTP');
     }
   }
 
   // ---------------- TIMER ----------------
+
   useEffect(() => {
     let interval;
+
     if (timer > 0) {
-      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
     }
+
     return () => clearInterval(interval);
   }, [timer]);
 
-  // ---------------- OTP INPUT ----------------
-  const handleOtpChange = (value, index) => {
-    if (!/^[0-9]?$/.test(value)) return;
+  // ---------------- OTP ----------------
+
+  const handleOtpChange = (inputValue, index) => {
+    if (!/^[0-9]?$/.test(inputValue)) {
+      return;
+    }
 
     const newOtp = [...otp];
-    newOtp[index] = value;
+
+    newOtp[index] = inputValue;
+
     setOtp(newOtp);
 
-    if (value && index < 5) {
+    if (inputValue && index < 5) {
       inputsRef.current[index + 1]?.focus();
     }
   };
 
   const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
+    if (
+      e.key === 'Backspace' &&
+      !otp[index] &&
+      index > 0
+    ) {
       inputsRef.current[index - 1]?.focus();
     }
   };
 
   // ---------------- VERIFY OTP ----------------
+
   async function handleVerifyOtp() {
-    const finalOtp = otp.join("");
+    const finalOtp = otp.join('');
 
     if (finalOtp.length !== 6) {
-      toast.warning("Enter full OTP");
+      toast.warning('Enter the complete OTP');
       return;
     }
 
     try {
-      const res = await _post("/auth/verify-reset-code", {
-        email: resetEmail,
-        otp: finalOtp,
-      });
+      const res = await _post(
+        '/auth/verify-reset-code',
+        {
+          email: resetEmail,
+          otp: finalOtp
+        }
+      );
 
       if (res.status === 200) {
-        toast.success("OTP verified");
+        toast.success('OTP verified');
+
         setVerifyMode(true);
       }
     } catch (err) {
-      toast.error("Invalid OTP");
+      toast.error('Invalid OTP');
     }
   }
 
   // ---------------- RESET PASSWORD ----------------
+
   async function handlePasswordReset() {
     if (newPassword.length < 6) {
-      toast.warning("Min 6 characters required");
+      toast.warning('Minimum 6 characters required');
       return;
     }
 
     try {
-      const res = await _post("/auth/reset-password", {
-        email: resetEmail,
-        newPassword,
-      });
+      const res = await _post(
+        '/auth/reset-password',
+        {
+          email: resetEmail,
+          newPassword
+        }
+      );
 
       if (res.status === 200) {
-        toast.success("Password reset successful");
+        toast.success('Password reset successful');
+
         setShowForgotPassword(false);
         setVerifyMode(false);
         setCodeSent(false);
-        setOtp(["", "", "", "", "", ""]);
+
+        setOtp([
+          '',
+          '',
+          '',
+          '',
+          '',
+          ''
+        ]);
+
+        setResetEmail('');
+        setNewPassword('');
       }
     } catch {
-      toast.error("Reset failed");
+      toast.error('Reset failed');
     }
   }
 
+  // ---------------- BACK TO LOGIN ----------------
+
+  function handleBackToLogin() {
+    setShowForgotPassword(false);
+    setCodeSent(false);
+    setVerifyMode(false);
+
+    setOtp([
+      '',
+      '',
+      '',
+      '',
+      '',
+      ''
+    ]);
+  }
+
   return (
-    <MDBContainer fluid style={{ height: "100vh" }}>
-      <MDBRow className="h-100 g-0">
+    <div className="loginPage">
 
-        {/* LEFT SIDE */}
-        <MDBCol md="6" className="d-flex align-items-center justify-content-center">
-          <div style={{ width: "80%" }}>
+      {/* LEFT VISUAL PANEL */}
 
-            {!showForgotPassword ? (
-              <>
-                <h3 className="text-center mb-4">Login</h3>
+      <section className="loginVisual">
 
-                <MDBInput label="Email" name="email" value={value.email} onChange={handleChange} />
-                <MDBInput label="Password" type="password" name="password" value={value.password} onChange={handleChange} className="mt-3"/>
+        <div className="visualOverlay" />
 
-                <Button className="w-100 mt-3" onClick={handleClick}>
-                  Login
-                </Button>
+        <div className="visualContent">
 
-                <Button className="w-100 mt-2" onClick={handleGoogleLogin}>
-                  <FcGoogle /> Google Login
-                </Button>
+          <div className="brandLogo">
+            <div className="brandIcon">
+              S
+            </div>
 
-                <p className="text-center mt-3" onClick={() => setShowForgotPassword(true)} style={{ cursor: "pointer" }}>
-                  Forgot Password?
-                </p>
-              </>
-            ) : (
-              <>
-<div className="position-relative mb-3">
-  <Button
-    variant="outline-dark"
-    onClick={() => setShowForgotPassword(false)}
-    className="position-absolute start-0 top-50 translate-middle-y d-flex align-items-center gap-2"
-  >
-    <ArrowLeft />
-    Back
-  </Button>
-
-  <h4 className="text-center m-0">Reset Password</h4>
-</div>
-                {!codeSent && (
-                  <>
-                    <MDBInput label="Email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
-                    <Button className="w-100 mt-3" onClick={handleResetClick} disabled={timer > 0}>
-                      {timer > 0 ? `Wait ${timer}s` : "Send OTP"}
-                    </Button>
-                  </>
-                )}
-
-                {codeSent && !verifyMode && (
-                  <>
-                    <div className="d-flex justify-content-center mt-3">
-                      {otp.map((digit, i) => (
-                        <input
-                          key={i}
-                          value={digit}
-                          maxLength={1}
-                          onChange={(e) => handleOtpChange(e.target.value, i)}
-                          onKeyDown={(e) => handleKeyDown(e, i)}
-                          ref={(el) => (inputsRef.current[i] = el)}
-                          style={{ width: "40px", margin: "5px", textAlign: "center" }}
-                        />
-                      ))}
-                    </div>
-
-                    <Button className="w-100 mt-3" onClick={handleVerifyOtp}>
-                      Verify OTP
-                    </Button>
-
-                    <Button className="w-100 mt-2" disabled={timer > 0} onClick={handleResetClick}>
-                      {timer > 0 ? `Resend in ${timer}s` : "Resend OTP"}
-                    </Button>
-                  </>
-                )}
-
-                {verifyMode && (
-                  <>
-                    <MDBInput label="New Password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                    <Button className="w-100 mt-3" onClick={handlePasswordReset}>
-                      Reset Password
-                    </Button>
-                  </>
-                )}
-              </>
-            )}
+            <span>
+              Socially
+            </span>
           </div>
-        </MDBCol>
 
-        {/* RIGHT IMAGE */}
-        <MDBCol md="6" className="d-none d-md-block p-0">
-          <img
-            src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7"
-            alt="img"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        </MDBCol>
+          <div className="visualText">
 
-      </MDBRow>
-    </MDBContainer>
+            <span className="visualTag">
+              CONNECT · SHARE · DISCOVER
+            </span>
+
+            <h1>
+              Your people.
+              <br />
+              Your moments.
+              <br />
+              <span>One place.</span>
+            </h1>
+
+            <p>
+              Stay connected with the people,
+              ideas and moments that matter to you.
+            </p>
+
+          </div>
+
+          <div className="visualBottom">
+
+            <div className="onlineUsers">
+
+              <div className="userBubble">A</div>
+              <div className="userBubble">M</div>
+              <div className="userBubble">R</div>
+              <div className="userBubble">+</div>
+
+            </div>
+
+            <span>
+              Join a growing community
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* RIGHT FORM PANEL */}
+
+      <section className="loginFormSection">
+
+        <div className="loginFormContainer">
+
+          {!showForgotPassword ? (
+
+            <>
+              <div className="formHeader">
+
+                <span className="mobileBrand">
+                  SOCIALly
+                </span>
+
+                <h2>
+                  Welcome back
+                </h2>
+
+                <p>
+                  Sign in to continue to your account.
+                </p>
+
+              </div>
+
+              {/* Email */}
+
+              <div className="inputGroup">
+
+                <label>
+                  Email address
+                </label>
+
+                <input
+                  type="email"
+                  name="email"
+                  value={value.email}
+                  onChange={handleChange}
+                  placeholder="you@example.com"
+                />
+
+              </div>
+
+              {/* Password */}
+
+              <div className="inputGroup">
+
+                <div className="passwordLabel">
+
+                  <label>
+                    Password
+                  </label>
+
+                </div>
+
+                <div className="passwordWrapper">
+
+                  <input
+                    type={
+                      showPassword
+                        ? 'text'
+                        : 'password'
+                    }
+                    name="password"
+                    value={value.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                  />
+
+                  <button
+                    type="button"
+                    className="passwordToggle"
+                    onClick={() =>
+                      setShowPassword(!showPassword)
+                    }
+                  >
+                    {showPassword
+                      ? <EyeSlash />
+                      : <Eye />
+                    }
+                  </button>
+
+                </div>
+
+              </div>
+
+              {/* Forgot */}
+
+              <div className="forgotRow">
+
+                <button
+                  onClick={() =>
+                    setShowForgotPassword(true)
+                  }
+                >
+                  Forgot password?
+                </button>
+
+              </div>
+
+              {/* Login */}
+
+              <button
+                className="loginButton"
+                onClick={handleClick}
+                disabled={loading}
+              >
+
+                {loading
+                  ? 'Signing in...'
+                  : 'Sign in'
+                }
+
+                {!loading && (
+                  <span>→</span>
+                )}
+
+              </button>
+
+              {/* Divider */}
+
+              <div className="divider">
+                <span>OR</span>
+              </div>
+
+              {/* Google */}
+
+              <button
+                className="googleButton"
+                onClick={handleGoogleLogin}
+              >
+
+                <FcGoogle size={21} />
+
+                <span>
+                  Continue with Google
+                </span>
+
+              </button>
+
+              {/* Signup */}
+
+              <p className="signupText">
+                Don't have an account?
+                <button
+                  onClick={() => navigate('/signup')}
+                >
+                  Create account
+                </button>
+              </p>
+
+            </>
+
+          ) : (
+
+            <>
+              {/* RESET PASSWORD */}
+
+              <div className="resetHeader">
+
+                <button
+                  className="backButton"
+                  onClick={handleBackToLogin}
+                >
+                  <ArrowLeft />
+                </button>
+
+                <div>
+                  <h2>
+                    Reset password
+                  </h2>
+
+                  <p>
+                    Securely recover your account.
+                  </p>
+                </div>
+
+              </div>
+
+              {/* EMAIL */}
+
+              {!codeSent && (
+
+                <>
+
+                  <div className="resetIcon">
+                    ✦
+                  </div>
+
+                  <div className="inputGroup">
+
+                    <label>
+                      Email address
+                    </label>
+
+                    <input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) =>
+                        setResetEmail(e.target.value)
+                      }
+                      placeholder="you@example.com"
+                    />
+
+                  </div>
+
+                  <button
+                    className="loginButton"
+                    onClick={handleResetClick}
+                    disabled={timer > 0}
+                  >
+                    {timer > 0
+                      ? `Wait ${timer}s`
+                      : 'Send verification code'
+                    }
+                  </button>
+
+                </>
+
+              )}
+
+              {/* OTP */}
+
+              {codeSent && !verifyMode && (
+
+                <>
+
+                  <div className="otpDescription">
+                    <p>
+                      Enter the 6-digit code sent to
+                    </p>
+
+                    <strong>
+                      {resetEmail}
+                    </strong>
+                  </div>
+
+                  <div className="otpContainer">
+
+                    {otp.map((digit, index) => (
+
+                      <input
+                        key={index}
+                        ref={(el) =>
+                          (inputsRef.current[index] = el)
+                        }
+                        value={digit}
+                        maxLength={1}
+                        inputMode="numeric"
+                        onChange={(e) =>
+                          handleOtpChange(
+                            e.target.value,
+                            index
+                          )
+                        }
+                        onKeyDown={(e) =>
+                          handleKeyDown(e, index)
+                        }
+                      />
+
+                    ))}
+
+                  </div>
+
+                  <button
+                    className="loginButton"
+                    onClick={handleVerifyOtp}
+                  >
+                    Verify code
+                  </button>
+
+                  <button
+                    className="resendButton"
+                    disabled={timer > 0}
+                    onClick={handleResetClick}
+                  >
+                    {timer > 0
+                      ? `Resend in ${timer}s`
+                      : 'Resend code'
+                    }
+                  </button>
+
+                </>
+
+              )}
+
+              {/* NEW PASSWORD */}
+
+              {verifyMode && (
+
+                <>
+
+                  <div className="inputGroup">
+
+                    <label>
+                      New password
+                    </label>
+
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) =>
+                        setNewPassword(e.target.value)
+                      }
+                      placeholder="Create a new password"
+                    />
+
+                  </div>
+
+                  <button
+                    className="loginButton"
+                    onClick={handlePasswordReset}
+                  >
+                    Update password
+                  </button>
+
+                </>
+
+              )}
+
+            </>
+
+          )}
+
+        </div>
+
+      </section>
+
+    </div>
   );
 }
 
